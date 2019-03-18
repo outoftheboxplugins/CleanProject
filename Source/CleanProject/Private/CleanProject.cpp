@@ -21,6 +21,7 @@
 #include "Private/SPackageReportDialog.h"
 #include "MessageDialog.h"
 #include "SDependReportDialog.h"
+#include "EngineUtils.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
 
@@ -116,13 +117,36 @@ void FCleanProjectModule::ValidateAssets(TArray<FAssetData> SelectedAssets, bool
 		return;
 	}
 
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	TArray<FAssetData> AllAssetData;
+
+	FARFilter Filter;
+	Filter.PackagePaths.Add(TEXT("/Game"));
+	Filter.bRecursivePaths = true;
+
+ 	AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
+	
+
+	for (auto DependsIt = AllPackageNamesToMove.CreateConstIterator(); DependsIt; ++DependsIt)
+	{
+		for (auto AssetIt = AllAssetData.CreateConstIterator(); AssetIt; ++AssetIt)
+		{
+			FAssetData current = *AssetIt;
+			if (current.PackageName == *DependsIt)
+			{
+				AllAssetData.Remove(current);
+				--AssetIt;
+			}
+		}
+	}
+
 	// Prompt the user displaying all assets that are going to be migrated
 	{
 		const FText ReportMessage = LOCTEXT("MigratePackagesReportTitle", "The following assets will be migrated to another content folder.");
 		TArray<FString> ReportPackageNames;
-		for (auto PackageIt = AllPackageNamesToMove.CreateConstIterator(); PackageIt; ++PackageIt)
+		for (auto PackageIt = AllAssetData.CreateConstIterator(); PackageIt; ++PackageIt)
 		{
-			ReportPackageNames.Add((*PackageIt).ToString());
+			ReportPackageNames.Add((*PackageIt).PackageName.ToString());
 		}
 		SDependReportDialog::FOnReportConfirmed OnReportConfirmed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportConfirmed, ReportPackageNames);
 		SDependReportDialog::OpenDependReportDialog(ReportMessage, ReportPackageNames, OnReportConfirmed);
@@ -165,6 +189,7 @@ void FCleanProjectModule::RecursiveGetDependencies(const FName& PackageName, TSe
 {
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 	TArray<FName> Dependencies;
+
 	AssetRegistryModule.Get().GetDependencies(PackageName, Dependencies);
 
 	for (auto DependsIt = Dependencies.CreateConstIterator(); DependsIt; ++DependsIt)
