@@ -25,6 +25,7 @@
 #include "UnrealEd/Public/ObjectTools.h"
 #include "MultiBoxBuilder.h"
 #include "EditorStyleSet.h"
+#include "Engine/World.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
 
@@ -91,12 +92,17 @@ void FCleanProjectModule::CreateDepenCheckerMainMenuEntry(FMenuBuilder& MenuBuil
 // Create the menu entry for the main menu
 void FCleanProjectModule::OnExtendMainMenu()
 {
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	TArray<FAssetData> AllAssetData;
 
-	TArray<FAssetData> AssetDataList;
-	AssetRegistryModule.Get().GetAllAssets(AssetDataList);
+	FARFilter Filter;
+	Filter.PackagePaths.Add(TEXT("/Game"));
+	Filter.bRecursivePaths = true;
+	Filter.ClassNames.Add(UWorld::StaticClass()->GetFName());
 
-	DepenChecker(AssetDataList);
+	AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
+
+	DepenChecker(AllAssetData);
 }
 
 // Calculate the unused assets from a list of selected assets
