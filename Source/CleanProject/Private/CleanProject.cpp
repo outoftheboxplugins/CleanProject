@@ -132,13 +132,6 @@ void FCleanProjectModule::DepenChecker(TArray<FAssetData> SelectedAssets)
 		}
 	}
 
-	// Confirm that there is at least one package to move 
-	if (AllPackageNamesToCheck.Num() == 0)
-	{
-		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("DepenChecker_NoFilesToMove", "No files dependencies found."));
-		return;
-	}
-
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 	TArray<FAssetData> AllAssetData;
 
@@ -161,7 +154,14 @@ void FCleanProjectModule::DepenChecker(TArray<FAssetData> SelectedAssets)
 		}
 	}
 
-	// Prompt the user displaying all assets that are going to be migrated
+	// Confirm that there is at least one package to 
+	if (AllAssetData.Num() == 0)
+	{
+		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("DepenChecker_NoFilesToDelete", "No files to delete."));
+		return;
+	}
+
+	// Prompt the user displaying all assets that are going to be deleted.
 	{
 		const FText ReportMessage = LOCTEXT("DepenCheckerReportTitle", "The following assets are not used by the selected assets.");
 		TArray<FString> ReportPackageNames;
