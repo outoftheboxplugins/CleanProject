@@ -23,23 +23,23 @@
 #include "SDependReportDialog.h"
 #include "EngineUtils.h"
 #include "UnrealEd/Public/ObjectTools.h"
+#include "MultiBoxBuilder.h"
+#include "EditorStyleSet.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
 
 void FCleanProjectModule::StartupModule()
 {
-	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-
-	// Register content browser hook
+	// Register content browser right-click
 	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
 	TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuExtenderDelegates = ContentBrowserModule.GetAllAssetViewContextMenuExtenders();
 
-	CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::OnExtendContentBrowserAssetSelectionMenu));
-	ContentBrowserAssetExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
+	CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::OnExtendContentBrowserAssetActions));
+	FDelegateHandle ContentBrowserAssetExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
 
-	// make an extension to add the DataValidation function menu
-	MenuExtender = MakeShareable(new FExtender);
-	MenuExtender->AddMenuExtension("FileLoadAndSave", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::DepenCheckerMenuCreationDelegate));
+	// Register main menu dropdown entry
+	TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender);
+	MenuExtender->AddMenuExtension("FileLoadAndSave", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateDepenCheckerMainMenuEntry));
 
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 	LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
@@ -47,11 +47,11 @@ void FCleanProjectModule::StartupModule()
 
 void FCleanProjectModule::ShutdownModule()
 {
-
+	//TODO: unregister stuff.
 }
 
-// Extend content browser menu for groups of selected assets
-TSharedRef<FExtender> FCleanProjectModule::OnExtendContentBrowserAssetSelectionMenu(const TArray<FAssetData>& SelectedAssets)
+// Extend content browser menu for to add depend checker delegate
+TSharedRef<FExtender> FCleanProjectModule::OnExtendContentBrowserAssetActions(const TArray<FAssetData>& SelectedAssets)
 {
 	TSharedRef<FExtender> Extender(new FExtender());
 
@@ -59,22 +59,47 @@ TSharedRef<FExtender> FCleanProjectModule::OnExtendContentBrowserAssetSelectionM
 		"AssetContextAdvancedActions",
 		EExtensionHook::After,
 		nullptr,
-		FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateDataValidationContentBrowserAssetMenu, SelectedAssets));
+		FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateDepenCheckerContentBrowserAssetAction, SelectedAssets));
 
 	return Extender;
 }
 
-void FCleanProjectModule::CreateDataValidationContentBrowserAssetMenu(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets)
+// Create the menu entry for the content browser
+void FCleanProjectModule::CreateDepenCheckerContentBrowserAssetAction(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets)
 {
 	MenuBuilder.AddMenuEntry
 	(
-		LOCTEXT("DepenCheckerTabTitle", "Check unused assets."),
+		LOCTEXT("DepenCheckerTabTitle", "Check unused assets"),
 		LOCTEXT("DepenCheckerTooltipText", "Returns all the assets not used by the selected assets."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateRaw(this, &FCleanProjectModule::DepenChecker, SelectedAssets))
 	);
 }
 
+// Extend main menu for to add depend checker delegate
+void FCleanProjectModule::CreateDepenCheckerMainMenuEntry(FMenuBuilder& MenuBuilder)
+{
+	MenuBuilder.BeginSection("CleanProject", LOCTEXT("CleanProject", "CleanProject"));
+	MenuBuilder.AddMenuEntry(
+		FText(LOCTEXT("DepenChecker", "DepenChecker")),
+		LOCTEXT("DepenCheckerTooltip", "Return all the unused assets of the game."),
+		FSlateIcon(FEditorStyle::GetStyleSetName(), "DeveloperTools.MenuIcon"),
+		FUIAction(FExecuteAction::CreateRaw(this, &FCleanProjectModule::OnExtendMainMenu)));
+	MenuBuilder.EndSection();
+}
+
+// Create the menu entry for the main menu
+void FCleanProjectModule::OnExtendMainMenu()
+{
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+
+	TArray<FAssetData> AssetDataList;
+	AssetRegistryModule.Get().GetAllAssets(AssetDataList);
+
+	DepenChecker(AssetDataList);
+}
+
+// Calculate the unused assets from a list of selected assets
 void FCleanProjectModule::DepenChecker(TArray<FAssetData> SelectedAssets)
 {
 	TArray<FName> PackageNames;
@@ -144,27 +169,7 @@ void FCleanProjectModule::DepenChecker(TArray<FAssetData> SelectedAssets)
 	}
 }
 
-void FCleanProjectModule::Menu_DepenChecker()
-{
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
-
-	TArray<FAssetData> AssetDataList;
-	AssetRegistryModule.Get().GetAllAssets(AssetDataList);
-
-	DepenChecker(AssetDataList);
-}
-
-void FCleanProjectModule::DepenCheckerMenuCreationDelegate(FMenuBuilder& MenuBuilder)
-{
-	MenuBuilder.BeginSection("CleanProject", LOCTEXT("CleanProject", "CleanProject"));
-	MenuBuilder.AddMenuEntry(
-		FText(LOCTEXT("DepenChecker", "DepenChecker")),
-		LOCTEXT("DepenCheckerTooltip", "Return all the unused assets of the game."),
-		FSlateIcon(FEditorStyle::GetStyleSetName(), "DeveloperTools.MenuIcon"),
-		FUIAction(FExecuteAction::CreateRaw(this, &FCleanProjectModule::Menu_DepenChecker)));
-	MenuBuilder.EndSection();
-}
-
+// Get Dependencies recursive for assets
 void FCleanProjectModule::RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies) const
 {
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
@@ -188,6 +193,7 @@ void FCleanProjectModule::RecursiveGetDependencies(const FName& PackageName, TSe
 	}
 }
 
+// Delete the assets when a report is confirmed
 void FCleanProjectModule::CheckDepencies_ReportConfirmed(TArray<FAssetData> ConfirmedPackageNamesToDelete) const
 {
 	TArray<UObject*> AssetsToDelete;

@@ -16,17 +16,20 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+
 protected:
-	TSharedRef<FExtender> OnExtendContentBrowserAssetSelectionMenu(const TArray<FAssetData>& SelectedAssets);
-	void CreateDataValidationContentBrowserAssetMenu(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
-	void DepenChecker(TArray<FAssetData> SelectedAssets);
+	//~ Content browser Asset Actions
+	TSharedRef<FExtender> OnExtendContentBrowserAssetActions(const TArray<FAssetData>& SelectedAssets);	
+	void CreateDepenCheckerContentBrowserAssetAction(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
+
+protected:
+	//~ Main Menu Entry
+	void OnExtendMainMenu();
+	void CreateDepenCheckerMainMenuEntry(FMenuBuilder& MenuBuilder);
+
+protected:
+	//~ Functionality
 	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies) const;
+	void DepenChecker(TArray<FAssetData> SelectedAssets);
 	void CheckDepencies_ReportConfirmed(TArray<FAssetData> ConfirmedPackageNamesToDelete) const;
-	void Menu_DepenChecker();
-	void DepenCheckerMenuCreationDelegate(FMenuBuilder& MenuBuilder);
-
-private:
-	TSharedPtr<FExtender> MenuExtender;
-
-	FDelegateHandle ContentBrowserAssetExtenderDelegateHandle;
 };
