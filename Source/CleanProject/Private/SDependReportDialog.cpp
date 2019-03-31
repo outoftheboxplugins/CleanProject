@@ -144,7 +144,7 @@ void SDependReportDialog::Construct( const FArguments& InArgs, const FText& InRe
 					.HAlign(HAlign_Center)
 					.ContentPadding( FEditorStyle::GetMargin("StandardDialog.ContentPadding") )
 					.OnClicked(this, &SDependReportDialog::OkClicked)
-					.Text(LOCTEXT("OkButton", "OK"))
+					.Text(LOCTEXT("DeleteButton", "Delete"))
 				]
 				+SUniformGridPanel::Slot(1,0)
 				[
@@ -168,7 +168,7 @@ END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SDependReportDialog::OpenDependReportDialog(const FText& ReportMessage, const TArray<FString>& PackageNames, const FOnReportConfirmed& InOnReportConfirmed)
 {
 	TSharedRef<SWindow> ReportWindow = SNew(SWindow)
-		.Title(LOCTEXT("ReportWindowTitle", "Asset Report"))
+		.Title(LOCTEXT("ReportWindowTitle", "Depend Checker Report"))
 		.ClientSize( FVector2D(600, 500) )
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)

@@ -22,6 +22,7 @@
 #include "MessageDialog.h"
 #include "SDependReportDialog.h"
 #include "EngineUtils.h"
+#include "UnrealEd/Public/ObjectTools.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
 
@@ -36,11 +37,9 @@ void FCleanProjectModule::StartupModule()
 	CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::OnExtendContentBrowserAssetSelectionMenu));
 	ContentBrowserAssetExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
 
-	// add the File->DataValidation menu subsection
-
 	// make an extension to add the DataValidation function menu
 	MenuExtender = MakeShareable(new FExtender);
-	MenuExtender->AddMenuExtension("FileLoadAndSave", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateStatic(&DataValidationMenuCreationDelegate));
+	MenuExtender->AddMenuExtension("FileLoadAndSave", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::DepenCheckerMenuCreationDelegate));
 
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 	LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
@@ -65,26 +64,18 @@ TSharedRef<FExtender> FCleanProjectModule::OnExtendContentBrowserAssetSelectionM
 	return Extender;
 }
 
-// Extend content browser menu for groups of selected assets
 void FCleanProjectModule::CreateDataValidationContentBrowserAssetMenu(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets)
 {
 	MenuBuilder.AddMenuEntry
 	(
-		LOCTEXT("ValidateAssetsTabTitle", "Check Dependencies of these assets"),
-		LOCTEXT("ValidateAssetsTooltipText", "Runs data validation on these assets."),
+		LOCTEXT("DepenCheckerTabTitle", "Check unused assets."),
+		LOCTEXT("DepenCheckerTooltipText", "Returns all the assets not used by the selected assets."),
 		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateRaw(this, &FCleanProjectModule::ValidateAssets, SelectedAssets, false))
-	);
-	MenuBuilder.AddMenuEntry
-	(
-		LOCTEXT("ValidateAssetsAndDependenciesTabTitle", "Check unused assets of these assets"),
-		LOCTEXT("ValidateAssetsAndDependenciesTooltipText", "Runs data validation on these assets and all assets they depend on."),
-		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateRaw(this, &FCleanProjectModule::ValidateAssets, SelectedAssets, true))
+		FUIAction(FExecuteAction::CreateRaw(this, &FCleanProjectModule::DepenChecker, SelectedAssets))
 	);
 }
 
-void FCleanProjectModule::ValidateAssets(TArray<FAssetData> SelectedAssets, bool bValidateDependencies)
+void FCleanProjectModule::DepenChecker(TArray<FAssetData> SelectedAssets)
 {
 	TArray<FName> PackageNames;
 	PackageNames.Reserve(SelectedAssets.Num());
@@ -93,27 +84,27 @@ void FCleanProjectModule::ValidateAssets(TArray<FAssetData> SelectedAssets, bool
 		PackageNames.Add(SelectedAssets[AssetIdx].PackageName);
 	}
 
-	TSet<FName> AllPackageNamesToMove;
+	TSet<FName> AllPackageNamesToCheck;
 	{
-		FScopedSlowTask SlowTask(PackageNames.Num(), LOCTEXT("MigratePackages_GatheringDependencies", "Gathering Dependencies..."));
+		FScopedSlowTask SlowTask(PackageNames.Num(), LOCTEXT("DepenChecker_GatheringDependencies", "Gathering Dependencies..."));
 		SlowTask.MakeDialog();
 
 		for (auto PackageIt = PackageNames.CreateConstIterator(); PackageIt; ++PackageIt)
 		{
 			SlowTask.EnterProgressFrame();
 
-			if (!AllPackageNamesToMove.Contains(*PackageIt))
+			if (!AllPackageNamesToCheck.Contains(*PackageIt))
 			{
-				AllPackageNamesToMove.Add(*PackageIt);
-				RecursiveGetDependencies(*PackageIt, AllPackageNamesToMove);
+				AllPackageNamesToCheck.Add(*PackageIt);
+				RecursiveGetDependencies(*PackageIt, AllPackageNamesToCheck);
 			}
 		}
 	}
 
 	// Confirm that there is at least one package to move 
-	if (AllPackageNamesToMove.Num() == 0)
+	if (AllPackageNamesToCheck.Num() == 0)
 	{
-		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("MigratePackages_NoFilesToMove", "No files were found to move"));
+		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("DepenChecker_NoFilesToMove", "No files dependencies found."));
 		return;
 	}
 
@@ -126,8 +117,7 @@ void FCleanProjectModule::ValidateAssets(TArray<FAssetData> SelectedAssets, bool
 
  	AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
 	
-
-	for (auto DependsIt = AllPackageNamesToMove.CreateConstIterator(); DependsIt; ++DependsIt)
+	for (auto DependsIt = AllPackageNamesToCheck.CreateConstIterator(); DependsIt; ++DependsIt)
 	{
 		for (auto AssetIt = AllAssetData.CreateConstIterator(); AssetIt; ++AssetIt)
 		{
@@ -142,47 +132,37 @@ void FCleanProjectModule::ValidateAssets(TArray<FAssetData> SelectedAssets, bool
 
 	// Prompt the user displaying all assets that are going to be migrated
 	{
-		const FText ReportMessage = LOCTEXT("MigratePackagesReportTitle", "The following assets will be migrated to another content folder.");
+		const FText ReportMessage = LOCTEXT("DepenCheckerReportTitle", "The following assets are not used by the selected assets.");
 		TArray<FString> ReportPackageNames;
 		for (auto PackageIt = AllAssetData.CreateConstIterator(); PackageIt; ++PackageIt)
 		{
 			ReportPackageNames.Add((*PackageIt).PackageName.ToString());
 		}
-		SDependReportDialog::FOnReportConfirmed OnReportConfirmed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportConfirmed, ReportPackageNames);
+		
+		SDependReportDialog::FOnReportConfirmed OnReportConfirmed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportConfirmed, AllAssetData);
 		SDependReportDialog::OpenDependReportDialog(ReportMessage, ReportPackageNames, OnReportConfirmed);
 	}
-
-	//FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	//
-	//TSet<FAssetData> DependentAssets;
-	//if (bValidateDependencies)
-	//{
-	//	for (const FAssetData& Asset : SelectedAssets)
-	//	{
-	//		FindAssetDependencies(AssetRegistryModule, Asset, DependentAssets);
-	//	}
-	//
-	//	SelectedAssets = DependentAssets.Array();
-	//}
-	//
-	//UDataValidationManager* DataValidationManager = UDataValidationManager::Get();
-	//if (DataValidationManager)
-	//{
-	//	DataValidationManager->ValidateAssets(SelectedAssets, false);
-	//}
-	
-	
 }
 
-void FCleanProjectModule::DataValidationMenuCreationDelegate(FMenuBuilder& MenuBuilder)
+void FCleanProjectModule::Menu_DepenChecker()
 {
-	//MenuBuilder.BeginSection("DataValidation", LOCTEXT("DataValidation", "DataValidation"));
-	//MenuBuilder.AddMenuEntry(
-	//	TAttribute<FText>::Create(LOCTEXT("DataValidation", "DataValidation")),
-	//	LOCTEXT("ValidateDataTooltip", "Validates all user data in content directory."),
-	//	FSlateIcon(FEditorStyle::GetStyleSetName(), "DeveloperTools.MenuIcon"),
-	//	FUIAction(FExecuteAction::CreateStatic(&FDataValidationModule::Menu_ValidateData)));
-	//MenuBuilder.EndSection();
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+
+	TArray<FAssetData> AssetDataList;
+	AssetRegistryModule.Get().GetAllAssets(AssetDataList);
+
+	DepenChecker(AssetDataList);
+}
+
+void FCleanProjectModule::DepenCheckerMenuCreationDelegate(FMenuBuilder& MenuBuilder)
+{
+	MenuBuilder.BeginSection("CleanProject", LOCTEXT("CleanProject", "CleanProject"));
+	MenuBuilder.AddMenuEntry(
+		FText(LOCTEXT("DepenChecker", "DepenChecker")),
+		LOCTEXT("DepenCheckerTooltip", "Return all the unused assets of the game."),
+		FSlateIcon(FEditorStyle::GetStyleSetName(), "DeveloperTools.MenuIcon"),
+		FUIAction(FExecuteAction::CreateRaw(this, &FCleanProjectModule::Menu_DepenChecker)));
+	MenuBuilder.EndSection();
 }
 
 void FCleanProjectModule::RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies) const
@@ -208,9 +188,17 @@ void FCleanProjectModule::RecursiveGetDependencies(const FName& PackageName, TSe
 	}
 }
 
-void FCleanProjectModule::CheckDepencies_ReportConfirmed(TArray<FString> ConfirmedPackageNamesToMigrate) const
+void FCleanProjectModule::CheckDepencies_ReportConfirmed(TArray<FAssetData> ConfirmedPackageNamesToDelete) const
 {
+	TArray<UObject*> AssetsToDelete;
+	for (auto AssetIt = ConfirmedPackageNamesToDelete.CreateConstIterator(); AssetIt; ++AssetIt)
+	{
+		FAssetData current = *AssetIt;
+		AssetsToDelete.Add(current.GetAsset());
+	}
 
+	const bool bShowConfirmation = false;
+	ObjectTools::ForceDeleteObjects(AssetsToDelete, bShowConfirmation);
 }
 
 #undef LOCTEXT_NAMESPACE

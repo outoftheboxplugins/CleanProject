@@ -19,10 +19,11 @@ public:
 protected:
 	TSharedRef<FExtender> OnExtendContentBrowserAssetSelectionMenu(const TArray<FAssetData>& SelectedAssets);
 	void CreateDataValidationContentBrowserAssetMenu(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
-	void ValidateAssets(TArray<FAssetData> SelectedAssets, bool bValidateDependencies);
+	void DepenChecker(TArray<FAssetData> SelectedAssets);
 	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies) const;
-	void CheckDepencies_ReportConfirmed(TArray<FString> ConfirmedPackageNamesToMigrate) const;
-	static void DataValidationMenuCreationDelegate(FMenuBuilder& MenuBuilder);
+	void CheckDepencies_ReportConfirmed(TArray<FAssetData> ConfirmedPackageNamesToDelete) const;
+	void Menu_DepenChecker();
+	void DepenCheckerMenuCreationDelegate(FMenuBuilder& MenuBuilder);
 
 private:
 	TSharedPtr<FExtender> MenuExtender;
