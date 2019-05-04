@@ -1,4 +1,4 @@
-// Copyright Alexandru pasotee Oprea 2018. All Rights Reserved.
+// Copyright Out-of-the-Box Plugins 2018-2019. All Rights Reserved.
 
 #include "CleanProject.h"
 
@@ -11,21 +11,18 @@
 #include "Toolkits/AssetEditorToolkit.h"
 
 #include "ContentBrowserModule.h"
-#include "MultiBoxExtender.h"
-#include "LevelEditor.h"
-#include "AssetData.h"
-#include "IAssetTools.h"
-#include "AssetToolsModule.h"
-#include "ScopedSlowTask.h"
+#include "Editor/LevelEditor/Public/LevelEditor.h"
+#include "Developer/AssetTools/Public/IAssetTools.h"
+#include "Developer/AssetTools/Public/AssetToolsModule.h"
+#include "Misc/ScopedSlowTask.h"
 #include "AssetRegistryModule.h"
-#include "Private/SPackageReportDialog.h"
-#include "MessageDialog.h"
-#include "SDependReportDialog.h"
+#include "Misc/MessageDialog.h"
 #include "EngineUtils.h"
 #include "UnrealEd/Public/ObjectTools.h"
-#include "MultiBoxBuilder.h"
 #include "EditorStyleSet.h"
 #include "Engine/World.h"
+#include "Private/SDependReportDialog.h"
+#include "AssetTools/Private/SPackageReportDialog.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
 

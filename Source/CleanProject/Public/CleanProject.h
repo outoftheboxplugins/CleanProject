@@ -1,9 +1,14 @@
-// Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
+// Copyright Out-of-the-Box Plugins 2018-2019. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
+#include "Templates/SharedPointer.h"
+#include "Framework/MultiBox/MultiBoxExtender.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Containers/Array.h"
+#include "AssetData.h"
 
 /**
  * Implements the CleanProjectEditor module.
@@ -15,7 +20,6 @@ public:
 
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
-
 
 protected:
 	//~ Content browser Asset Actions
