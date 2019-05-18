@@ -21,7 +21,7 @@
 #include "UnrealEd/Public/ObjectTools.h"
 #include "EditorStyleSet.h"
 #include "Engine/World.h"
-#include "Private/SDependReportDialog.h"
+#include "SDependReportDialog.h"
 #include "AssetTools/Private/SPackageReportDialog.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
