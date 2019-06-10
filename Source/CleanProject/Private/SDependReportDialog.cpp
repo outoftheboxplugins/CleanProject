@@ -85,9 +85,10 @@ void FDependReportNode::AddPackage_Recursive(TArray<FString>& PathElements)
 }
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
-void SDependReportDialog::Construct( const FArguments& InArgs, const FText& InReportMessage, const TArray<FString>& InPackageNames, const FOnReportConfirmed& InOnReportConfirmed )
+void SDependReportDialog::Construct( const FArguments& InArgs, const FText& InReportMessage, const TArray<FString>& InPackageNames, const FOnReportConfirmed& InOnReportConfirmed, const FOnReportConfirmed& InOnReportBlacklist)
 {
 	OnReportConfirmed = InOnReportConfirmed;
+	OnReportBlackList = InOnReportBlacklist;
 	FolderOpenBrush = FEditorStyle::GetBrush("ContentBrowser.AssetTreeFolderOpen");
 	FolderClosedBrush = FEditorStyle::GetBrush("ContentBrowser.AssetTreeFolderClosed");
 	PackageBrush = FEditorStyle::GetBrush("ContentBrowser.ColumnViewAssetIcon");
@@ -146,7 +147,15 @@ void SDependReportDialog::Construct( const FArguments& InArgs, const FText& InRe
 					.OnClicked(this, &SDependReportDialog::OkClicked)
 					.Text(LOCTEXT("DeleteButton", "Delete"))
 				]
-				+SUniformGridPanel::Slot(1,0)
+				+ SUniformGridPanel::Slot(1, 0)
+				[
+					SNew(SButton)
+					.HAlign(HAlign_Center)
+					.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+					.OnClicked(this, &SDependReportDialog::OnBlackList)
+					.Text(LOCTEXT("BlackListButton", "BlackList"))
+				]
+				+SUniformGridPanel::Slot(2,0)
 				[
 					SNew(SButton)
 					.HAlign(HAlign_Center)
@@ -165,7 +174,7 @@ void SDependReportDialog::Construct( const FArguments& InArgs, const FText& InRe
 }
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
-void SDependReportDialog::OpenDependReportDialog(const FText& ReportMessage, const TArray<FString>& PackageNames, const FOnReportConfirmed& InOnReportConfirmed)
+void SDependReportDialog::OpenDependReportDialog(const FText& ReportMessage, const TArray<FString>& PackageNames, const FOnReportConfirmed& InOnReportConfirmed, const FOnReportConfirmed& InOnReportBlacklist)
 {
 	TSharedRef<SWindow> ReportWindow = SNew(SWindow)
 		.Title(LOCTEXT("ReportWindowTitle", "Depend Checker Report"))
@@ -173,7 +182,7 @@ void SDependReportDialog::OpenDependReportDialog(const FText& ReportMessage, con
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
 		[
-			SNew(SDependReportDialog, ReportMessage, PackageNames, InOnReportConfirmed)
+			SNew(SDependReportDialog, ReportMessage, PackageNames, InOnReportConfirmed, InOnReportBlacklist)
 		];
 
 	IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
@@ -256,6 +265,14 @@ FReply SDependReportDialog::OkClicked()
 {
 	CloseDialog();
 	OnReportConfirmed.ExecuteIfBound();
+
+	return FReply::Handled();
+}
+
+FReply SDependReportDialog::OnBlackList()
+{
+	CloseDialog();
+	OnReportBlackList.ExecuteIfBound();
 
 	return FReply::Handled();
 }

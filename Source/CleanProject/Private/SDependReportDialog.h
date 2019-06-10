@@ -48,10 +48,10 @@ public:
 	SLATE_END_ARGS()
 
 	/** Constructs this widget with InArgs */
-	void Construct( const FArguments& InArgs, const FText& InReportMessage, const TArray<FString>& InPackageNames, const FOnReportConfirmed& InOnReportConfirmed );
+	void Construct( const FArguments& InArgs, const FText& InReportMessage, const TArray<FString>& InPackageNames, const FOnReportConfirmed& InOnReportConfirmed, const FOnReportConfirmed& InOnReportBlacklist);
 
 	/** Opens the dialog in a new window */
-	static void OpenDependReportDialog(const FText& ReportMessage, const TArray<FString>& PackageNames, const FOnReportConfirmed& InOnReportConfirmed);
+	static void OpenDependReportDialog(const FText& ReportMessage, const TArray<FString>& PackageNames, const FOnReportConfirmed& InOnReportConfirmed, const FOnReportConfirmed& InOnReportBlacklist);
 
 	/** Closes the dialog. */
 	void CloseDialog();
@@ -72,11 +72,15 @@ private:
 	/** Handler for when "Ok" is clicked */
 	FReply OkClicked();
 
+	/** Handler for when "BlackList" is clicked */
+	FReply OnBlackList();
+
 	/** Handler for when "Cancel" is clicked */
 	FReply CancelClicked();
 
 private:
 	FOnReportConfirmed OnReportConfirmed;
+	FOnReportConfirmed OnReportBlackList;
 	FDependReportNode DependReportRootNode;
 	TSharedPtr<DependReportTree> ReportTreeView;
 

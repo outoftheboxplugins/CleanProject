@@ -23,6 +23,8 @@
 #include "Engine/World.h"
 #include "SDependReportDialog.h"
 #include "AssetTools/Private/SPackageReportDialog.h"
+#include "FileHelper.h"
+#include "Paths.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
 
@@ -38,7 +40,7 @@ void FCleanProjectModule::StartupModule()
 	// Register main menu dropdown entry
 	TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender);
 	MenuExtender->AddMenuExtension("FileLoadAndSave", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateDepenCheckerMainMenuEntry));
-
+	
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 	LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
 }
@@ -168,7 +170,8 @@ void FCleanProjectModule::DepenChecker(TArray<FAssetData> SelectedAssets)
 		}
 		
 		SDependReportDialog::FOnReportConfirmed OnReportConfirmed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportConfirmed, AllAssetData);
-		SDependReportDialog::OpenDependReportDialog(ReportMessage, ReportPackageNames, OnReportConfirmed);
+		SDependReportDialog::FOnReportConfirmed OnReporBlackListed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportBlackListed, AllAssetData);
+		SDependReportDialog::OpenDependReportDialog(ReportMessage, ReportPackageNames, OnReportConfirmed, OnReporBlackListed);
 	}
 }
 
@@ -208,6 +211,22 @@ void FCleanProjectModule::CheckDepencies_ReportConfirmed(TArray<FAssetData> Conf
 
 	const bool bShowConfirmation = false;
 	ObjectTools::ForceDeleteObjects(AssetsToDelete, bShowConfirmation);
+}
+
+void FCleanProjectModule::CheckDepencies_ReportBlackListed(TArray<FAssetData> ConfirmedPackageNamesToBlackList) const
+{
+	FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::GameSavedDir()) + TEXT("Blacklist.txt");
+	FString FileContent = TEXT("Copy this text inside your black-list.\n");
+	TArray<FString> AssetsToBlackList;
+	for (auto PackageIt = ConfirmedPackageNamesToBlackList.CreateConstIterator(); PackageIt; ++PackageIt)
+	{
+		FString assetPath = (*PackageIt).PackageName.ToString();
+		AssetsToBlackList.Add(assetPath);
+		FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
+	}
+
+	FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
+	FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), NULL, NULL);
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -36,4 +36,5 @@ protected:
 	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies) const;
 	void DepenChecker(TArray<FAssetData> SelectedAssets);
 	void CheckDepencies_ReportConfirmed(TArray<FAssetData> ConfirmedPackageNamesToDelete) const;
+	void CheckDepencies_ReportBlackListed(TArray<FAssetData> ConfirmedPackageNamesToBlackList) const;
 };
