@@ -23,8 +23,8 @@
 #include "Engine/World.h"
 #include "SDependReportDialog.h"
 #include "AssetTools/Private/SPackageReportDialog.h"
-#include "FileHelper.h"
-#include "Paths.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
 
