@@ -27,6 +27,8 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
+#include "AssetManagerEditorModule.h"
+
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
 
 void FCleanProjectModule::StartupModule()
@@ -185,6 +187,17 @@ void FCleanProjectModule::DepenChecker(TArray<FAssetData> SelectedAssets)
 		SDependReportDialog::FOnReportConfirmed OnReportConfirmed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportConfirmed, AllAssetData);
 		SDependReportDialog::FOnReportConfirmed OnReporBlackListed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportBlackListed, AllAssetData);
 		SDependReportDialog::OpenDependReportDialog(ReportMessage, ReportPackageNames, OnReportConfirmed, OnReporBlackListed);
+
+
+		if (FModuleManager::Get().ModuleExists(TEXT("AssetManagerEditor"))) 
+		{
+			IAssetManagerEditorModule& Module = FModuleManager::LoadModuleChecked< IAssetManagerEditorModule >("AssetManagerEditor");
+			Module.OpenAssetAuditUI(AllAssetData);
+
+		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("AssetManagerEditor plugin is not enabled"));
+		}
 	}
 }
 
@@ -242,7 +255,7 @@ void FCleanProjectModule::CheckDepencies_ReportBlackListed(TArray<FAssetData> Co
 
 		for (const FString& platformFolder : Settings->PlatformsPaths)
 		{
-			for (const FString& listFile : Settings->GetAllBlackLists())
+			for (const FString& listFile : Settings->BlacklistFiles)
 			{
 				FString slash = FGenericPlatformMisc::GetDefaultPathSeparator();
 				FString platformPath = projectBuildRoot + slash + platformFolder + slash + listFile;

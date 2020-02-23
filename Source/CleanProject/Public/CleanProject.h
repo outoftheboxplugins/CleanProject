@@ -15,9 +15,9 @@
  */
 class FCleanProjectModule : public IModuleInterface
 {
-public:
-	//~ IModuleInterface interface
 
+//~ IModuleInterface interface
+public:	
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 

@@ -4,32 +4,21 @@
 
 UCleanProjectSettings::UCleanProjectSettings()
 {
-    PlatformsPaths = { "WindowsNoEditor" };
+    PlatformsPaths = 
+    { 
+        "WindowsNoEditor",
+        "Android",
+        "IOS",
+        "Mac",
+        "Linux"
+    };
+
+    BlacklistFiles =
+    { 
+        "PakBlacklist-Debug.txt",
+        "PakBlacklist-Development.txt",
+        "PakBlacklist-Test.txt",
+        "PakBlacklist-Shipping.txt",
+    };
 }
 
-TArray<FString> UCleanProjectSettings::GetAllBlackLists() const
-{
-    TArray<FString> lists;
-
-    if (!DebugBlackList.IsEmpty())
-    {
-        lists.Add(DebugBlackList);
-    }
-
-    if (!DevelopmentBlackList.IsEmpty())
-    {
-        lists.Add(DevelopmentBlackList);
-    }
-
-    if (!TestBlackList.IsEmpty())
-    {
-        lists.Add(TestBlackList);
-    }
-
-    if (!ShippingBlackList.IsEmpty())
-    {
-        lists.Add(ShippingBlackList);
-    }
-
-    return lists;
-}

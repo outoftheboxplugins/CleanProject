@@ -18,6 +18,7 @@ class UCleanProjectSettings : public UObject
 public:
 	UCleanProjectSettings();
 
+	// Outputes the blacklist result to a intermediate file instead of creating them directly.
 	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
 	bool bUseSmartBlackList = true;
 
@@ -25,17 +26,5 @@ public:
 	TArray<FString> PlatformsPaths;
 
 	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
-	FString DebugBlackList			= "PakBlacklist-Debug.txt";
-
-	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
-	FString DevelopmentBlackList	= "PakBlacklist-Development.txt";
-
-	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
-	FString TestBlackList			= "PakBlacklist-Test.txt";
-
-	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
-	FString ShippingBlackList		= "PakBlacklist-Shipping.txt";
-
-public:
-	TArray<FString> GetAllBlackLists() const;
+	TArray<FString> BlacklistFiles;
 };
