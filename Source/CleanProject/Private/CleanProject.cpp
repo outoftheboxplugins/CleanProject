@@ -23,6 +23,7 @@
 #include "Engine/World.h"
 #include "SDependReportDialog.h"
 #include "AssetTools/Private/SPackageReportDialog.h"
+#include "CleanProjectSettings.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
@@ -43,6 +44,18 @@ void FCleanProjectModule::StartupModule()
 	
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 	LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
+
+	// Register the settings
+	ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
+
+	if (SettingsModule != nullptr)
+	{
+		ISettingsSectionPtr SettingsSection = SettingsModule->RegisterSettings("Editor", "Plugins", "Clean Project",
+			LOCTEXT("CleanProjectSettings", "Clean Project Settings"),
+			LOCTEXT("CleanProjectSettingsDescription", "Cleanup and project management improvements."),
+			GetMutableDefault<UCleanProjectSettings>()
+		);
+	}
 }
 
 void FCleanProjectModule::ShutdownModule()
@@ -215,18 +228,35 @@ void FCleanProjectModule::CheckDepencies_ReportConfirmed(TArray<FAssetData> Conf
 
 void FCleanProjectModule::CheckDepencies_ReportBlackListed(TArray<FAssetData> ConfirmedPackageNamesToBlackList) const
 {
-	FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::GameSavedDir()) + TEXT("Blacklist.txt");
-	FString FileContent = TEXT("Copy this text inside your black-list.\n");
-	TArray<FString> AssetsToBlackList;
+	FString FileContent;
 	for (auto PackageIt = ConfirmedPackageNamesToBlackList.CreateConstIterator(); PackageIt; ++PackageIt)
 	{
 		FString assetPath = (*PackageIt).PackageName.ToString();
-		AssetsToBlackList.Add(assetPath);
 		FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
 	}
 
-	FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
-	FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), NULL, NULL);
+	auto Settings = GetDefault<UCleanProjectSettings>();
+	if (Settings->bUseSmartBlackList)
+	{
+		FString projectBuildRoot = FPaths::ProjectDir() + "Build";
+
+		for (const FString& platformFolder : Settings->PlatformsPaths)
+		{
+			for (const FString& listFile : Settings->GetAllBlackLists())
+			{
+				FString slash = FGenericPlatformMisc::GetDefaultPathSeparator();
+				FString platformPath = projectBuildRoot + slash + platformFolder + slash + listFile;
+				FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
+			}
+		}
+	}
+	else
+	{
+		FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::GameSavedDir()) + TEXT("Blacklist.txt");
+		
+		FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
+		FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), NULL, NULL);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
