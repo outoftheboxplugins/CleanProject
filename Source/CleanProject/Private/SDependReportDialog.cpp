@@ -198,8 +198,7 @@ void SDependReportDialog::OpenDependReportDialog(const FText& ReportMessage, con
 
 void SDependReportDialog::CloseDialog()
 {
-	FWidgetPath WidgetPath;
-	TSharedPtr<SWindow> Window = FSlateApplication::Get().FindWidgetWindow(AsShared(), WidgetPath);
+	TSharedPtr<SWindow> Window = FSlateApplication::Get().FindWidgetWindow(AsShared());
 
 	if ( Window.IsValid() )
 	{

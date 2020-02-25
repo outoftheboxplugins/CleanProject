@@ -28,6 +28,7 @@
 #include "Misc/Paths.h"
 
 #include "AssetManagerEditorModule.h"
+#include "CleanProject\Public\CleanProjectOperations.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
 
@@ -87,7 +88,7 @@ void FCleanProjectModule::CreateDepenCheckerContentBrowserAssetAction(FMenuBuild
 		LOCTEXT("DepenCheckerTabTitle", "Check unused assets"),
 		LOCTEXT("DepenCheckerTooltipText", "Returns all the assets not used by the selected assets."),
 		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateRaw(this, &FCleanProjectModule::DepenChecker, SelectedAssets))
+		FUIAction(/*FExecuteAction::CreateRaw(this, &FCleanProjectModule::DepenChecker, SelectedAssets)*/)
 	);
 }
 
@@ -116,114 +117,10 @@ void FCleanProjectModule::OnExtendMainMenu()
 
 	AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
 
-	DepenChecker(AllAssetData);
+	//DepenChecker(AllAssetData);
 }
 
-// Calculate the unused assets from a list of selected assets
-void FCleanProjectModule::DepenChecker(TArray<FAssetData> SelectedAssets)
-{
-	TArray<FName> PackageNames;
-	PackageNames.Reserve(SelectedAssets.Num());
-	for (int32 AssetIdx = 0; AssetIdx < SelectedAssets.Num(); ++AssetIdx)
-	{
-		PackageNames.Add(SelectedAssets[AssetIdx].PackageName);
-	}
 
-	TSet<FName> AllPackageNamesToCheck;
-	{
-		FScopedSlowTask SlowTask(PackageNames.Num(), LOCTEXT("DepenChecker_GatheringDependencies", "Gathering Dependencies..."));
-		SlowTask.MakeDialog();
-
-		for (auto PackageIt = PackageNames.CreateConstIterator(); PackageIt; ++PackageIt)
-		{
-			SlowTask.EnterProgressFrame();
-
-			if (!AllPackageNamesToCheck.Contains(*PackageIt))
-			{
-				AllPackageNamesToCheck.Add(*PackageIt);
-				RecursiveGetDependencies(*PackageIt, AllPackageNamesToCheck);
-			}
-		}
-	}
-
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	TArray<FAssetData> AllAssetData;
-
-	FARFilter Filter;
-	Filter.PackagePaths.Add(TEXT("/Game"));
-	Filter.bRecursivePaths = true;
-
- 	AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
-	
-	for (auto DependsIt = AllPackageNamesToCheck.CreateConstIterator(); DependsIt; ++DependsIt)
-	{
-		for (auto AssetIt = AllAssetData.CreateConstIterator(); AssetIt; ++AssetIt)
-		{
-			FAssetData current = *AssetIt;
-			if (current.PackageName == *DependsIt)
-			{
-				AllAssetData.Remove(current);
-				--AssetIt;
-			}
-		}
-	}
-
-	// Confirm that there is at least one package to 
-	if (AllAssetData.Num() == 0)
-	{
-		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("DepenChecker_NoFilesToDelete", "No files to delete."));
-		return;
-	}
-
-	// Prompt the user displaying all assets that are going to be deleted.
-	{
-		const FText ReportMessage = LOCTEXT("DepenCheckerReportTitle", "The following assets are not used by the selected assets.");
-		TArray<FString> ReportPackageNames;
-		for (auto PackageIt = AllAssetData.CreateConstIterator(); PackageIt; ++PackageIt)
-		{
-			ReportPackageNames.Add((*PackageIt).PackageName.ToString());
-		}
-		
-		SDependReportDialog::FOnReportConfirmed OnReportConfirmed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportConfirmed, AllAssetData);
-		SDependReportDialog::FOnReportConfirmed OnReporBlackListed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportBlackListed, AllAssetData);
-		SDependReportDialog::OpenDependReportDialog(ReportMessage, ReportPackageNames, OnReportConfirmed, OnReporBlackListed);
-
-
-		if (FModuleManager::Get().ModuleExists(TEXT("AssetManagerEditor"))) 
-		{
-			IAssetManagerEditorModule& Module = FModuleManager::LoadModuleChecked< IAssetManagerEditorModule >("AssetManagerEditor");
-			Module.OpenAssetAuditUI(AllAssetData);
-
-		}
-		else {
-			UE_LOG(LogTemp, Error, TEXT("AssetManagerEditor plugin is not enabled"));
-		}
-	}
-}
-
-// Get Dependencies recursive for assets
-void FCleanProjectModule::RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies) const
-{
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	TArray<FName> Dependencies;
-
-	AssetRegistryModule.Get().GetDependencies(PackageName, Dependencies);
-
-	for (auto DependsIt = Dependencies.CreateConstIterator(); DependsIt; ++DependsIt)
-	{
-		if (!AllDependencies.Contains(*DependsIt))
-		{
-			// @todo Make this skip all packages whose root is different than the source package list root. For now we just skip engine content.
-			const bool bIsEnginePackage = (*DependsIt).ToString().StartsWith(TEXT("/Engine"));
-			const bool bIsScriptPackage = (*DependsIt).ToString().StartsWith(TEXT("/Script"));
-			if (!bIsEnginePackage && !bIsScriptPackage)
-			{
-				AllDependencies.Add(*DependsIt);
-				RecursiveGetDependencies(*DependsIt, AllDependencies);
-			}
-		}
-	}
-}
 
 // Delete the assets when a report is confirmed
 void FCleanProjectModule::CheckDepencies_ReportConfirmed(TArray<FAssetData> ConfirmedPackageNamesToDelete) const
@@ -265,7 +162,7 @@ void FCleanProjectModule::CheckDepencies_ReportBlackListed(TArray<FAssetData> Co
 	}
 	else
 	{
-		FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::GameSavedDir()) + TEXT("Blacklist.txt");
+		FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
 		
 		FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
 		FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), NULL, NULL);
