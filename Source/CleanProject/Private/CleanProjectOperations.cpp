@@ -5,6 +5,7 @@
 #include "AssetRegistryModule.h"
 #include "Core/Public/Misc/ScopedSlowTask.h"
 #include "Core/Public/Misc/MessageDialog.h"
+#include "SCleanProjectAssetDialog.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -64,43 +65,7 @@ namespace CleanProjectOperations
 		}
 		else
 		{
-
-
-
-
-
-
-
-
-
-
-			
-			
-			
-			
-
-			// Prompt the user displaying all assets that are going to be deleted.
-			//const FText ReportMessage = LOCTEXT("DepenCheckerReportTitle", "The following assets are not used by the selected assets.");
-			//TArray<FString> ReportPackageNames;
-			//for (auto PackageIt = DependenciesToTest.CreateConstIterator(); PackageIt; ++PackageIt)
-			//{
-			//	ReportPackageNames.Add((*PackageIt).PackageName.ToString());
-			//}
-
-			//SDependReportDialog::FOnReportConfirmed OnReportConfirmed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportConfirmed, DependenciesToTest);
-			//SDependReportDialog::FOnReportConfirmed OnReporBlackListed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportBlackListed, DependenciesToTest);
-			//SDependReportDialog::OpenDependReportDialog(ReportMessage, ReportPackageNames, OnReportConfirmed, OnReporBlackListed);
-			//
-			//
-			//if (FModuleManager::Get().ModuleExists(TEXT("AssetManagerEditor")))
-			//{
-			//	IAssetManagerEditorModule& Module = FModuleManager::LoadModuleChecked< IAssetManagerEditorModule >("AssetManagerEditor");
-			//	Module.OpenAssetAuditUI(DependenciesToTest);
-			//
-			//}
-			//else {
-			//	UE_LOG(LogTemp, Error, TEXT("AssetManagerEditor plugin is not enabled"));
-			//}
+			SCleanProjectAssetDialog::OpenAssetDialog(DependenciesToTest);
 		}
 	}
 
@@ -141,7 +106,5 @@ namespace CleanProjectOperations
 		return AllAssetData;
 	}
 }
-
-
 
 #undef LOCTEXT_NAMESPACE
