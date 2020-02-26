@@ -16,8 +16,20 @@ public:
 	static void OpenAssetDialog(const TArray<FAssetData>& AssetsToReport);
 
 	/** Constructs this widget with InArgs */
-	void Construct(const FArguments& InArgs);
+	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);
 
 	/** Closes the dialog. */
 	void CloseDialog();
+
+private:
+	FReply OnDeleteClicked();
+
+	FReply OnAuditClicked();
+
+	FReply OnBlacklistClicked();
+
+	FReply OnCancelClicked();
+
+private:
+	TArray<FAssetData> ReportAssets;
 };

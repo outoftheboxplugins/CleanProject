@@ -87,7 +87,7 @@ void FCleanProjectModule::CreateDepenCheckerContentBrowserAssetAction(FMenuBuild
 		LOCTEXT("DepenCheckerTabTitle", "Check unused assets"),
 		LOCTEXT("DepenCheckerTooltipText", "Returns all the assets not used by the selected assets."),
 		FSlateIcon(),
-		FUIAction(/*FExecuteAction::CreateRaw(this, &FCleanProjectModule::DepenChecker, SelectedAssets)*/)
+		FUIAction(FExecuteAction::CreateLambda([&SelectedAssets]() { CleanProjectOperations::CheckDependenciesBasedOn(SelectedAssets); }))
 	);
 }
 
@@ -106,17 +106,7 @@ void FCleanProjectModule::CreateDepenCheckerMainMenuEntry(FMenuBuilder& MenuBuil
 // Create the menu entry for the main menu
 void FCleanProjectModule::OnExtendMainMenu()
 {
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	TArray<FAssetData> AllAssetData;
-
-	FARFilter Filter;
-	Filter.PackagePaths.Add(TEXT("/Game"));
-	Filter.bRecursivePaths = true;
-	Filter.ClassNames.Add(UWorld::StaticClass()->GetFName());
-
-	AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
-
-	//DepenChecker(AllAssetData);
+	CleanProjectOperations::CheckDependenciesBasedOn(CleanProjectOperations::GetAllGameAssets());
 }
 
 

@@ -4,12 +4,92 @@
 #include "SCleanProjectAssetDialog.h"
 #include "Interfaces/IMainFrameModule.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Slate/Public/Widgets/Layout/SUniformGridPanel.h"
+#include "Slate/Public/Widgets/Input/SButton.h"
+#include "Slate/Public/Widgets/Text/STextBlock.h"
+#include "EditorStyle/Public/EditorStyleSet.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-void SCleanProjectAssetDialog::Construct(const FArguments& InArgs)
+void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
-	
+	ReportAssets = AssetsToReport;
+
+	ChildSlot
+	[
+		SNew(SVerticalBox)
+
+		// Titlebar
+		+SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(4, 4)
+		[
+			SNew(STextBlock)
+			.Text(LOCTEXT("CleanProject_ReportSubtitle", "The following assets were found unused:"))
+			.TextStyle(FEditorStyle::Get(), "PackageMigration.DialogTitle")
+		]
+
+		// Tree of packages in the report
+		+ SVerticalBox::Slot()
+		//.FillHeight(1.f)
+		[
+			SNew(SBorder)
+			.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+			//[
+			//	SAssignNew(ReportTreeView, DependReportTree)
+			//	.TreeItemsSource(&DependReportRootNode.Children)
+			//	.ItemHeight(18)
+			//	.SelectionMode(ESelectionMode::Single)
+			//	.OnGenerateRow(this, &SDependReportDialog::GenerateTreeRow)
+			//	.OnGetChildren(this, &SDependReportDialog::GetChildrenForTree)
+			//]
+		]
+
+		// Buttons
+		+SVerticalBox::Slot()
+		.AutoHeight()
+		.HAlign(HAlign_Right)
+		.Padding(4, 4)
+		[
+			SNew(SUniformGridPanel)
+			.SlotPadding(FEditorStyle::GetMargin("StandardDialog.SlotPadding"))
+			.MinDesiredSlotWidth(FEditorStyle::GetFloat("StandardDialog.MinDesiredSlotWidth"))
+			.MinDesiredSlotHeight(FEditorStyle::GetFloat("StandardDialog.MinDesiredSlotHeight"))
+			
+			+SUniformGridPanel::Slot(0, 0)
+			[
+				SNew(SButton)
+				.HAlign(HAlign_Center)
+				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+				.OnClicked(this, &SCleanProjectAssetDialog::OnDeleteClicked)
+				.Text(LOCTEXT("CleanProject_DeleteButton", "Delete"))
+			]
+			+SUniformGridPanel::Slot(1, 0)
+			[
+				SNew(SButton)
+				.HAlign(HAlign_Center)
+				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+				.OnClicked(this, &SCleanProjectAssetDialog::OnAuditClicked)
+				.Text(LOCTEXT("CleanProject_AuditButton", "More Info"))
+			]
+			+SUniformGridPanel::Slot(2, 0)
+			[
+				SNew(SButton)
+				.HAlign(HAlign_Center)
+				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+				.OnClicked(this, &SCleanProjectAssetDialog::OnBlacklistClicked)
+				.Text(LOCTEXT("CleanProject_BlacklistButton", "Blacklist"))
+			]
+			+SUniformGridPanel::Slot(3, 0)
+			[
+				SNew(SButton)
+				.HAlign(HAlign_Center)
+				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+				.OnClicked(this, &SCleanProjectAssetDialog::OnCancelClicked)
+				.Text(LOCTEXT("CleanProject_CancelButton", "Cancel"))
+			]
+		]
+	];
 }
 
 void SCleanProjectAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsToReport)
@@ -20,7 +100,7 @@ void SCleanProjectAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsT
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
 		[
-			SNew(SCleanProjectAssetDialog)
+			SNew(SCleanProjectAssetDialog, AssetsToReport)
 		];
 
 	IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
@@ -42,6 +122,26 @@ void SCleanProjectAssetDialog::CloseDialog()
 	{
 		Window->RequestDestroyWindow();
 	}
+}
+
+FReply SCleanProjectAssetDialog::OnDeleteClicked()
+{
+	return FReply::Handled();
+}
+
+FReply SCleanProjectAssetDialog::OnAuditClicked()
+{
+	return FReply::Handled();
+}
+
+FReply SCleanProjectAssetDialog::OnBlacklistClicked()
+{
+	return FReply::Handled();
+}
+
+FReply SCleanProjectAssetDialog::OnCancelClicked()
+{
+	return FReply::Handled();
 }
 
 #undef LOCTEXT_NAMESPACE
