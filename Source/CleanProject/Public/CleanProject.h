@@ -30,10 +30,4 @@ protected:
 	//~ Main Menu Entry
 	void OnExtendMainMenu();
 	void CreateDepenCheckerMainMenuEntry(FMenuBuilder& MenuBuilder);
-
-protected:
-	//~ Functionality
-	
-	void CheckDepencies_ReportConfirmed(TArray<FAssetData> ConfirmedPackageNamesToDelete) const;
-	void CheckDepencies_ReportBlackListed(TArray<FAssetData> ConfirmedPackageNamesToBlackList) const;
 };

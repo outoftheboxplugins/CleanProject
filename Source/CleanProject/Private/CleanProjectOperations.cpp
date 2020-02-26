@@ -43,7 +43,6 @@ namespace CleanProjectOperations
 			}
 		}
 		
-
 		// Removed the dependenices found from the ones tested.
 		for (auto DependsIt = AllPackageNamesToCheck.CreateConstIterator(); DependsIt; ++DependsIt)
 		{

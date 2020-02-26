@@ -22,11 +22,10 @@
 #include "EditorStyleSet.h"
 #include "Engine/World.h"
 #include "AssetTools/Private/SPackageReportDialog.h"
-#include "CleanProjectSettings.h"
-#include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "CleanProjectSettings.h"
 
-#include "AssetManagerEditorModule.h"
+
 #include "CleanProject\Public\CleanProjectOperations.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
@@ -87,7 +86,7 @@ void FCleanProjectModule::CreateDepenCheckerContentBrowserAssetAction(FMenuBuild
 		LOCTEXT("DepenCheckerTabTitle", "Check unused assets"),
 		LOCTEXT("DepenCheckerTooltipText", "Returns all the assets not used by the selected assets."),
 		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateLambda([&SelectedAssets]() { CleanProjectOperations::CheckDependenciesBasedOn(SelectedAssets); }))
+		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]() { CleanProjectOperations::CheckDependenciesBasedOn(SelectedAssets); }))
 	);
 }
 
@@ -107,55 +106,6 @@ void FCleanProjectModule::CreateDepenCheckerMainMenuEntry(FMenuBuilder& MenuBuil
 void FCleanProjectModule::OnExtendMainMenu()
 {
 	CleanProjectOperations::CheckDependenciesBasedOn(CleanProjectOperations::GetAllGameAssets());
-}
-
-
-
-// Delete the assets when a report is confirmed
-void FCleanProjectModule::CheckDepencies_ReportConfirmed(TArray<FAssetData> ConfirmedPackageNamesToDelete) const
-{
-	TArray<UObject*> AssetsToDelete;
-	for (auto AssetIt = ConfirmedPackageNamesToDelete.CreateConstIterator(); AssetIt; ++AssetIt)
-	{
-		FAssetData current = *AssetIt;
-		AssetsToDelete.Add(current.GetAsset());
-	}
-
-	const bool bShowConfirmation = false;
-	ObjectTools::ForceDeleteObjects(AssetsToDelete, bShowConfirmation);
-}
-
-void FCleanProjectModule::CheckDepencies_ReportBlackListed(TArray<FAssetData> ConfirmedPackageNamesToBlackList) const
-{
-	FString FileContent;
-	for (auto PackageIt = ConfirmedPackageNamesToBlackList.CreateConstIterator(); PackageIt; ++PackageIt)
-	{
-		FString assetPath = (*PackageIt).PackageName.ToString();
-		FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
-	}
-
-	auto Settings = GetDefault<UCleanProjectSettings>();
-	if (Settings->bUseSmartBlackList)
-	{
-		FString projectBuildRoot = FPaths::ProjectDir() + "Build";
-
-		for (const FString& platformFolder : Settings->PlatformsPaths)
-		{
-			for (const FString& listFile : Settings->BlacklistFiles)
-			{
-				FString slash = FGenericPlatformMisc::GetDefaultPathSeparator();
-				FString platformPath = projectBuildRoot + slash + platformFolder + slash + listFile;
-				FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
-			}
-		}
-	}
-	else
-	{
-		FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
-		
-		FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
-		FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), NULL, NULL);
-	}
 }
 
 #undef LOCTEXT_NAMESPACE

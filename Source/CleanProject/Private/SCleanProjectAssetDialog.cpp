@@ -8,6 +8,11 @@
 #include "Slate/Public/Widgets/Input/SButton.h"
 #include "Slate/Public/Widgets/Text/STextBlock.h"
 #include "EditorStyle/Public/EditorStyleSet.h"
+#include "UnrealEd/Public/ObjectTools.h"
+#include "CleanProjectSettings.h"
+#include "Misc/FileHelper.h"
+#include "AssetManagerEditorModule.h"
+
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -126,21 +131,74 @@ void SCleanProjectAssetDialog::CloseDialog()
 
 FReply SCleanProjectAssetDialog::OnDeleteClicked()
 {
+	TArray<UObject*> AssetsToDelete;
+	for (auto AssetIt = ReportAssets.CreateConstIterator(); AssetIt; ++AssetIt)
+	{
+		AssetsToDelete.Add(AssetIt->GetAsset());
+	}
+
+	const bool bShowConfirmation = false;
+	ObjectTools::ForceDeleteObjects(AssetsToDelete, bShowConfirmation);
+
+	CloseDialog();
+
 	return FReply::Handled();
 }
 
 FReply SCleanProjectAssetDialog::OnAuditClicked()
 {
+	if (FModuleManager::Get().ModuleExists(TEXT("AssetManagerEditor")))
+	{
+		IAssetManagerEditorModule& Module = FModuleManager::LoadModuleChecked< IAssetManagerEditorModule >("AssetManagerEditor");
+		Module.OpenAssetAuditUI(ReportAssets);
+	}
+
+	CloseDialog();
+
 	return FReply::Handled();
 }
 
 FReply SCleanProjectAssetDialog::OnBlacklistClicked()
 {
+	FString FileContent;
+	for (auto PackageIt = ReportAssets.CreateConstIterator(); PackageIt; ++PackageIt)
+	{
+		FString assetPath = PackageIt->PackageName.ToString();
+		FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
+	}
+
+	auto Settings = GetDefault<UCleanProjectSettings>();
+	if (Settings->bUseSmartBlackList)
+	{
+		FString projectBuildRoot = FPaths::ProjectDir() + "Build";
+
+		for (const FString& platformFolder : Settings->PlatformsPaths)
+		{
+			for (const FString& listFile : Settings->BlacklistFiles)
+			{
+				FString slash = FGenericPlatformMisc::GetDefaultPathSeparator();
+				FString platformPath = projectBuildRoot + slash + platformFolder + slash + listFile;
+				FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
+			}
+		}
+	}
+	else
+	{
+		FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
+
+		FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
+		FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), NULL, NULL);
+	}
+
+	CloseDialog();
+
 	return FReply::Handled();
 }
 
 FReply SCleanProjectAssetDialog::OnCancelClicked()
 {
+	CloseDialog();
+
 	return FReply::Handled();
 }
 
@@ -159,12 +217,7 @@ FReply SCleanProjectAssetDialog::OnCancelClicked()
 //SDependReportDialog::OpenDependReportDialog(ReportMessage, ReportPackageNames, OnReportConfirmed, OnReporBlackListed);
 //
 //
-//if (FModuleManager::Get().ModuleExists(TEXT("AssetManagerEditor")))
-//{
-//	IAssetManagerEditorModule& Module = FModuleManager::LoadModuleChecked< IAssetManagerEditorModule >("AssetManagerEditor");
-//	Module.OpenAssetAuditUI(DependenciesToTest);
-//
-//}
+
 //else {
 //	UE_LOG(LogTemp, Error, TEXT("AssetManagerEditor plugin is not enabled"));
 //}
