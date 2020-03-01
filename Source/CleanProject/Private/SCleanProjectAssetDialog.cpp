@@ -16,9 +16,51 @@
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
+namespace
+{
+	const FName ColumnAssetName = FName("Name");
+	const FName ColumnAssetPath = FName("Path");
+}
+
+void SCleanProjectAssetDialog::SAssetLine::Construct(const FArguments& InArgs, TAssetSharedPtr InItem, const TSharedRef<STableViewBase>& InOwnerTable)
+{
+	Item = InItem;
+
+	SMultiColumnTableRow<TAssetSharedPtr>::Construct(FSuperRowType::FArguments(), InOwnerTable);
+}
+
+TSharedRef<SWidget> SCleanProjectAssetDialog::SAssetLine::GenerateWidgetForColumn(const FName& ColumnName)
+{
+	if (ColumnName == ColumnAssetName)
+	{
+		return
+			SNew(STextBlock)
+			.Text(FText::FromName(Item->AssetName));
+	}
+	else if (ColumnName == ColumnAssetPath)
+	{
+		return
+			SNew(STextBlock)
+			.Text(FText::FromName(Item->PackagePath));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Could not identify this column, please contact the developer"));
+		return SNew(STextBlock).Text(LOCTEXT("CleanProject_WatchUnkownColumn", "Unknown Column"));
+	}
+}
+
+TSharedRef<ITableRow> SCleanProjectAssetDialog::MakeVariableTableRow(TAssetSharedPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
+{
+	return SNew(SCleanProjectAssetDialog::SAssetLine, InInfo, OwnerTable);
+}
+
 void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
-	ReportAssets = AssetsToReport;
+	for (auto AssetIt : AssetsToReport)
+	{
+		ReportAssets.Add(MakeShared<FAssetData>(AssetIt));
+	}
 
 	ChildSlot
 	[
@@ -36,18 +78,28 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 
 		// Tree of packages in the report
 		+ SVerticalBox::Slot()
-		//.FillHeight(1.f)
+		.FillHeight(1.f)
 		[
 			SNew(SBorder)
 			.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
-			//[
+			[
 			//	SAssignNew(ReportTreeView, DependReportTree)
 			//	.TreeItemsSource(&DependReportRootNode.Children)
 			//	.ItemHeight(18)
 			//	.SelectionMode(ESelectionMode::Single)
 			//	.OnGenerateRow(this, &SDependReportDialog::GenerateTreeRow)
 			//	.OnGetChildren(this, &SDependReportDialog::GetChildrenForTree)
-			//]
+				SAssignNew(AssetsistView, SListView<TAssetSharedPtr>)
+				.ListItemsSource(&ReportAssets)
+				.OnGenerateRow(this, &SCleanProjectAssetDialog::MakeVariableTableRow)
+				//.OnMouseButtonDoubleClick(this, &SVariablesWatchWidget::HandleVariableSelected)
+				//.OnContextMenuOpening(FOnContextMenuOpening::CreateSP(this, &SVariablesWatchWidget::CreateContextMenu))
+				.HeaderRow(
+					SNew(SHeaderRow)
+					+ SHeaderRow::Column(ColumnAssetName).DefaultLabel(LOCTEXT("CleanProject_ListNameColumn", "Name"))
+					+ SHeaderRow::Column(ColumnAssetPath).DefaultLabel(LOCTEXT("CleanProject_ListNamePath", "Path"))
+				)
+			]
 		]
 
 		// Buttons
@@ -134,7 +186,7 @@ FReply SCleanProjectAssetDialog::OnDeleteClicked()
 	TArray<UObject*> AssetsToDelete;
 	for (auto AssetIt = ReportAssets.CreateConstIterator(); AssetIt; ++AssetIt)
 	{
-		AssetsToDelete.Add(AssetIt->GetAsset());
+		AssetsToDelete.Add(AssetIt->Get()->GetAsset());
 	}
 
 	const bool bShowConfirmation = false;
@@ -149,11 +201,16 @@ FReply SCleanProjectAssetDialog::OnAuditClicked()
 {
 	if (FModuleManager::Get().ModuleExists(TEXT("AssetManagerEditor")))
 	{
-		IAssetManagerEditorModule& Module = FModuleManager::LoadModuleChecked< IAssetManagerEditorModule >("AssetManagerEditor");
-		Module.OpenAssetAuditUI(ReportAssets);
-	}
+		TArray<FName> AssetNames;
 
-	CloseDialog();
+		for (auto PackageIt = ReportAssets.CreateConstIterator(); PackageIt; ++PackageIt)
+		{
+			AssetNames.Add(PackageIt->Get()->PackageName);
+		}
+
+		IAssetManagerEditorModule& Module = FModuleManager::LoadModuleChecked< IAssetManagerEditorModule >("AssetManagerEditor");
+		Module.OpenAssetAuditUI(AssetNames);
+	}
 
 	return FReply::Handled();
 }
@@ -163,7 +220,7 @@ FReply SCleanProjectAssetDialog::OnBlacklistClicked()
 	FString FileContent;
 	for (auto PackageIt = ReportAssets.CreateConstIterator(); PackageIt; ++PackageIt)
 	{
-		FString assetPath = PackageIt->PackageName.ToString();
+		FString assetPath = PackageIt->Get()->PackageName.ToString();
 		FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
 	}
 

@@ -51,6 +51,8 @@ public class CleanProject : ModuleRules
                 "Projects",
                 "MainFrame",
 				"AssetManagerEditor",
+				"ToolMenus",
+
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

@@ -20,15 +20,45 @@
 #include "EngineUtils.h"
 #include "UnrealEd/Public/ObjectTools.h"
 #include "EditorStyleSet.h"
-#include "Engine/World.h"
 #include "AssetTools/Private/SPackageReportDialog.h"
 #include "Misc/Paths.h"
+
+#include "UObject/Object.h"
+#include "UObject/SoftObjectPath.h"
+#include "GameFramework/HUD.h"
+
+#include "Framework/Application/SlateApplication.h"
+#include "ToolMenus.h"
+#include "EditorStyleSet.h"
+#include "AssetRegistryModule.h"
+#include "Misc/MessageDialog.h"
+#include "LevelEditor.h"
+#include "Misc/FeedbackContext.h"
+#include "Misc/OutputDeviceConsole.h"
+#include "Modules/ModuleManager.h"
+
+#include "ContentBrowserModule.h"
+#include "ContentBrowserDelegates.h"
+
+//#include "WorkspaceMenuStructure.h"
+//#include "WorkspaceMenuStructureModule.h"
+//#include "EditorValidatorSubsystem.h"
+
+
+
 #include "CleanProjectSettings.h"
-
-
 #include "CleanProject\Public\CleanProjectOperations.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
+
+namespace
+{
+	const FName SettingsContainer = FName("Editor");
+	const FName SettingsCategory = FName("Plugins");
+	const FName SettingsSection = FName("Clean Project");
+
+	const FName MainMenuExtensionHook = FName("FileLoadSave");
+}
 
 void FCleanProjectModule::StartupModule()
 {
@@ -36,76 +66,90 @@ void FCleanProjectModule::StartupModule()
 	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
 	TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuExtenderDelegates = ContentBrowserModule.GetAllAssetViewContextMenuExtenders();
 
-	CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::OnExtendContentBrowserAssetActions));
+	CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::CreateContentBrowserExtender));
 	FDelegateHandle ContentBrowserAssetExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
-
-	// Register main menu dropdown entry
-	TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender);
-	MenuExtender->AddMenuExtension("FileLoadAndSave", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateDepenCheckerMainMenuEntry));
 	
-	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
-	LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
+	// Hook the extender to the editor module.
+	FCoreDelegates::OnPostEngineInit.AddRaw(this, &FCleanProjectModule::RegisterMenus);
 
-	// Register the settings
-	ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
-
-	if (SettingsModule != nullptr)
+	// Register the settings entry.
+	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
-		ISettingsSectionPtr SettingsSection = SettingsModule->RegisterSettings("Editor", "Plugins", "Clean Project",
+		SettingsModule->RegisterSettings(SettingsContainer, SettingsCategory, SettingsSection,
 			LOCTEXT("CleanProjectSettings", "Clean Project Settings"),
 			LOCTEXT("CleanProjectSettingsDescription", "Cleanup and project management improvements."),
-			GetMutableDefault<UCleanProjectSettings>()
-		);
+			GetMutableDefault<UCleanProjectSettings>());
 	}
 }
 
 void FCleanProjectModule::ShutdownModule()
 {
-	//TODO: unregister stuff.
+	// Unregister the settings entry.
+	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+	{
+		SettingsModule->UnregisterSettings(SettingsContainer, SettingsCategory, SettingsSection);
+	}
+
+	// Unregister main menu dropdown entry.
+	UToolMenus::UnregisterOwner(this);
 }
 
-// Extend content browser menu for to add depend checker delegate
-TSharedRef<FExtender> FCleanProjectModule::OnExtendContentBrowserAssetActions(const TArray<FAssetData>& SelectedAssets)
+void FCleanProjectModule::RegisterMenus()
 {
-	TSharedRef<FExtender> Extender(new FExtender());
+	FToolMenuOwnerScoped OwnerScoped(this);
+	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.File");
+	FToolMenuSection& Section = Menu->AddSection("Plugins",
+		LOCTEXT("CleanProjectSection", "Plugins"),
+		FToolMenuInsert("FileLoadAndSave", EToolMenuInsertType::After));
 
-	Extender->AddMenuExtension(
+	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
+		"ValidateData",
+		LOCTEXT("CleanProjectMaiMenu", "Clean your project"),
+		LOCTEXT("CleanProjectMainMenuTooltip", "Check depedencies based on all your maps."),
+		FSlateIcon(FEditorStyle::GetStyleSetName(), "DeveloperTools.MenuIcon"),
+		FUIAction(FExecuteAction::CreateLambda([]()
+			{
+				TArray<FAssetData> MapAssetDatas = CleanProjectOperations::GetAllMapAssets();
+				CleanProjectOperations::CheckDependenciesBasedOn(MapAssetDatas);
+			})
+		)));
+}
+
+TSharedRef<FExtender> FCleanProjectModule::CreateContentBrowserExtender(const TArray<FAssetData>& SelectedAssets)
+{
+	TSharedRef<FExtender> ContentBrowserExtender = MakeShareable(new FExtender);
+	ContentBrowserExtender->AddMenuExtension(
 		"AssetContextAdvancedActions",
 		EExtensionHook::After,
 		nullptr,
-		FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateDepenCheckerContentBrowserAssetAction, SelectedAssets));
+		FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateContentBrowserEntry, SelectedAssets));
 
-	return Extender;
+	return ContentBrowserExtender;
 }
 
-// Create the menu entry for the content browser
-void FCleanProjectModule::CreateDepenCheckerContentBrowserAssetAction(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets)
+void FCleanProjectModule::CreateContentBrowserEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets)
 {
 	MenuBuilder.AddMenuEntry
 	(
-		LOCTEXT("DepenCheckerTabTitle", "Check unused assets"),
-		LOCTEXT("DepenCheckerTooltipText", "Returns all the assets not used by the selected assets."),
+		LOCTEXT("CleanProject_ContentBrowserBasedTitle", "Check unused assets based on selected"),
+		LOCTEXT("CleanProject_ContentBrowserBasedTooltip", "Returns all the assets not used by the selected assets."),
 		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]() { CleanProjectOperations::CheckDependenciesBasedOn(SelectedAssets); }))
-	);
-}
+		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]() 
+			{ 
+				CleanProjectOperations::CheckDependenciesBasedOn(SelectedAssets); 
+			})
+	));
 
-// Extend main menu for to add depend checker delegate
-void FCleanProjectModule::CreateDepenCheckerMainMenuEntry(FMenuBuilder& MenuBuilder)
-{
-	MenuBuilder.BeginSection("CleanProject", LOCTEXT("CleanProject", "CleanProject"));
-	MenuBuilder.AddMenuEntry(
-		FText(LOCTEXT("DepenChecker", "DepenChecker")),
-		LOCTEXT("DepenCheckerTooltip", "Return all the unused assets of the game."),
-		FSlateIcon(FEditorStyle::GetStyleSetName(), "DeveloperTools.MenuIcon"),
-		FUIAction(FExecuteAction::CreateRaw(this, &FCleanProjectModule::OnExtendMainMenu)));
-	MenuBuilder.EndSection();
-}
-
-// Create the menu entry for the main menu
-void FCleanProjectModule::OnExtendMainMenu()
-{
-	CleanProjectOperations::CheckDependenciesBasedOn(CleanProjectOperations::GetAllGameAssets());
+	MenuBuilder.AddMenuEntry
+	(
+		LOCTEXT("CleanProject_ContentBrowserForTitle", "Check if selected assets are unused"),
+		LOCTEXT("CleanProject_ContentBrowserForTooltip", "Returns the unused assets from the list of selected assets based on the dependencies of all."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
+			{
+				CleanProjectOperations::CheckDependenciesOf(SelectedAssets);
+			})
+		));
 }
 
 #undef LOCTEXT_NAMESPACE

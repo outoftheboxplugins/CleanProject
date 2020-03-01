@@ -5,9 +5,13 @@
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
+#include "Slate/Public/Widgets/Views/SListView.h"
 
 class SCleanProjectAssetDialog : public SCompoundWidget
 {
+private:
+	using TAssetSharedPtr = TSharedPtr<FAssetData>;
+
 public:
 	SLATE_BEGIN_ARGS(SCleanProjectAssetDialog) {}
 	SLATE_END_ARGS()
@@ -22,6 +26,24 @@ public:
 	void CloseDialog();
 
 private:
+	class SAssetLine : public SMultiColumnTableRow<TAssetSharedPtr>
+	{
+	public:
+		SLATE_BEGIN_ARGS(SAssetLine) {}
+		SLATE_END_ARGS()
+
+		void Construct(const FArguments& InArgs, TAssetSharedPtr InItem, const TSharedRef<STableViewBase>& InOwnerTable);
+
+	private:
+		TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName);
+
+	private:
+		TAssetSharedPtr Item;
+	};
+
+	TSharedRef<ITableRow> MakeVariableTableRow(TAssetSharedPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable);
+
+private:
 	FReply OnDeleteClicked();
 
 	FReply OnAuditClicked();
@@ -31,5 +53,7 @@ private:
 	FReply OnCancelClicked();
 
 private:
-	TArray<FAssetData> ReportAssets;
+	TArray<TAssetSharedPtr> ReportAssets;
+
+	TSharedPtr<SListView<TAssetSharedPtr>> AssetsistView;
 };

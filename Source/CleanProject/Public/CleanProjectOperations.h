@@ -21,11 +21,14 @@ namespace CleanProjectOperations
     void CheckDependenciesOf(TArray<FAssetData> SelectedAssets);
 
     // Check if the AssetsToTest are used by any of the DependenciesToTest.
-    void CheckDependenciesOf(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest);
+    void CheckDependenciesInternal(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest);
 
     // Recursively get all the dependencies of a certain package.
     void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies);
 
     // Returns all the assets from the project (Game folder).
-    TArray<FAssetData> GetAllGameAssets();
+    TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes = TArray<FName>());
+
+    // Returns all the map assets from the project (Game folder).
+    TArray<FAssetData> GetAllMapAssets();
 }

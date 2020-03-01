@@ -5,6 +5,7 @@
 #include "AssetRegistryModule.h"
 #include "Core/Public/Misc/ScopedSlowTask.h"
 #include "Core/Public/Misc/MessageDialog.h"
+#include "Engine/World.h"
 #include "SCleanProjectAssetDialog.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
@@ -13,16 +14,21 @@ namespace CleanProjectOperations
 {
 	void CheckDependenciesBasedOn(TArray<FAssetData> SelectedAssets)
 	{
-		CheckDependenciesOf(SelectedAssets, GetAllGameAssets());
+		CheckDependenciesInternal(SelectedAssets, GetAllGameAssets());
 	}
 
 	void CheckDependenciesOf(TArray<FAssetData> SelectedAssets)
 	{
-		CheckDependenciesOf(GetAllGameAssets(), SelectedAssets);
+		CheckDependenciesInternal(GetAllGameAssets(), SelectedAssets);
 	}
 
-	void CheckDependenciesOf(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest)
+	void CheckDependenciesInternal(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest)
 	{
+		for (auto PackageIt = DependenciesToTest.CreateConstIterator(); PackageIt; ++PackageIt)
+		{
+			AssetsToTest.RemoveSwap(*PackageIt);
+		}
+
 		// Recursively get all the packages to check from dependencies.
 		TSet<FName> AllPackageNamesToCheck;
 		
@@ -91,7 +97,7 @@ namespace CleanProjectOperations
 		}
 	}
 
-	TArray<FAssetData> GetAllGameAssets()
+	TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes /* = TArray<FName>()*/)
 	{
 		TArray<FAssetData> AllAssetData;
 
@@ -99,10 +105,27 @@ namespace CleanProjectOperations
 		Filter.PackagePaths.Add(TEXT("/Game"));
 		Filter.bRecursivePaths = true;
 
+		if (ClassTypes.Num() != 0)
+		{
+			Filter.ClassNames.Reserve(ClassTypes.Num());
+
+			for (const auto& classType : ClassTypes)
+			{
+				Filter.ClassNames.Add(classType);
+			}
+		}
+
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 		AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
 
 		return AllAssetData;
+	}
+	TArray<FAssetData> GetAllMapAssets()
+	{
+		TArray<FName> MapsClassFilter;
+		MapsClassFilter.Add(UWorld::StaticClass()->GetFName());
+
+		return GetAllGameAssets(MapsClassFilter);
 	}
 }
 

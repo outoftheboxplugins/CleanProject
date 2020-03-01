@@ -7,7 +7,6 @@
 #include "Templates/SharedPointer.h"
 #include "Framework/MultiBox/MultiBoxExtender.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "Containers/Array.h"
 #include "AssetData.h"
 
 /**
@@ -21,13 +20,11 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-protected:
-	//~ Content browser Asset Actions
-	TSharedRef<FExtender> OnExtendContentBrowserAssetActions(const TArray<FAssetData>& SelectedAssets);	
-	void CreateDepenCheckerContentBrowserAssetAction(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
+private:
+	// Main menu
+	void RegisterMenus();
 
-protected:
-	//~ Main Menu Entry
-	void OnExtendMainMenu();
-	void CreateDepenCheckerMainMenuEntry(FMenuBuilder& MenuBuilder);
+	// Content browser action
+	void CreateContentBrowserEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
+	TSharedRef<FExtender> CreateContentBrowserExtender(const TArray<FAssetData>& SelectedAssets);
 };
