@@ -28,6 +28,7 @@ public class CleanProject : ModuleRules
 			{
                 "AssetTools",
                 "Core",
+				"AssetManagerEditor",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -50,7 +51,6 @@ public class CleanProject : ModuleRules
                 "UnrealEd",
                 "Projects",
                 "MainFrame",
-				"AssetManagerEditor",
 				"ToolMenus",
 
 				// ... add private dependencies that you statically link with here ...	

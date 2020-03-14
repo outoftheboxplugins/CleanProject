@@ -9,9 +9,6 @@
 
 class SCleanProjectAssetDialog : public SCompoundWidget
 {
-private:
-	using TAssetSharedPtr = TSharedPtr<FAssetData>;
-
 public:
 	SLATE_BEGIN_ARGS(SCleanProjectAssetDialog) {}
 	SLATE_END_ARGS()
@@ -26,34 +23,15 @@ public:
 	void CloseDialog();
 
 private:
-	class SAssetLine : public SMultiColumnTableRow<TAssetSharedPtr>
-	{
-	public:
-		SLATE_BEGIN_ARGS(SAssetLine) {}
-		SLATE_END_ARGS()
-
-		void Construct(const FArguments& InArgs, TAssetSharedPtr InItem, const TSharedRef<STableViewBase>& InOwnerTable);
-
-	private:
-		TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName);
-
-	private:
-		TAssetSharedPtr Item;
-	};
-
-	TSharedRef<ITableRow> MakeVariableTableRow(TAssetSharedPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable);
+	FString GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const;
+	FText GetDiskSizeDisplayText(FAssetData& AssetData, FName ColumnName) const;
 
 private:
 	FReply OnDeleteClicked();
-
 	FReply OnAuditClicked();
-
 	FReply OnBlacklistClicked();
-
 	FReply OnCancelClicked();
 
 private:
-	TArray<TAssetSharedPtr> ReportAssets;
-
-	TSharedPtr<SListView<TAssetSharedPtr>> AssetsistView;
+	TArray<FAssetData> ReportAssets;
 };

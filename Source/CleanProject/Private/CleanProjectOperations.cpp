@@ -14,12 +14,19 @@ namespace CleanProjectOperations
 {
 	void CheckDependenciesBasedOn(TArray<FAssetData> SelectedAssets)
 	{
-		CheckDependenciesInternal(SelectedAssets, GetAllGameAssets());
+		CheckDependenciesInternal(GetAllGameAssets(), SelectedAssets);
 	}
 
 	void CheckDependenciesOf(TArray<FAssetData> SelectedAssets)
 	{
-		CheckDependenciesInternal(GetAllGameAssets(), SelectedAssets);
+		// Remove the selected from all the game assets before proceding.
+		TArray<FAssetData> FilteredGameAssets = GetAllGameAssets();
+		FilteredGameAssets.RemoveAllSwap([&SelectedAssets](const FAssetData& current)
+			{
+				return SelectedAssets.Contains(current);
+			});
+
+		CheckDependenciesInternal(SelectedAssets, FilteredGameAssets);
 	}
 
 	void CheckDependenciesInternal(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest)
@@ -33,12 +40,12 @@ namespace CleanProjectOperations
 		TSet<FName> AllPackageNamesToCheck;
 		
 		// Create a slow task to display a progressbar for the user.
-		FScopedSlowTask SlowTask(AssetsToTest.Num(), LOCTEXT("CleanProject_SlowTaskTitle", "Gathering Dependencies..."));
+		FScopedSlowTask SlowTask(DependenciesToTest.Num(), LOCTEXT("CleanProject_SlowTaskTitle", "Gathering Dependencies..."));
 		bool showCancelButton = true;
 		bool allowPIE = true;
 		SlowTask.MakeDialog(showCancelButton, allowPIE);
 
-		for (auto PackageIt = AssetsToTest.CreateConstIterator(); PackageIt; ++PackageIt)
+		for (auto PackageIt = DependenciesToTest.CreateConstIterator(); PackageIt; ++PackageIt)
 		{
 			SlowTask.EnterProgressFrame();
 
@@ -52,25 +59,22 @@ namespace CleanProjectOperations
 		// Removed the dependenices found from the ones tested.
 		for (auto DependsIt = AllPackageNamesToCheck.CreateConstIterator(); DependsIt; ++DependsIt)
 		{
-			for (auto AssetIt = DependenciesToTest.CreateConstIterator(); AssetIt; ++AssetIt)
-			{
-				FAssetData current = *AssetIt;
-				if (current.PackageName == *DependsIt)
+			const FName& DependencyPackageName = *DependsIt;
+
+			AssetsToTest.RemoveAllSwap([&DependencyPackageName](const FAssetData& AssetData)
 				{
-					DependenciesToTest.Remove(current);
-					--AssetIt;
-				}
-			}
+					return AssetData.PackageName == DependencyPackageName;
+				});
 		}
 
 		// Confirm that there is at least one package to 
-		if (DependenciesToTest.Num() == 0)
+		if (AssetsToTest.Num() == 0)
 		{
 			FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("CleanProject_NoFilesToDelete", "No unused assets found."));
 		}
 		else
 		{
-			SCleanProjectAssetDialog::OpenAssetDialog(DependenciesToTest);
+			SCleanProjectAssetDialog::OpenAssetDialog(AssetsToTest);
 		}
 	}
 
@@ -105,21 +109,18 @@ namespace CleanProjectOperations
 		Filter.PackagePaths.Add(TEXT("/Game"));
 		Filter.bRecursivePaths = true;
 
-		if (ClassTypes.Num() != 0)
+		Filter.ClassNames.Reserve(ClassTypes.Num());
+		for (const auto& classType : ClassTypes)
 		{
-			Filter.ClassNames.Reserve(ClassTypes.Num());
-
-			for (const auto& classType : ClassTypes)
-			{
-				Filter.ClassNames.Add(classType);
-			}
+			Filter.ClassNames.Add(classType);
 		}
-
+		
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 		AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
 
 		return AllAssetData;
 	}
+
 	TArray<FAssetData> GetAllMapAssets()
 	{
 		TArray<FName> MapsClassFilter;

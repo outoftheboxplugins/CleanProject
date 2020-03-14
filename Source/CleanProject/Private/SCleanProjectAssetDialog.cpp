@@ -12,54 +12,114 @@
 #include "CleanProjectSettings.h"
 #include "Misc/FileHelper.h"
 #include "AssetManagerEditorModule.h"
+#include "IAssetRegistry.h"
+#include "AssetRegistry/Public/AssetRegistryModule.h"
 
+#include "Framework/Commands/UIAction.h"
+#include "Framework/Commands/UICommandList.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/SBoxPanel.h"
+#include "Widgets/Text/STextBlock.h"
+#include "Widgets/Input/SMenuAnchor.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+
+#include "EditorStyleSet.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/SViewport.h"
+#include "FileHelpers.h"
+#include "ARFilter.h"
+#include "ClassViewerModule.h"
+#include "ClassViewerFilter.h"
+#include "IContentBrowserSingleton.h"
+#include "ContentBrowserModule.h"
+#include "AssetRegistryModule.h"
+#include "Toolkits/GlobalEditorCommonCommands.h"
+#include "FrontendFilterBase.h"
+#include "Slate/SceneViewport.h"
+#include "ObjectEditorUtils.h"
+#include "Engine/AssetManager.h"
+#include "Engine/BlueprintCore.h"
+#include "Widgets/Input/SComboBox.h"
+#include "Framework/Application/SlateApplication.h"
+#include "DragAndDrop/AssetDragDropOp.h"
+#include "Blueprint/BlueprintSupport.h"
+#include "Subsystems/AssetEditorSubsystem.h"
+#include "Editor.h"
+#include "ContentBrowser/Private/SAssetDialog.h"
+#include "ContentBrowser/Private/SAssetPicker.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-namespace
-{
-	const FName ColumnAssetName = FName("Name");
-	const FName ColumnAssetPath = FName("Path");
-}
-
-void SCleanProjectAssetDialog::SAssetLine::Construct(const FArguments& InArgs, TAssetSharedPtr InItem, const TSharedRef<STableViewBase>& InOwnerTable)
-{
-	Item = InItem;
-
-	SMultiColumnTableRow<TAssetSharedPtr>::Construct(FSuperRowType::FArguments(), InOwnerTable);
-}
-
-TSharedRef<SWidget> SCleanProjectAssetDialog::SAssetLine::GenerateWidgetForColumn(const FName& ColumnName)
-{
-	if (ColumnName == ColumnAssetName)
-	{
-		return
-			SNew(STextBlock)
-			.Text(FText::FromName(Item->AssetName));
-	}
-	else if (ColumnName == ColumnAssetPath)
-	{
-		return
-			SNew(STextBlock)
-			.Text(FText::FromName(Item->PackagePath));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Could not identify this column, please contact the developer"));
-		return SNew(STextBlock).Text(LOCTEXT("CleanProject_WatchUnkownColumn", "Unknown Column"));
-	}
-}
-
-TSharedRef<ITableRow> SCleanProjectAssetDialog::MakeVariableTableRow(TAssetSharedPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
-{
-	return SNew(SCleanProjectAssetDialog::SAssetLine, InInfo, OwnerTable);
-}
-
 void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
-	for (auto AssetIt : AssetsToReport)
+	ReportAssets.Append(AssetsToReport);
+
+	FContentBrowserModule& ContentBrowserModule = FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+	IAssetManagerEditorModule& ManagerEditorModule = IAssetManagerEditorModule::Get();
+
+	FAssetPickerConfig Config;
 	{
-		ReportAssets.Add(MakeShared<FAssetData>(AssetIt));
+		Config.InitialAssetViewType = EAssetViewType::Column;
+		Config.bAddFilterUI = true;
+		Config.bShowPathInColumnView = true;
+		Config.bSortByPathInColumnView = true;
+
+		// Configure response to click and double-click
+		//Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateSP(this, &SAssetAuditBrowser::OnRequestOpenAsset);
+		//Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SAssetAuditBrowser::OnGetAssetContextMenu);
+		//Config.OnAssetTagWantsToBeDisplayed = FOnShouldDisplayAssetTag::CreateSP(this, &SAssetAuditBrowser::CanShowColumnForAssetRegistryTag);
+		//Config.OnShouldFilterAsset = FOnShouldFilterAsset::CreateSP(this, &SAssetAuditBrowser::HandleFilterAsset);
+		//Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
+		//Config.SetFilterDelegates.Add(&SetFilterDelegate);
+
+		Config.bFocusSearchBoxWhenOpened = false;
+		Config.bPreloadAssetsForContextMenu = false;
+
+		// Hide path and type by default
+		Config.HiddenColumnNames.Add(TEXT("Class"));
+		Config.HiddenColumnNames.Add(TEXT("Type"));
+		Config.HiddenColumnNames.Add(TEXT("ParentClass"));
+		Config.HiddenColumnNames.Add(TEXT("ModuleName"));
+		Config.HiddenColumnNames.Add(TEXT("ModuleRelativePath"));
+		Config.HiddenColumnNames.Add(TEXT("Dimensions"));
+		Config.HiddenColumnNames.Add(TEXT("HasAlphaChannel"));
+		Config.HiddenColumnNames.Add(TEXT("Format"));
+		Config.HiddenColumnNames.Add(TEXT("AddressX"));
+		Config.HiddenColumnNames.Add(TEXT("AddressY"));
+		Config.HiddenColumnNames.Add(TEXT("LODBias"));
+		Config.HiddenColumnNames.Add(TEXT("SRGB"));
+		Config.HiddenColumnNames.Add(TEXT("CompressionSettings"));
+		Config.HiddenColumnNames.Add(TEXT("Filter"));
+		Config.HiddenColumnNames.Add(TEXT("MipLoadOptions"));
+		Config.HiddenColumnNames.Add(TEXT("LODGroup"));
+		Config.HiddenColumnNames.Add(TEXT("VirtualTextureStreaming"));
+		Config.HiddenColumnNames.Add(TEXT("NeverStream"));
+		Config.HiddenColumnNames.Add(TEXT("PrimaryAssetType"));
+		Config.HiddenColumnNames.Add(TEXT("PrimaryAssetName"));
+		Config.HiddenColumnNames.Add(TEXT("DateModified"));
+		Config.HiddenColumnNames.Add(TEXT("BlueprintType"));
+		Config.HiddenColumnNames.Add(TEXT("NativeParentClass"));
+		Config.HiddenColumnNames.Add(TEXT("NumReplicatedProperties"));
+		Config.HiddenColumnNames.Add(TEXT("IsDataOnly"));
+		Config.HiddenColumnNames.Add(TEXT("NativeComponents"));
+		Config.HiddenColumnNames.Add(TEXT("BlueprintComponents"));
+
+		// Add custom columns
+		Config.CustomColumns.Emplace(IAssetManagerEditorModule::DiskSizeName, 
+			LOCTEXT("CleanProject_SizeColumn", "Disk Size"),
+			LOCTEXT("CleanProject_SizeColumnTooltip", "Size of saved file on disk for only this asset"), 
+			UObject::FAssetRegistryTag::TT_Numerical, 
+			FOnGetCustomAssetColumnData::CreateSP(this, &SCleanProjectAssetDialog::GetDiskSizeData),
+			FOnGetCustomAssetColumnDisplayText::CreateSP(this, &SCleanProjectAssetDialog::GetDiskSizeDisplayText));
+	}
+
+	TArray<FName>& ReportObjectsPaths = Config.Filter.ObjectPaths;
+	ReportObjectsPaths.Reserve(ReportAssets.Num());
+
+	for (auto PackageIt = ReportAssets.CreateConstIterator(); PackageIt; ++PackageIt)
+	{
+		ReportObjectsPaths.Add(PackageIt->ObjectPath);
 	}
 
 	ChildSlot
@@ -81,24 +141,10 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 		.FillHeight(1.f)
 		[
 			SNew(SBorder)
+			.Padding(FMargin(3))
 			.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
 			[
-			//	SAssignNew(ReportTreeView, DependReportTree)
-			//	.TreeItemsSource(&DependReportRootNode.Children)
-			//	.ItemHeight(18)
-			//	.SelectionMode(ESelectionMode::Single)
-			//	.OnGenerateRow(this, &SDependReportDialog::GenerateTreeRow)
-			//	.OnGetChildren(this, &SDependReportDialog::GetChildrenForTree)
-				SAssignNew(AssetsistView, SListView<TAssetSharedPtr>)
-				.ListItemsSource(&ReportAssets)
-				.OnGenerateRow(this, &SCleanProjectAssetDialog::MakeVariableTableRow)
-				//.OnMouseButtonDoubleClick(this, &SVariablesWatchWidget::HandleVariableSelected)
-				//.OnContextMenuOpening(FOnContextMenuOpening::CreateSP(this, &SVariablesWatchWidget::CreateContextMenu))
-				.HeaderRow(
-					SNew(SHeaderRow)
-					+ SHeaderRow::Column(ColumnAssetName).DefaultLabel(LOCTEXT("CleanProject_ListNameColumn", "Name"))
-					+ SHeaderRow::Column(ColumnAssetPath).DefaultLabel(LOCTEXT("CleanProject_ListNamePath", "Path"))
-				)
+				ContentBrowserModule.Get().CreateAssetPicker(Config)
 			]
 		]
 
@@ -147,6 +193,8 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 			]
 		]
 	];
+
+	ManagerEditorModule.RefreshRegistryData();
 }
 
 void SCleanProjectAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsToReport)
@@ -181,12 +229,46 @@ void SCleanProjectAssetDialog::CloseDialog()
 	}
 }
 
+FString SCleanProjectAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const
+{
+	FName packageName = FName(*AssetData.GetPackage()->GetName());
+
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	const FAssetPackageData* packageData = AssetRegistryModule.Get().GetAssetPackageData(packageName);
+
+	if (packageData)
+	{
+		return LexToString(packageData->DiskSize);
+	}
+	else
+	{
+		return FString::FString("Invalid");
+	}
+}
+
+FText SCleanProjectAssetDialog::GetDiskSizeDisplayText(FAssetData& AssetData, FName ColumnName) const
+{
+	FName packageName = FName(*AssetData.GetPackage()->GetName());
+
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	const FAssetPackageData* packageData = AssetRegistryModule.Get().GetAssetPackageData(packageName);
+
+	if (packageData)
+	{
+		return FText::AsMemory(packageData->DiskSize);
+	}
+	else
+	{
+		return LOCTEXT("CleanProject_UnkownSize", "Invalid Size");
+	}
+}
+
 FReply SCleanProjectAssetDialog::OnDeleteClicked()
 {
 	TArray<UObject*> AssetsToDelete;
 	for (auto AssetIt = ReportAssets.CreateConstIterator(); AssetIt; ++AssetIt)
 	{
-		AssetsToDelete.Add(AssetIt->Get()->GetAsset());
+		AssetsToDelete.Add(AssetIt->GetAsset());
 	}
 
 	const bool bShowConfirmation = false;
@@ -205,7 +287,7 @@ FReply SCleanProjectAssetDialog::OnAuditClicked()
 
 		for (auto PackageIt = ReportAssets.CreateConstIterator(); PackageIt; ++PackageIt)
 		{
-			AssetNames.Add(PackageIt->Get()->PackageName);
+			AssetNames.Add(PackageIt->PackageName);
 		}
 
 		IAssetManagerEditorModule& Module = FModuleManager::LoadModuleChecked< IAssetManagerEditorModule >("AssetManagerEditor");
@@ -220,7 +302,7 @@ FReply SCleanProjectAssetDialog::OnBlacklistClicked()
 	FString FileContent;
 	for (auto PackageIt = ReportAssets.CreateConstIterator(); PackageIt; ++PackageIt)
 	{
-		FString assetPath = PackageIt->Get()->PackageName.ToString();
+		FString assetPath = PackageIt->PackageName.ToString();
 		FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
 	}
 
