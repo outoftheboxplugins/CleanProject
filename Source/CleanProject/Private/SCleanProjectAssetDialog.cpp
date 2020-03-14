@@ -77,34 +77,9 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 		Config.bPreloadAssetsForContextMenu = false;
 
 		// Hide path and type by default
-		Config.HiddenColumnNames.Add(TEXT("Class"));
-		Config.HiddenColumnNames.Add(TEXT("Type"));
-		Config.HiddenColumnNames.Add(TEXT("ParentClass"));
-		Config.HiddenColumnNames.Add(TEXT("ModuleName"));
-		Config.HiddenColumnNames.Add(TEXT("ModuleRelativePath"));
-		Config.HiddenColumnNames.Add(TEXT("Dimensions"));
-		Config.HiddenColumnNames.Add(TEXT("HasAlphaChannel"));
-		Config.HiddenColumnNames.Add(TEXT("Format"));
-		Config.HiddenColumnNames.Add(TEXT("AddressX"));
-		Config.HiddenColumnNames.Add(TEXT("AddressY"));
-		Config.HiddenColumnNames.Add(TEXT("LODBias"));
-		Config.HiddenColumnNames.Add(TEXT("SRGB"));
-		Config.HiddenColumnNames.Add(TEXT("CompressionSettings"));
-		Config.HiddenColumnNames.Add(TEXT("Filter"));
-		Config.HiddenColumnNames.Add(TEXT("MipLoadOptions"));
-		Config.HiddenColumnNames.Add(TEXT("LODGroup"));
-		Config.HiddenColumnNames.Add(TEXT("VirtualTextureStreaming"));
-		Config.HiddenColumnNames.Add(TEXT("NeverStream"));
-		Config.HiddenColumnNames.Add(TEXT("PrimaryAssetType"));
-		Config.HiddenColumnNames.Add(TEXT("PrimaryAssetName"));
-		Config.HiddenColumnNames.Add(TEXT("DateModified"));
-		Config.HiddenColumnNames.Add(TEXT("BlueprintType"));
-		Config.HiddenColumnNames.Add(TEXT("NativeParentClass"));
-		Config.HiddenColumnNames.Add(TEXT("NumReplicatedProperties"));
-		Config.HiddenColumnNames.Add(TEXT("IsDataOnly"));
-		Config.HiddenColumnNames.Add(TEXT("NativeComponents"));
-		Config.HiddenColumnNames.Add(TEXT("BlueprintComponents"));
-
+		auto Settings = GetDefault<UCleanProjectSettings>();
+		Config.HiddenColumnNames.Append(Settings->ReportHiddenColumns);
+		
 		// Add custom columns
 		Config.CustomColumns.Emplace(IAssetManagerEditorModule::DiskSizeName, 
 			LOCTEXT("CleanProject_SizeColumn", "Disk Size"),
@@ -271,8 +246,7 @@ FReply SCleanProjectAssetDialog::OnDeleteClicked()
 		AssetsToDelete.Add(AssetIt->GetAsset());
 	}
 
-	const bool bShowConfirmation = false;
-	ObjectTools::ForceDeleteObjects(AssetsToDelete, bShowConfirmation);
+	ObjectTools::DeleteObjects(AssetsToDelete);
 
 	CloseDialog();
 

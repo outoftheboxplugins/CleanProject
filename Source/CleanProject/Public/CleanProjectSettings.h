@@ -27,4 +27,8 @@ public:
 
 	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
 	TArray<FString> BlacklistFiles;
+
+	UPROPERTY(EditAnywhere, config, Category = "Report")
+	TArray<FString> ReportHiddenColumns;
+
 };
