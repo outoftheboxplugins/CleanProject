@@ -40,8 +40,14 @@
 #include "ContentBrowserModule.h"
 #include "ContentBrowserDelegates.h"
 
+//#include "WorkspaceMenuStructure.h"
+//#include "WorkspaceMenuStructureModule.h"
+//#include "EditorValidatorSubsystem.h"
+
+
+
 #include "CleanProjectSettings.h"
-#include "CleanProjectOperations.h"
+#include "CleanProject\Public\CleanProjectOperations.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
 
