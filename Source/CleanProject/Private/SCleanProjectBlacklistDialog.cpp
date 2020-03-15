@@ -131,7 +131,7 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 					})
 				.Content()
 					[
-						SNew(STextBlock).Text(this, &SCleanProjectBlacklistDialog::ComboboxGetText, ConfigurationCombobox)
+						SNew(STextBlock).Text(this, &SCleanProjectBlacklistDialog::GetConfigurationText)
 					]
 			]
 		+ SUniformGridPanel::Slot(1, 0)
@@ -145,7 +145,7 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 					})
 				.Content()
 					[
-						SNew(STextBlock).Text(this, &SCleanProjectBlacklistDialog::ComboboxGetText, PlatformCombobox)
+						SNew(STextBlock).Text(this, &SCleanProjectBlacklistDialog::GetPlatformText)
 					]
 			]
 		]
@@ -182,17 +182,25 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 	];
 }
 
-FText SCleanProjectBlacklistDialog::ComboboxGetText(FStringComboBoxPtr ComboBoxPtr) const
+FText SCleanProjectBlacklistDialog::GetConfigurationText() const
 {
-	if (ComboBoxPtr)
+	TSharedPtr<FString> SelectedText = ConfigurationCombobox->GetSelectedItem();
+	if (SelectedText.IsValid())
 	{
-		TSharedPtr<FString> SelectedText = ComboBoxPtr->GetSelectedItem();
-		if (SelectedText.IsValid())
-		{
-			return FText::FromString(*SelectedText);
-		}
+		return FText::FromString(*SelectedText);
 	}
 	
+	return LOCTEXT("CleanProject_BlacklistDialogComoboboxDefault", "Select option.");
+}
+
+FText SCleanProjectBlacklistDialog::GetPlatformText() const
+{
+	TSharedPtr<FString> SelectedText = PlatformCombobox->GetSelectedItem();
+	if (SelectedText.IsValid())
+	{
+		return FText::FromString(*SelectedText);
+	}
+
 	return LOCTEXT("CleanProject_BlacklistDialogComoboboxDefault", "Select option.");
 }
 

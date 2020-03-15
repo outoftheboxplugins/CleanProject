@@ -24,7 +24,8 @@ public:
 	static void OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist);
 	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);
 
-	FText ComboboxGetText(FStringComboBoxPtr ComboBoxPtr) const;
+	FText GetConfigurationText() const;
+	FText GetPlatformText() const;
 
 	FReply OnBlacklistOk();
 	FReply OnBlacklistCancel();
