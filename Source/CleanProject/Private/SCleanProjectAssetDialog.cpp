@@ -56,6 +56,12 @@
 void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
 	ReportAssets.Append(AssetsToReport);
+	int64 TotalDiskSize = 0;
+
+	for (const FAssetData& AssetDataReported : AssetsToReport)
+	{
+		TotalDiskSize += GetAssetDiskSize(AssetDataReported);
+	}
 
 	FContentBrowserModule& ContentBrowserModule = FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
 	IAssetManagerEditorModule& ManagerEditorModule = IAssetManagerEditorModule::Get();
@@ -105,6 +111,15 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 
 		// Titlebar
 		+SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(4, 4)
+		[
+			SNew(STextBlock)
+			.Text( FText::Format(LOCTEXT("CleanProject_ReportDiskSize", "Total disk size: {0}"), FText::AsMemory(TotalDiskSize)))
+			.TextStyle(FEditorStyle::Get(), "PackageMigration.DialogTitle")
+		]
+
+		+ SVerticalBox::Slot()
 		.AutoHeight()
 		.Padding(4, 4)
 		[
@@ -272,7 +287,7 @@ void SCleanProjectAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData) c
 
 int64 SCleanProjectAssetDialog::GetAssetDiskSize(const FAssetData& Asset) const
 {
-	FName packageName = FName(*AssetData.GetPackage()->GetName());
+	FName packageName = FName(*Asset.GetPackage()->GetName());
 
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 	const FAssetPackageData* packageData = AssetRegistryModule.Get().GetAssetPackageData(packageName);
