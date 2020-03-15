@@ -50,6 +50,7 @@
 #include "ContentBrowser/Private/SAssetPicker.h"
 #include "ContentBrowser/Private/SAssetView.h"
 #include "CleanProjectGameSettings.h"
+#include "SCleanProjectBlacklistDialog.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -389,6 +390,10 @@ void SCleanProjectAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudi
 
 void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 {
+	SCleanProjectBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
+
+	return;
+
 	FString FileContent;
 	for (const FAssetData& AssetData : AssetsToBlacklist)
 	{
