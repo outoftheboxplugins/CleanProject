@@ -270,7 +270,7 @@ void SCleanProjectAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData) c
 	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorsForAssets(AssetNames);
 }
 
-FString SCleanProjectAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const
+int64 SCleanProjectAssetDialog::GetAssetDiskSize(const FAssetData& Asset) const
 {
 	FName packageName = FName(*AssetData.GetPackage()->GetName());
 
@@ -279,7 +279,21 @@ FString SCleanProjectAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName C
 
 	if (packageData)
 	{
-		return LexToString(packageData->DiskSize);
+		return packageData->DiskSize;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+FString SCleanProjectAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const
+{
+	const int64 DiskSize = GetAssetDiskSize(AssetData);
+
+	if (DiskSize > 0)
+	{
+		return LexToString(DiskSize);
 	}
 	else
 	{
@@ -289,14 +303,11 @@ FString SCleanProjectAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName C
 
 FText SCleanProjectAssetDialog::GetDiskSizeDisplayText(FAssetData& AssetData, FName ColumnName) const
 {
-	FName packageName = FName(*AssetData.GetPackage()->GetName());
+	const int64 DiskSize = GetAssetDiskSize(AssetData);
 
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	const FAssetPackageData* packageData = AssetRegistryModule.Get().GetAssetPackageData(packageName);
-
-	if (packageData)
+	if (DiskSize > 0)
 	{
-		return FText::AsMemory(packageData->DiskSize);
+		return FText::AsMemory(DiskSize);
 	}
 	else
 	{

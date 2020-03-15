@@ -28,6 +28,7 @@ private:
 
 // Custom Report column
 private:
+	int64 GetAssetDiskSize(const FAssetData& Asset) const;
 	FString GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const;
 	FText GetDiskSizeDisplayText(FAssetData& AssetData, FName ColumnName) const;
 
