@@ -49,6 +49,7 @@
 #include "ContentBrowser/Private/SAssetDialog.h"
 #include "ContentBrowser/Private/SAssetPicker.h"
 #include "ContentBrowser/Private/SAssetView.h"
+#include "CleanProjectGameSettings.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -238,6 +239,15 @@ TSharedPtr<SWidget> SCleanProjectAssetDialog::OnGetAssetContextMenu(const TArray
 			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::BlackListAssets, SelectedAssets),
 			FCanExecuteAction()
 		));
+	
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("CleanProject_WhitelistAction", "Whitelist"),
+		LOCTEXT("CleanProject_WhitelistActionTooltip", "Whitelist only selected assets and remove from report."),
+		FSlateIcon(),
+		FUIAction(
+			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::WhiteListAssets, SelectedAssets),
+			FCanExecuteAction()
+		));
 
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("CleanProject_DeleteAction", "Delete"),
@@ -386,6 +396,18 @@ void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsTo
 	RemoveFromList(AssetsToBlacklist);
 }
 
+void SCleanProjectAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)
+{
+	auto Settings = GetMutableDefault<UCleanProjectGameSettings>();
+	
+	for (const FAssetData& WhitelistAsset : AssetsToWhitelist)
+	{
+		Settings->WhiteListAssetsPaths.Add(WhitelistAsset.ObjectPath);
+	}
+
+	RemoveFromList(AssetsToWhitelist);
+}
+
 void SCleanProjectAssetDialog::RemoveFromList(const TArray<FAssetData> AssetsToRemove)
 {
 	ReportAssets.RemoveAllSwap([&AssetsToRemove](const FAssetData& AssetData) 
@@ -406,7 +428,14 @@ void SCleanProjectAssetDialog::RemoveFromList(const TArray<FAssetData> AssetsToR
 			return AssetObjectPaths.Contains(objectPath);
 		});
 
-	SetFilterDelegate.Execute(ReportAssetsFilter);
+	if (ReportAssets.Num() == 0)
+	{
+		CloseDialog();
+	}
+	else
+	{
+		SetFilterDelegate.Execute(ReportAssetsFilter);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

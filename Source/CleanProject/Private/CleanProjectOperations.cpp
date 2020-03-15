@@ -7,6 +7,8 @@
 #include "Core/Public/Misc/MessageDialog.h"
 #include "Engine/World.h"
 #include "SCleanProjectAssetDialog.h"
+#include "CleanProjectSettings.h"
+#include "CleanProjectGameSettings.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -31,6 +33,16 @@ namespace CleanProjectOperations
 
 	void CheckDependenciesInternal(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest)
 	{
+		auto Settings = GetDefault<UCleanProjectGameSettings>();
+
+		for (const FName& WhiteListAssetPath : Settings->WhiteListAssetsPaths)
+		{
+			AssetsToTest.RemoveAllSwap([&WhiteListAssetPath](const FAssetData& AssetData)
+				{
+					return AssetData.ObjectPath == WhiteListAssetPath;
+				});
+		}
+
 		for (auto PackageIt = DependenciesToTest.CreateConstIterator(); PackageIt; ++PackageIt)
 		{
 			AssetsToTest.RemoveSwap(*PackageIt);

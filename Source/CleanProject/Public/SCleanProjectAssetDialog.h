@@ -43,6 +43,7 @@ private:
 	void DeleteAssets(const TArray<FAssetData> AssetsToDelete);
 	void AuditAssets(const TArray<FAssetData> AssetsToAudit);
 	void BlackListAssets(const TArray<FAssetData> AssetsToBlacklist);
+	void WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist);
 	void RemoveFromList(const TArray<FAssetData> AssetsToRemove);
 
 // Internal state

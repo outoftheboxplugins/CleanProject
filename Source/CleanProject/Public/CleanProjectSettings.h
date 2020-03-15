@@ -18,7 +18,7 @@ class UCleanProjectSettings : public UObject
 public:
 	UCleanProjectSettings();
 
-	// Outputes the blacklist result to a intermediate file instead of creating them directly.
+	// Outputs the blacklist result to a intermediate file instead of creating them directly.
 	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
 	bool bUseSmartBlackList = true;
 
@@ -30,5 +30,4 @@ public:
 
 	UPROPERTY(EditAnywhere, config, Category = "Report")
 	TArray<FString> ReportHiddenColumns;
-
 };

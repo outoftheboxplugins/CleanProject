@@ -42,14 +42,19 @@
 
 #include "CleanProjectSettings.h"
 #include "CleanProjectOperations.h"
+#include "CleanProjectGameSettings.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
 
 namespace
 {
-	const FName SettingsContainer = FName("Editor");
-	const FName SettingsCategory = FName("Plugins");
-	const FName SettingsSection = FName("Clean Project");
+	const FName SettingsContainer	= FName("Editor");
+	const FName SettingsCategory	= FName("Plugins");
+	const FName SettingsSection		= FName("Clean Project");
+	
+	const FName SettingsGameContainer	= FName("Project");
+	const FName SettingsGameCategory	= FName("Plugins");
+	const FName SettingsGameSection		= FName("Clean Project");
 
 	const FName MainMenuExtensionHook = FName("FileLoadSave");
 }
@@ -70,9 +75,14 @@ void FCleanProjectModule::StartupModule()
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
 		SettingsModule->RegisterSettings(SettingsContainer, SettingsCategory, SettingsSection,
-			LOCTEXT("CleanProjectSettings", "Clean Project Settings"),
+			LOCTEXT("CleanProjectSettings", "Clean Project"),
 			LOCTEXT("CleanProjectSettingsDescription", "Cleanup and project management improvements."),
 			GetMutableDefault<UCleanProjectSettings>());
+
+		SettingsModule->RegisterSettings(SettingsGameContainer, SettingsGameCategory, SettingsGameSection,
+			LOCTEXT("CleanProjectSettings", "Clean Project"),
+			LOCTEXT("CleanProjectSettingsDescription", "Cleanup and project management improvements."),
+			GetMutableDefault<UCleanProjectGameSettings>());
 	}
 }
 
@@ -82,6 +92,7 @@ void FCleanProjectModule::ShutdownModule()
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
 		SettingsModule->UnregisterSettings(SettingsContainer, SettingsCategory, SettingsSection);
+		SettingsModule->UnregisterSettings(SettingsGameContainer, SettingsGameCategory, SettingsGameSection);
 	}
 
 	// Unregister main menu dropdown entry.
