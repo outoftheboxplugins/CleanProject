@@ -7,6 +7,8 @@
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Slate/Public/Widgets/Views/SListView.h"
 
+class SAssetView;
+
 class SCleanProjectAssetDialog : public SCompoundWidget
 {
 public:
@@ -22,6 +24,7 @@ public:
 // Slate Delegates
 private:
 	TSharedPtr<SWidget> OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets);
+	void OnRequestOpenAsset(const FAssetData& AssetData) const;
 
 // Custom Report column
 private:
@@ -38,7 +41,14 @@ private:
 // Functionality
 private:
 	void DeleteAssets(const TArray<FAssetData> AssetsToDelete);
+	void AuditAssets(const TArray<FAssetData> AssetsToAudit);
+	void BlackListAssets(const TArray<FAssetData> AssetsToBlacklist);
+	void RemoveFromList(const TArray<FAssetData> AssetsToRemove);
+
 // Internal state
 private:
 	TArray<FAssetData> ReportAssets;
+
+	FSetARFilterDelegate SetFilterDelegate;
+	FARFilter ReportAssetsFilter;
 };

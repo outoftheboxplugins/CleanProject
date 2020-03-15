@@ -48,6 +48,7 @@
 #include "Editor.h"
 #include "ContentBrowser/Private/SAssetDialog.h"
 #include "ContentBrowser/Private/SAssetPicker.h"
+#include "ContentBrowser/Private/SAssetView.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -65,12 +66,11 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 		Config.bShowPathInColumnView = true;
 		Config.bSortByPathInColumnView = true;
 
-		// Configure response to click and double-click
-		//Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateSP(this, &SAssetAuditBrowser::OnRequestOpenAsset);
+		// Configure response to double-click and context-menu
+		Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateSP(this, &SCleanProjectAssetDialog::OnRequestOpenAsset);
 		Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SCleanProjectAssetDialog::OnGetAssetContextMenu);
-		//Config.OnShouldFilterAsset = FOnShouldFilterAsset::CreateSP(this, &SAssetAuditBrowser::HandleFilterAsset);
-		//Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
-		//Config.SetFilterDelegates.Add(&SetFilterDelegate);
+		Config.SetFilterDelegates.Add(&SetFilterDelegate);
+
 
 		Config.bFocusSearchBoxWhenOpened = false;
 		Config.bPreloadAssetsForContextMenu = false;
@@ -88,13 +88,15 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 			FOnGetCustomAssetColumnDisplayText::CreateSP(this, &SCleanProjectAssetDialog::GetDiskSizeDisplayText));
 	}
 
-	TArray<FName>& ReportObjectsPaths = Config.Filter.ObjectPaths;
+	TArray<FName>& ReportObjectsPaths = ReportAssetsFilter.ObjectPaths;
 	ReportObjectsPaths.Reserve(ReportAssets.Num());
 
 	for (auto PackageIt = ReportAssets.CreateConstIterator(); PackageIt; ++PackageIt)
 	{
 		ReportObjectsPaths.Add(PackageIt->ObjectPath);
 	}
+
+	Config.Filter = ReportAssetsFilter;
 
 	ChildSlot
 	[
@@ -209,17 +211,53 @@ TSharedPtr<SWidget> SCleanProjectAssetDialog::OnGetAssetContextMenu(const TArray
 	
 	MenuBuilder.BeginSection(TEXT("CleanProject_ReportContextMenu"),
 		LOCTEXT("CleanProject_ReportConextMenuCategory", "Cleanup actions"));
+	
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("CleanProject_RemoveAction", "Remove"),
+		LOCTEXT("CleanProject_RemoveActionTooltip", "Remove selected assets from the report, so they won't get deleted."),
+		FSlateIcon(),
+		FUIAction(
+			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::RemoveFromList, SelectedAssets),
+			FCanExecuteAction()
+		));
+
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("CleanProject_AuditAction", "Audit"),
+		LOCTEXT("CleanProject_AuditActionTooltip", "Get more information about the selected assets."),
+		FSlateIcon(),
+		FUIAction(
+			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::AuditAssets, SelectedAssets),
+			FCanExecuteAction()
+		));
+
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("CleanProject_BlacklistAction", "Blacklist"),
+		LOCTEXT("CleanProject_BlacklistActionTooltip", "Blacklist only selected assets and remove from report."),
+		FSlateIcon(),
+		FUIAction(
+			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::BlackListAssets, SelectedAssets),
+			FCanExecuteAction()
+		));
+
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("CleanProject_DeleteAction", "Delete"),
-		LOCTEXT("CleanProject_DeleteActionTooltip", "Delete only selected assets"),
+		LOCTEXT("CleanProject_DeleteActionTooltip", "Delete only selected assets."),
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "ContentBrowser.AssetActions.Delete"),
 		FUIAction(
 			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::DeleteAssets, SelectedAssets),
-			FCanExecuteAction::CreateLambda([] { return true; })
+			FCanExecuteAction()
 		));
 
 	MenuBuilder.EndSection();
 	return MenuBuilder.MakeWidget();
+}
+
+void SCleanProjectAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData) const
+{
+	TArray<FName> AssetNames;
+	AssetNames.Add(AssetData.ObjectPath);
+
+	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorsForAssets(AssetNames);
 }
 
 FString SCleanProjectAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const
@@ -266,28 +304,59 @@ FReply SCleanProjectAssetDialog::OnDeleteClicked()
 
 FReply SCleanProjectAssetDialog::OnAuditClicked()
 {
-	if (FModuleManager::Get().ModuleExists(TEXT("AssetManagerEditor")))
-	{
-		TArray<FName> AssetNames;
-
-		for (auto PackageIt = ReportAssets.CreateConstIterator(); PackageIt; ++PackageIt)
-		{
-			AssetNames.Add(PackageIt->PackageName);
-		}
-
-		IAssetManagerEditorModule& Module = FModuleManager::LoadModuleChecked< IAssetManagerEditorModule >("AssetManagerEditor");
-		Module.OpenAssetAuditUI(AssetNames);
-	}
-
+	AuditAssets(ReportAssets);
 	return FReply::Handled();
 }
 
 FReply SCleanProjectAssetDialog::OnBlacklistClicked()
 {
-	FString FileContent;
-	for (auto PackageIt = ReportAssets.CreateConstIterator(); PackageIt; ++PackageIt)
+	BlackListAssets(ReportAssets);
+	CloseDialog();
+
+	return FReply::Handled();
+}
+
+FReply SCleanProjectAssetDialog::OnCancelClicked()
+{
+	CloseDialog();
+
+	return FReply::Handled();
+}
+
+void SCleanProjectAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
+{
+	TArray<UObject*> ObjectsToDelete;
+	for(const FAssetData& AssetData : AssetsToDelete)
 	{
-		FString assetPath = PackageIt->PackageName.ToString();
+		ObjectsToDelete.Add(AssetData.GetAsset());
+	}
+
+	RemoveFromList(AssetsToDelete);
+	ObjectTools::DeleteObjects(ObjectsToDelete);
+}
+
+void SCleanProjectAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudit)
+{
+	if (FModuleManager::Get().ModuleExists(TEXT("AssetManagerEditor")))
+	{
+		TArray<FName> AssetNames;
+
+		for(const FAssetData& AssetData: AssetsToAudit)
+		{
+			AssetNames.Add(AssetData.PackageName);
+		}
+
+		IAssetManagerEditorModule& Module = FModuleManager::LoadModuleChecked< IAssetManagerEditorModule >("AssetManagerEditor");
+		Module.OpenAssetAuditUI(AssetNames);
+	}
+}
+
+void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
+{
+	FString FileContent;
+	for (const FAssetData& AssetData : AssetsToBlacklist)
+	{
+		FString assetPath = AssetData.PackageName.ToString();
 		FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
 	}
 
@@ -314,27 +383,30 @@ FReply SCleanProjectAssetDialog::OnBlacklistClicked()
 		FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), NULL, NULL);
 	}
 
-	CloseDialog();
-
-	return FReply::Handled();
+	RemoveFromList(AssetsToBlacklist);
 }
 
-FReply SCleanProjectAssetDialog::OnCancelClicked()
+void SCleanProjectAssetDialog::RemoveFromList(const TArray<FAssetData> AssetsToRemove)
 {
-	CloseDialog();
+	ReportAssets.RemoveAllSwap([&AssetsToRemove](const FAssetData& AssetData) 
+		{
+			return AssetsToRemove.Contains(AssetData);
+		});
 
-	return FReply::Handled();
-}
+	TArray<FName> AssetObjectPaths;
+	AssetObjectPaths.Reserve(AssetsToRemove.Num());
 
-void SCleanProjectAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
-{
-	TArray<UObject*> ObjectsToDelete;
-	for(const FAssetData& AssetData : AssetsToDelete)
+	for (const FAssetData& AssetData : AssetsToRemove)
 	{
-		ObjectsToDelete.Add(AssetData.GetAsset());
+		AssetObjectPaths.Add(AssetData.ObjectPath);
 	}
 
-	ObjectTools::DeleteObjects(ObjectsToDelete);
+	ReportAssetsFilter.ObjectPaths.RemoveAllSwap([&AssetObjectPaths](const FName& objectPath)
+		{
+			return AssetObjectPaths.Contains(objectPath);
+		});
+
+	SetFilterDelegate.Execute(ReportAssetsFilter);
 }
 
 #undef LOCTEXT_NAMESPACE
