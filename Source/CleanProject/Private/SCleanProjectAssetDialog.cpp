@@ -399,11 +399,7 @@ void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsTo
 void SCleanProjectAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)
 {
 	auto Settings = GetMutableDefault<UCleanProjectGameSettings>();
-	
-	for (const FAssetData& WhitelistAsset : AssetsToWhitelist)
-	{
-		Settings->WhiteListAssetsPaths.Add(WhitelistAsset.ObjectPath);
-	}
+	Settings->WhitelistAssetes(AssetsToWhitelist);
 
 	RemoveFromList(AssetsToWhitelist);
 }

@@ -114,7 +114,10 @@ void FCleanProjectModule::RegisterMenus()
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "DeveloperTools.MenuIcon"),
 		FUIAction(FExecuteAction::CreateLambda([]()
 			{
-				TArray<FAssetData> MapAssetDatas = CleanProjectOperations::GetAllMapAssets();
+				auto Settings = GetDefault<UCleanProjectGameSettings>();
+				bool checkMaps = Settings->bCheckAllMapsRefernece;
+
+				TArray<FAssetData> MapAssetDatas = checkMaps ? CleanProjectOperations::GetAllMapAssets() : TArray<FAssetData>();
 				CleanProjectOperations::CheckDependenciesBasedOn(MapAssetDatas);
 			})
 		)));
@@ -134,6 +137,9 @@ TSharedRef<FExtender> FCleanProjectModule::CreateContentBrowserExtender(const TA
 
 void FCleanProjectModule::CreateContentBrowserEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets)
 {
+	MenuBuilder.BeginSection(TEXT("CleanProject_ContentBrowserSection"),
+		LOCTEXT("CleanProject_ContentBrowserSection", "Clean Project"));
+
 	MenuBuilder.AddMenuEntry
 	(
 		LOCTEXT("CleanProject_ContentBrowserBasedTitle", "Check unused assets based on selected"),
@@ -154,7 +160,21 @@ void FCleanProjectModule::CreateContentBrowserEntry(FMenuBuilder& MenuBuilder, T
 			{
 				CleanProjectOperations::CheckDependenciesOf(SelectedAssets);
 			})
-		));
+	));
+
+	MenuBuilder.AddMenuEntry
+	(
+		LOCTEXT("CleanProject_ContentBrowserWhitelistTitle", "Whitelist selected assets"),
+		LOCTEXT("CleanProject_ContentBrowserWhitelistTooltip", "Add the selected assets to the whitelist."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
+			{
+				auto Settings = GetMutableDefault<UCleanProjectGameSettings>();
+				Settings->WhitelistAssetes(SelectedAssets);
+			})
+	));
+
+	MenuBuilder.EndSection();
 }
 
 #undef LOCTEXT_NAMESPACE

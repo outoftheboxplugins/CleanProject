@@ -35,11 +35,11 @@ namespace CleanProjectOperations
 	{
 		auto Settings = GetDefault<UCleanProjectGameSettings>();
 
-		for (const FName& WhiteListAssetPath : Settings->WhiteListAssetsPaths)
+		for (const FName& WhitelistAssetPath : Settings->WhitelistAssetsPaths)
 		{
-			AssetsToTest.RemoveAllSwap([&WhiteListAssetPath](const FAssetData& AssetData)
+			AssetsToTest.RemoveAllSwap([&WhitelistAssetPath](const FAssetData& AssetData)
 				{
-					return AssetData.ObjectPath == WhiteListAssetPath;
+					return AssetData.ObjectPath == WhitelistAssetPath;
 				});
 		}
 
@@ -50,6 +50,15 @@ namespace CleanProjectOperations
 
 		// Recursively get all the packages to check from dependencies.
 		TSet<FName> AllPackageNamesToCheck;
+
+		// Gather the dependencies of the whitelisted assets as well if needed.
+		if (Settings->bCheckWhitelistReferences)
+		{
+			for (const FName& WhitelistAssetPath : Settings->WhitelistAssetsPaths)
+			{
+				AllPackageNamesToCheck.Add(WhitelistAssetPath);
+			}
+		}
 		
 		// Create a slow task to display a progressbar for the user.
 		FScopedSlowTask SlowTask(DependenciesToTest.Num(), LOCTEXT("CleanProject_SlowTaskTitle", "Gathering Dependencies..."));
@@ -83,6 +92,10 @@ namespace CleanProjectOperations
 		if (AssetsToTest.Num() == 0)
 		{
 			FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("CleanProject_NoFilesToDelete", "No unused assets found."));
+		}
+		else if (AllPackageNamesToCheck.Num() == 0)
+		{
+			FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("CleanProject_NoFilesChecked", "No dependency files were selected."));
 		}
 		else
 		{

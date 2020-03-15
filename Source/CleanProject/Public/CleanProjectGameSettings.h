@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
+#include "AssetData.h"
 #include "CleanProjectGameSettings.generated.h"
 
 /**
@@ -18,7 +19,24 @@ class UCleanProjectGameSettings : public UObject
 public:
 	UCleanProjectGameSettings();
 
+public:
+	void WhitelistAsset(const FAssetData& Asset);
+	void WhitelistAsset(const FName& AssetPath);
+
+	void WhitelistAssetes(const TArray<FAssetData> Assets);
+	void WhitelistAssetes(const TArray<FName> AssetPaths);
+
+public:
 	// Assets inside the whitelist are always considered referenced.
 	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
-	TArray<FName> WhiteListAssetsPaths;
+	TArray<FName> WhitelistAssetsPaths;
+
+	// Should we always check the dependencies of the whitelisted assets when scanning for references?
+	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
+	bool bCheckWhitelistReferences = true;
+
+	// When performing a project-wide clean, should all the maps be included in the reference check?
+	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
+	bool bCheckAllMapsRefernece = true;
 };
+
