@@ -79,10 +79,11 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 	ParentWindow = InArgs._ParentWindow;
 
 	// Prepare the display texts for the dropdowns.
-	TSharedPtr<FString> AllOption(new FString("All Configurations"));
+	TSharedPtr<FString> AllConfigurations(new FString("All Configurations"));
+	TSharedPtr<FString> AllPlatforms(new FString("All Platforms"));
 
-	ConfigurationsDisplayTexts.Add(AllOption);
-	PlatformsDisplayTexts.Add(AllOption);
+	ConfigurationsDisplayTexts.Add(AllConfigurations);
+	PlatformsDisplayTexts.Add(AllPlatforms);
 
 	auto Settings = GetDefault<UCleanProjectSettings>();
 
@@ -122,20 +123,6 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 
 			+ SUniformGridPanel::Slot(0, 0)
 			[
-				SAssignNew(ConfigurationCombobox, SComboBox<TSharedPtr<FString>>)
-				.OptionsSource(&ConfigurationsDisplayTexts)
-				.InitiallySelectedItem(ConfigurationsDisplayTexts[0])
-				.OnGenerateWidget_Lambda([](TSharedPtr<FString> Item)
-					{
-						return SNew(STextBlock).Text(FText::FromString(*Item));
-					})
-				.Content()
-					[
-						SNew(STextBlock).Text(this, &SCleanProjectBlacklistDialog::GetConfigurationText)
-					]
-			]
-		+ SUniformGridPanel::Slot(1, 0)
-			[
 				SAssignNew(PlatformCombobox, SComboBox<TSharedPtr<FString>>)
 				.OptionsSource(&PlatformsDisplayTexts)
 				.InitiallySelectedItem(PlatformsDisplayTexts[0])
@@ -146,6 +133,20 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 				.Content()
 					[
 						SNew(STextBlock).Text(this, &SCleanProjectBlacklistDialog::GetPlatformText)
+					]
+			]
+			+ SUniformGridPanel::Slot(1, 0)
+			[
+				SAssignNew(ConfigurationCombobox, SComboBox<TSharedPtr<FString>>)
+				.OptionsSource(&ConfigurationsDisplayTexts)
+				.InitiallySelectedItem(ConfigurationsDisplayTexts[0])
+				.OnGenerateWidget_Lambda([](TSharedPtr<FString> Item)
+					{
+						return SNew(STextBlock).Text(FText::FromString(*Item));
+					})
+				.Content()
+					[
+						SNew(STextBlock).Text(this, &SCleanProjectBlacklistDialog::GetConfigurationText)
 					]
 			]
 		]
