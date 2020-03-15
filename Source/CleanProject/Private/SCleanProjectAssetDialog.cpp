@@ -67,8 +67,7 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 
 		// Configure response to click and double-click
 		//Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateSP(this, &SAssetAuditBrowser::OnRequestOpenAsset);
-		//Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SAssetAuditBrowser::OnGetAssetContextMenu);
-		//Config.OnAssetTagWantsToBeDisplayed = FOnShouldDisplayAssetTag::CreateSP(this, &SAssetAuditBrowser::CanShowColumnForAssetRegistryTag);
+		Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SCleanProjectAssetDialog::OnGetAssetContextMenu);
 		//Config.OnShouldFilterAsset = FOnShouldFilterAsset::CreateSP(this, &SAssetAuditBrowser::HandleFilterAsset);
 		//Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
 		//Config.SetFilterDelegates.Add(&SetFilterDelegate);
@@ -204,6 +203,25 @@ void SCleanProjectAssetDialog::CloseDialog()
 	}
 }
 
+TSharedPtr<SWidget> SCleanProjectAssetDialog::OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets)
+{
+	FMenuBuilder MenuBuilder(/*bInShouldCloseWindowAfterMenuSelection=*/ true, NULL);
+	
+	MenuBuilder.BeginSection(TEXT("CleanProject_ReportContextMenu"),
+		LOCTEXT("CleanProject_ReportConextMenuCategory", "Cleanup actions"));
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("CleanProject_DeleteAction", "Delete"),
+		LOCTEXT("CleanProject_DeleteActionTooltip", "Delete only selected assets"),
+		FSlateIcon(FEditorStyle::GetStyleSetName(), "ContentBrowser.AssetActions.Delete"),
+		FUIAction(
+			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::DeleteAssets, SelectedAssets),
+			FCanExecuteAction::CreateLambda([] { return true; })
+		));
+
+	MenuBuilder.EndSection();
+	return MenuBuilder.MakeWidget();
+}
+
 FString SCleanProjectAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const
 {
 	FName packageName = FName(*AssetData.GetPackage()->GetName());
@@ -240,14 +258,7 @@ FText SCleanProjectAssetDialog::GetDiskSizeDisplayText(FAssetData& AssetData, FN
 
 FReply SCleanProjectAssetDialog::OnDeleteClicked()
 {
-	TArray<UObject*> AssetsToDelete;
-	for (auto AssetIt = ReportAssets.CreateConstIterator(); AssetIt; ++AssetIt)
-	{
-		AssetsToDelete.Add(AssetIt->GetAsset());
-	}
-
-	ObjectTools::DeleteObjects(AssetsToDelete);
-
+	DeleteAssets(ReportAssets);
 	CloseDialog();
 
 	return FReply::Handled();
@@ -315,22 +326,15 @@ FReply SCleanProjectAssetDialog::OnCancelClicked()
 	return FReply::Handled();
 }
 
+void SCleanProjectAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
+{
+	TArray<UObject*> ObjectsToDelete;
+	for(const FAssetData& AssetData : AssetsToDelete)
+	{
+		ObjectsToDelete.Add(AssetData.GetAsset());
+	}
+
+	ObjectTools::DeleteObjects(ObjectsToDelete);
+}
+
 #undef LOCTEXT_NAMESPACE
-
-// Prompt the user displaying all assets that are going to be deleted.
-//const FText ReportMessage = LOCTEXT("DepenCheckerReportTitle", "The following assets are not used by the selected assets.");
-//TArray<FString> ReportPackageNames;
-//for (auto PackageIt = DependenciesToTest.CreateConstIterator(); PackageIt; ++PackageIt)
-//{
-//	ReportPackageNames.Add((*PackageIt).PackageName.ToString());
-//}
-
-//SDependReportDialog::FOnReportConfirmed OnReportConfirmed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportConfirmed, DependenciesToTest);
-//SDependReportDialog::FOnReportConfirmed OnReporBlackListed = SPackageReportDialog::FOnReportConfirmed::CreateRaw(this, &FCleanProjectModule::CheckDepencies_ReportBlackListed, DependenciesToTest);
-//SDependReportDialog::OpenDependReportDialog(ReportMessage, ReportPackageNames, OnReportConfirmed, OnReporBlackListed);
-//
-//
-
-//else {
-//	UE_LOG(LogTemp, Error, TEXT("AssetManagerEditor plugin is not enabled"));
-//}

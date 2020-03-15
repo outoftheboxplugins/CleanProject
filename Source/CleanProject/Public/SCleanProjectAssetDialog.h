@@ -13,25 +13,32 @@ public:
 	SLATE_BEGIN_ARGS(SCleanProjectAssetDialog) {}
 	SLATE_END_ARGS()
 
-	/** Opens the dialog in a new window */
+// Interface
+public:
 	static void OpenAssetDialog(const TArray<FAssetData>& AssetsToReport);
-
-	/** Constructs this widget with InArgs */
 	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);
-
-	/** Closes the dialog. */
 	void CloseDialog();
 
+// Slate Delegates
+private:
+	TSharedPtr<SWidget> OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets);
+
+// Custom Report column
 private:
 	FString GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const;
 	FText GetDiskSizeDisplayText(FAssetData& AssetData, FName ColumnName) const;
 
+// Buttons Actions
 private:
 	FReply OnDeleteClicked();
 	FReply OnAuditClicked();
 	FReply OnBlacklistClicked();
 	FReply OnCancelClicked();
 
+// Functionality
+private:
+	void DeleteAssets(const TArray<FAssetData> AssetsToDelete);
+// Internal state
 private:
 	TArray<FAssetData> ReportAssets;
 };
