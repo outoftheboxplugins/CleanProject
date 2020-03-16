@@ -51,6 +51,7 @@
 #include "ContentBrowser/Private/SAssetPicker.h"
 #include "ContentBrowser/Private/SAssetView.h"
 #include "CleanProjectGameSettings.h"
+#include "CleanProjectOperations.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -77,6 +78,7 @@ void SCleanProjectBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>&
 void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
 	ParentWindow = InArgs._ParentWindow;
+	AssetsToBlacklist = AssetsToReport;
 
 	// Prepare the display texts for the dropdowns.
 	TSharedPtr<FString> AllConfigurations(new FString("All Configurations"));
@@ -99,6 +101,8 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 		PlatformsDisplayTexts.Add(PlatformStr);
 	}
 
+	//TODO: Make an other entry for the file write options (append, override) or maybe expose the whole enum to choose from.
+
 	ChildSlot
 	[
 		SNew(SVerticalBox)
@@ -108,7 +112,7 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 		.Padding(4, 4)
 		[
 			SNew(STextBlock)
-			.Text(LOCTEXT("CleanProject_BlacklistDialogSubtitle", "Choose how to blaklist the selected assets."))
+			.Text(LOCTEXT("CleanProject_BlacklistDialogSubtitle", "Choose how to blacklist the selected assets."))
 			.TextStyle(FEditorStyle::Get(), "PackageMigration.DialogTitle")
 		]
 		
@@ -207,11 +211,15 @@ FText SCleanProjectBlacklistDialog::GetPlatformText() const
 
 FReply SCleanProjectBlacklistDialog::OnBlacklistOk()
 {
+	FString SelectedPlatform = GetPlatformText().ToString();
+	FString SelectedConfiguration = GetConfigurationText().ToString();
+
+	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, SelectedConfiguration, SelectedPlatform);
+
 	ParentWindow.Get()->RequestDestroyWindow();
 
 	return FReply::Handled();
 }
-
 
 FReply SCleanProjectBlacklistDialog::OnBlacklistCancel()
 {

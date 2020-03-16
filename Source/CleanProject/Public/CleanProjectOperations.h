@@ -26,9 +26,15 @@ namespace CleanProjectOperations
     // Recursively get all the dependencies of a certain package.
     void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies);
 
+	// Generate the blacklist for a specific platform or configuration
+	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const FString& Platform = "", const FString& Configuration = "");
+
     // Returns all the assets from the project (Game folder).
     TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes = TArray<FName>());
 
     // Returns all the map assets from the project (Game folder).
     TArray<FAssetData> GetAllMapAssets();
+
+	// Helpers
+	TArray<FString> GetListFromSelection(const TArray<FString>& List, const FString& Selection);
 }

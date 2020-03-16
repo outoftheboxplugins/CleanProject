@@ -394,36 +394,7 @@ void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsTo
 
 	return;
 
-	FString FileContent;
-	for (const FAssetData& AssetData : AssetsToBlacklist)
-	{
-		FString assetPath = AssetData.PackageName.ToString();
-		FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
-	}
-
-	auto Settings = GetDefault<UCleanProjectSettings>();
-	if (Settings->bUseSmartBlackList)
-	{
-		FString projectBuildRoot = FPaths::ProjectDir() + "Build";
-
-		for (const FString& platformFolder : Settings->PlatformsPaths)
-		{
-			for (const FString& listFile : Settings->BlacklistFiles)
-			{
-				FString slash = FGenericPlatformMisc::GetDefaultPathSeparator();
-				FString platformPath = projectBuildRoot + slash + platformFolder + slash + listFile;
-				FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
-			}
-		}
-	}
-	else
-	{
-		FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
-
-		FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
-		FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), NULL, NULL);
-	}
-
+	//TODO: Let the blacklist dialog take a std::function to call after completion depending on accept/cancel of the operation.
 	RemoveFromList(AssetsToBlacklist);
 }
 

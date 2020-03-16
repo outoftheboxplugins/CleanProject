@@ -9,6 +9,7 @@
 #include "SCleanProjectAssetDialog.h"
 #include "CleanProjectSettings.h"
 #include "CleanProjectGameSettings.h"
+#include "Misc/FileHelper.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -126,6 +127,43 @@ namespace CleanProjectOperations
 		}
 	}
 
+	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const FString& Platform /*= ""*/, const FString& Configuration /*= ""*/)
+	{
+		auto Settings = GetDefault<UCleanProjectSettings>();
+		
+		TArray<FString> SelectedConfigurations = GetListFromSelection(Settings->BlacklistFiles, Configuration);
+		TArray<FString> SelectedPlatforms = GetListFromSelection(Settings->PlatformsPaths, Platform);
+		
+		FString FileContent;
+		for (const FAssetData& AssetData : AssetsToBlacklist)
+		{
+			FString assetPath = AssetData.PackageName.ToString();
+			FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
+		}
+		
+		if (Settings->bUseSmartBlackList)
+		{
+			FString projectBuildRoot = FPaths::ProjectDir() + "Build";
+		
+			for (const FString& platformFolder : SelectedPlatforms)
+			{
+				for (const FString& listFile : SelectedConfigurations)
+				{
+					FString slash = FGenericPlatformMisc::GetDefaultPathSeparator();
+					FString platformPath = projectBuildRoot + slash + platformFolder + slash + listFile;
+					FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
+				}
+			}
+		}
+		else
+		{
+			FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
+		
+			FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
+			FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), NULL, NULL);
+		}
+	}
+
 	TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes /* = TArray<FName>()*/)
 	{
 		TArray<FAssetData> AllAssetData;
@@ -153,6 +191,22 @@ namespace CleanProjectOperations
 
 		return GetAllGameAssets(MapsClassFilter);
 	}
+
+	TArray<FString> GetListFromSelection(const TArray<FString>& List, const FString& Selection)
+	{
+		TArray<FString> Result;
+		if (List.Contains(Selection))
+		{
+			Result.Add(Selection);
+		}
+		else
+		{
+			Result = List;
+		}
+
+		return Result;
+	}
+
 }
 
 #undef LOCTEXT_NAMESPACE

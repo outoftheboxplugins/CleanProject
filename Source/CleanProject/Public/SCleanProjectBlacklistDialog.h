@@ -37,4 +37,6 @@ private:
 
 	TArray<TSharedPtr<FString>> ConfigurationsDisplayTexts;
 	TArray<TSharedPtr<FString>> PlatformsDisplayTexts;
+
+	TArray<FAssetData> AssetsToBlacklist;
 };
