@@ -313,7 +313,7 @@ FString SCleanProjectAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName C
 	}
 	else
 	{
-		return FString::FString("Invalid");
+		return FString("Invalid");
 	}
 }
 
