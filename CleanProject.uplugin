@@ -19,4 +19,10 @@
 			"WhitelistPlatforms": [ "Win64", "Win32", "Mac", "Linux" ]
 		}
 	]
+	"Plugins": [
+    		{
+      			"Name": "AssetManagerEditor",
+      			"Enabled": true
+    		},
+    	]
 }
