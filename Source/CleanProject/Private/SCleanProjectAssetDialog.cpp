@@ -51,6 +51,7 @@
 #include "ContentBrowser/Private/SAssetView.h"
 #include "CleanProjectGameSettings.h"
 #include "SCleanProjectBlacklistDialog.h"
+#include "CleanProjectOperations.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -390,11 +391,18 @@ void SCleanProjectAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudi
 
 void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 {
-	SCleanProjectBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
-
-	return;
+	auto Settings = GetDefault<UCleanProjectSettings>();
+	if (Settings->bShouldSkipBlacklistDialog)
+	{
+		CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, Settings->bShouldAppendDefault);
+	}
+	else
+	{
+		SCleanProjectBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
+	}
 
 	//TODO: Let the blacklist dialog take a std::function to call after completion depending on accept/cancel of the operation.
+	return;
 	RemoveFromList(AssetsToBlacklist);
 }
 

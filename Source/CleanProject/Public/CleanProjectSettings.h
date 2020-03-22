@@ -28,6 +28,12 @@ public:
 	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
 	TArray<FString> BlacklistFiles;
 
+	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
+	bool bShouldAppendDefault;
+
+	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
+	bool bShouldSkipBlacklistDialog;
+
 	UPROPERTY(EditAnywhere, config, Category = "Report")
 	TArray<FString> ReportHiddenColumns;
 };

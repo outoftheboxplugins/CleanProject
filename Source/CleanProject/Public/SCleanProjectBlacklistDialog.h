@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
+#include "SlateCore/Public/Styling/SlateTypes.h"
+
+class SCheckBox;
 
 class SCleanProjectBlacklistDialog : public SCompoundWidget
 {
@@ -26,12 +29,21 @@ public:
 
 	FText GetConfigurationText() const;
 	FText GetPlatformText() const;
+	
+	ECheckBoxState IsAppendCheckboxChcked() const;
+	ECheckBoxState IsSkipCheckboxChcked() const;
 
 	FReply OnBlacklistOk();
 	FReply OnBlacklistCancel();
 
+	void OnSkipDialogChanged(ECheckBoxState newState);
+	void OnAppendCheckboxChecked(ECheckBoxState newState);
+
 private:
 	TAttribute<TSharedPtr<SWindow>> ParentWindow;
+	TSharedPtr<SCheckBox> ToggleAppendCheckbox;
+	TSharedPtr<SCheckBox> ToggleSkipCheckbox;
+
 	FStringComboBoxPtr ConfigurationCombobox;
 	FStringComboBoxPtr PlatformCombobox;
 
@@ -39,4 +51,5 @@ private:
 	TArray<TSharedPtr<FString>> PlatformsDisplayTexts;
 
 	TArray<FAssetData> AssetsToBlacklist;
+	bool bShouldAppend;
 };

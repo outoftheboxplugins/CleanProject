@@ -27,7 +27,7 @@ namespace CleanProjectOperations
     void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies);
 
 	// Generate the blacklist for a specific platform or configuration
-	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const FString& Platform = "", const FString& Configuration = "");
+	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform = "", const FString& Configuration = "");
 
     // Returns all the assets from the project (Game folder).
     TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes = TArray<FName>());

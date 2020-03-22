@@ -57,7 +57,7 @@
 
 void SCleanProjectBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist)
 {
-	const FVector2D DEFAULT_WINDOW_SIZE = FVector2D(400, 100);
+	const FVector2D DEFAULT_WINDOW_SIZE = FVector2D(400, 150);
 
 	/** Create the window to host our package dialog widget */
 	TSharedRef< SWindow > DeleteAssetsWindow = SNew(SWindow)
@@ -77,8 +77,13 @@ void SCleanProjectBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>&
 
 void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
+	// Get info from args.
 	ParentWindow = InArgs._ParentWindow;
 	AssetsToBlacklist = AssetsToReport;
+
+	// Get info from settings.
+	auto Settings = GetDefault<UCleanProjectSettings>();
+	bShouldAppend = Settings->bShouldAppendDefault;
 
 	// Prepare the display texts for the dropdowns.
 	TSharedPtr<FString> AllConfigurations(new FString("All Configurations"));
@@ -86,8 +91,6 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 
 	ConfigurationsDisplayTexts.Add(AllConfigurations);
 	PlatformsDisplayTexts.Add(AllPlatforms);
-
-	auto Settings = GetDefault<UCleanProjectSettings>();
 
 	for (const FString& Configuration : Settings->BlacklistFiles)
 	{
@@ -100,8 +103,6 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 		TSharedPtr<FString> PlatformStr(new FString(Platform));
 		PlatformsDisplayTexts.Add(PlatformStr);
 	}
-
-	//TODO: Make an other entry for the file write options (append, override) or maybe expose the whole enum to choose from.
 
 	ChildSlot
 	[
@@ -153,8 +154,32 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 						SNew(STextBlock).Text(this, &SCleanProjectBlacklistDialog::GetConfigurationText)
 					]
 			]
+			+ SUniformGridPanel::Slot(2, 0)
+			[
+				SAssignNew(ToggleAppendCheckbox, SCheckBox)
+				.IsChecked(this, &SCleanProjectBlacklistDialog::IsAppendCheckboxChcked)
+				.OnCheckStateChanged(this, &SCleanProjectBlacklistDialog::OnAppendCheckboxChecked)
+				.ToolTipText(LOCTEXT("CleanProject_BlacklistAppendTip", "Ticking this checkbox will append the generated blacklist to the existing one instead of overridding it completly."))
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("CleanProject_BlacklistAppend", "Append?"))
+				]
+			]
 		]
 
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(4, 4)
+		[
+			SAssignNew(ToggleSkipCheckbox, SCheckBox)
+			.IsChecked(this, &SCleanProjectBlacklistDialog::IsSkipCheckboxChcked)
+			.OnCheckStateChanged(this, &SCleanProjectBlacklistDialog::OnSkipDialogChanged)
+			.ToolTipText(LOCTEXT("CleanProject_BlacklistSkipTip", "Skip this step next time and automatically generate for all configurations."))
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("CleanProject_BlacklistSkipStep", "Skip next time."))
+			]
+		]
 
 		// Buttons
 		+SVerticalBox::Slot()
@@ -209,12 +234,38 @@ FText SCleanProjectBlacklistDialog::GetPlatformText() const
 	return LOCTEXT("CleanProject_BlacklistDialogComoboboxDefault", "Select option.");
 }
 
+ECheckBoxState SCleanProjectBlacklistDialog::IsAppendCheckboxChcked() const
+{
+	if (bShouldAppend)
+	{
+		return ECheckBoxState::Checked;
+	}
+	else
+	{
+		return ECheckBoxState::Unchecked;
+	}
+}
+
+ECheckBoxState SCleanProjectBlacklistDialog::IsSkipCheckboxChcked() const
+{
+	auto Settings = GetDefault<UCleanProjectSettings>();
+
+	if (Settings->bShouldSkipBlacklistDialog)
+	{
+		return ECheckBoxState::Checked;
+	}
+	else
+	{
+		return ECheckBoxState::Unchecked;
+	}
+}
+
 FReply SCleanProjectBlacklistDialog::OnBlacklistOk()
 {
 	FString SelectedPlatform = GetPlatformText().ToString();
 	FString SelectedConfiguration = GetConfigurationText().ToString();
 
-	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, SelectedConfiguration, SelectedPlatform);
+	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, bShouldAppend, SelectedConfiguration, SelectedPlatform);
 
 	ParentWindow.Get()->RequestDestroyWindow();
 
@@ -226,6 +277,17 @@ FReply SCleanProjectBlacklistDialog::OnBlacklistCancel()
 	ParentWindow.Get()->RequestDestroyWindow();
 
 	return FReply::Handled();
+}
+
+void SCleanProjectBlacklistDialog::OnSkipDialogChanged(ECheckBoxState newState)
+{
+	auto Settings = GetMutableDefault<UCleanProjectSettings>();
+	Settings->bShouldSkipBlacklistDialog = (newState == ECheckBoxState::Checked);
+}
+
+void SCleanProjectBlacklistDialog::OnAppendCheckboxChecked(ECheckBoxState newState)
+{
+	bShouldAppend = (newState == ECheckBoxState::Checked);
 }
 
 #undef LOCTEXT_NAMESPACE
