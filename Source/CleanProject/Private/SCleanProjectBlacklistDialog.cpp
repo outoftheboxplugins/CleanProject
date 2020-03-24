@@ -52,12 +52,13 @@
 #include "ContentBrowser/Private/SAssetView.h"
 #include "CleanProjectGameSettings.h"
 #include "CleanProjectOperations.h"
+#include "SSpacer.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
 bool SCleanProjectBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist)
 {
-	const FVector2D DEFAULT_WINDOW_SIZE = FVector2D(400, 150);
+	const FVector2D DEFAULT_WINDOW_SIZE = FVector2D(400, 100);
 
 	/** Create the window to host our package dialog widget */
 	TSharedRef< SWindow > DeleteAssetsWindow = SNew(SWindow)
@@ -168,46 +169,50 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 			]
 		]
 
-		+ SVerticalBox::Slot()
-		.AutoHeight()
-		.Padding(4, 4)
-		[
-			SAssignNew(ToggleSkipCheckbox, SCheckBox)
-			.IsChecked(this, &SCleanProjectBlacklistDialog::IsSkipCheckboxChcked)
-			.OnCheckStateChanged(this, &SCleanProjectBlacklistDialog::OnSkipDialogChanged)
-			.ToolTipText(LOCTEXT("CleanProject_BlacklistSkipTip", "Skip this step next time and automatically generate for all configurations."))
-			[
-				SNew(STextBlock)
-				.Text(LOCTEXT("CleanProject_BlacklistSkipStep", "Skip next time."))
-			]
-		]
-
 		// Buttons
 		+SVerticalBox::Slot()
 		.AutoHeight()
-		.HAlign(HAlign_Right)
 		.Padding(4, 4)
 		[
-			SNew(SUniformGridPanel)
-			.SlotPadding(FEditorStyle::GetMargin("StandardDialog.SlotPadding"))
-			.MinDesiredSlotWidth(FEditorStyle::GetFloat("StandardDialog.MinDesiredSlotWidth"))
-			.MinDesiredSlotHeight(FEditorStyle::GetFloat("StandardDialog.MinDesiredSlotHeight"))
-			
-			+SUniformGridPanel::Slot(0, 0)
+			SNew(SHorizontalBox)
+			+SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+            .Padding(FEditorStyle::GetMargin("StandardDialog.SlotPadding"))
 			[
-				SNew(SButton)
-				.HAlign(HAlign_Center)
-				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCleanProjectBlacklistDialog::OnBlacklistOk)
-				.Text(LOCTEXT("CleanProject_BlacklistDialogOk", "Blacklist"))
+                SAssignNew(ToggleSkipCheckbox, SCheckBox)
+                .IsChecked(this, &SCleanProjectBlacklistDialog::IsSkipCheckboxChcked)
+				.OnCheckStateChanged(this, &SCleanProjectBlacklistDialog::OnSkipDialogChanged)
+				.ToolTipText(LOCTEXT("CleanProject_BlacklistSkipTip", "Skip this step next time and automatically generate for all configurations."))
+				[
+				    SNew(STextBlock)
+				    .Text(LOCTEXT("CleanProject_BlacklistSkipStep", "Skip next time."))
+				]
 			]
-			+SUniformGridPanel::Slot(1, 0)
+			+SHorizontalBox::Slot()
+			.FillWidth(1.0f)
 			[
-				SNew(SButton)
-				.HAlign(HAlign_Center)
-				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCleanProjectBlacklistDialog::OnBlacklistCancel)
-				.Text(LOCTEXT("CleanProject_BlacklistDialogCancel", "Cancel"))
+				SNew(SSpacer)
+			]
+			+SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			[
+                SNew(SButton)
+                .HAlign(HAlign_Center)
+                .ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+                .OnClicked(this, &SCleanProjectBlacklistDialog::OnBlacklistOk)
+                .Text(LOCTEXT("CleanProject_BlacklistDialogOk", "Blacklist"))
+			]
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			[
+                SNew(SButton)
+                .HAlign(HAlign_Center)
+                .ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+                .OnClicked(this, &SCleanProjectBlacklistDialog::OnBlacklistCancel)
+                .Text(LOCTEXT("CleanProject_BlacklistDialogCancel", "Cancel"))
 			]
 		]
 	];
