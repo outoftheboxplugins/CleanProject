@@ -21,7 +21,8 @@ public:
 
 // Interface
 public:
-	static void OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist);
+	// Returns true if the assets were successfully blacklisted. False for cancel.
+	static bool OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist);
 	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);
 
 	FText GetConfigurationText() const;
@@ -29,6 +30,9 @@ public:
 
 	FReply OnBlacklistOk();
 	FReply OnBlacklistCancel();
+
+private:
+    bool DidDeleteAssets() const { return bDidDeleteAssets; }
 
 private:
 	TAttribute<TSharedPtr<SWindow>> ParentWindow;
@@ -39,4 +43,5 @@ private:
 	TArray<TSharedPtr<FString>> PlatformsDisplayTexts;
 
 	TArray<FAssetData> AssetsToBlacklist;
+	bool bDidDeleteAssets = false;
 };

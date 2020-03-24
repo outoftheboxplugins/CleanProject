@@ -348,8 +348,7 @@ FReply SCleanProjectAssetDialog::OnAuditClicked()
 FReply SCleanProjectAssetDialog::OnBlacklistClicked()
 {
 	BlackListAssets(ReportAssets);
-	CloseDialog();
-
+	
 	return FReply::Handled();
 }
 
@@ -390,12 +389,12 @@ void SCleanProjectAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudi
 
 void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 {
-	SCleanProjectBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
+	bool bRemoveAssets = SCleanProjectBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
 
-	return;
-
-	//TODO: Let the blacklist dialog take a std::function to call after completion depending on accept/cancel of the operation.
-	RemoveFromList(AssetsToBlacklist);
+	if (bRemoveAssets)
+	{
+		RemoveFromList(AssetsToBlacklist);
+	}
 }
 
 void SCleanProjectAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)

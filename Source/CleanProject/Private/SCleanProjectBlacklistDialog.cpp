@@ -55,7 +55,7 @@
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-void SCleanProjectBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist)
+bool SCleanProjectBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist)
 {
 	const FVector2D DEFAULT_WINDOW_SIZE = FVector2D(400, 100);
 
@@ -73,6 +73,8 @@ void SCleanProjectBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>&
 
 	/** Show the package dialog window as a modal window */
 	GEditor->EditorAddModalWindow(DeleteAssetsWindow);
+
+	return DeleteDialog->DidDeleteAssets();
 }
 
 void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
@@ -211,10 +213,12 @@ FText SCleanProjectBlacklistDialog::GetPlatformText() const
 
 FReply SCleanProjectBlacklistDialog::OnBlacklistOk()
 {
+	bDidDeleteAssets = true;
+
 	FString SelectedPlatform = GetPlatformText().ToString();
 	FString SelectedConfiguration = GetConfigurationText().ToString();
 
-	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, SelectedConfiguration, SelectedPlatform);
+	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, SelectedPlatform, SelectedConfiguration);
 
 	ParentWindow.Get()->RequestDestroyWindow();
 
@@ -223,6 +227,8 @@ FReply SCleanProjectBlacklistDialog::OnBlacklistOk()
 
 FReply SCleanProjectBlacklistDialog::OnBlacklistCancel()
 {
+	bDidDeleteAssets = false;
+
 	ParentWindow.Get()->RequestDestroyWindow();
 
 	return FReply::Handled();

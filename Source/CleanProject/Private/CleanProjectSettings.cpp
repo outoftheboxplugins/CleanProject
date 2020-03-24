@@ -61,6 +61,20 @@ UCleanProjectSettings::UCleanProjectSettings()
 		"SectionsWithCollision",
 		"DefaultCollision",
 		"CollisionComplexity",
+		"CompressionRatio",
+		"Compressed",
+		"CompressedSize",
+		"FrameRate",
+		"NumFrames",
+		"Interpolation",
+		"RegargetSource",
+		"AdditiveAnimType",
+		"ImportFileFramerate",
+		"ImportResampleFramerate",
+		"bEnableRootMotion",
+		"bUseNormalizedRootMotionScale",
+		"SequenceLength",
+		"RetargetSource",
     };
 }
 
