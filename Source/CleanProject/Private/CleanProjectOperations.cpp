@@ -127,10 +127,11 @@ namespace CleanProjectOperations
 		}
 	}
 
-	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const FString& Platform /*= ""*/, const FString& Configuration /*= ""*/)
+	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform /*= ""*/, const FString& Configuration /*= ""*/)
 	{
 		auto Settings = GetDefault<UCleanProjectSettings>();
 		
+		const EFileWrite WriteFlags = bAppend ? EFileWrite::FILEWRITE_Append : EFileWrite::FILEWRITE_None;
 		TArray<FString> SelectedConfigurations = GetListFromSelection(Settings->BlacklistFiles, Configuration);
 		TArray<FString> SelectedPlatforms = GetListFromSelection(Settings->PlatformsPaths, Platform);
 		
@@ -151,7 +152,8 @@ namespace CleanProjectOperations
 				{
 					FString slash = FGenericPlatformMisc::GetDefaultPathSeparator();
 					FString platformPath = projectBuildRoot + slash + platformFolder + slash + listFile;
-					FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
+					FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect, 
+						&IFileManager::Get(), WriteFlags);
 				}
 			}
 		}
@@ -159,7 +161,8 @@ namespace CleanProjectOperations
 		{
 			FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
 		
-			FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_None);
+			FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect,
+				&IFileManager::Get(), WriteFlags);
 			FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), NULL, NULL);
 		}
 	}

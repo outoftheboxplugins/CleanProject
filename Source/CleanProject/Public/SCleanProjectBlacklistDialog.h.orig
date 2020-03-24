@@ -55,6 +55,10 @@ private:
 	TArray<TSharedPtr<FString>> PlatformsDisplayTexts;
 
 	TArray<FAssetData> AssetsToBlacklist;
+<<<<<<< HEAD
 	bool bDidDeleteAssets = false;
-	bool bShouldAppend = true;
+||||||| merged common ancestors
+=======
+	bool bShouldAppend;
+>>>>>>> ad9d25d4652f8447f6ab1a0ef58a589dbb3fdcb6
 };

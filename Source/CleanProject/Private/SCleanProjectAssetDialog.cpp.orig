@@ -390,7 +390,21 @@ void SCleanProjectAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudi
 
 void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 {
-	bool bRemoveAssets = true;
+<<<<<<< HEAD
+	bool bRemoveAssets = SCleanProjectBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
+
+	if (bRemoveAssets)
+	{
+		RemoveFromList(AssetsToBlacklist);
+	}
+||||||| merged common ancestors
+	SCleanProjectBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
+
+	return;
+
+	//TODO: Let the blacklist dialog take a std::function to call after completion depending on accept/cancel of the operation.
+	RemoveFromList(AssetsToBlacklist);
+=======
 	auto Settings = GetDefault<UCleanProjectSettings>();
 	if (Settings->bShouldSkipBlacklistDialog)
 	{
@@ -398,13 +412,13 @@ void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsTo
 	}
 	else
 	{
-		bRemoveAssets = SCleanProjectBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
+		SCleanProjectBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
 	}
 
-	if (bRemoveAssets)
-	{
-		RemoveFromList(AssetsToBlacklist);
-	}
+	//TODO: Let the blacklist dialog take a std::function to call after completion depending on accept/cancel of the operation.
+	return;
+	RemoveFromList(AssetsToBlacklist);
+>>>>>>> ad9d25d4652f8447f6ab1a0ef58a589dbb3fdcb6
 }
 
 void SCleanProjectAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)

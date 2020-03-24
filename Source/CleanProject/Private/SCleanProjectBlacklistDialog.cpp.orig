@@ -269,7 +269,13 @@ FReply SCleanProjectBlacklistDialog::OnBlacklistOk()
 	FString SelectedPlatform = GetPlatformText().ToString();
 	FString SelectedConfiguration = GetConfigurationText().ToString();
 
-	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, bShouldAppend, SelectedPlatform, SelectedConfiguration);
+<<<<<<< HEAD
+	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, SelectedPlatform, SelectedConfiguration);
+||||||| merged common ancestors
+	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, SelectedConfiguration, SelectedPlatform);
+=======
+	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, bShouldAppend, SelectedConfiguration, SelectedPlatform);
+>>>>>>> ad9d25d4652f8447f6ab1a0ef58a589dbb3fdcb6
 
 	ParentWindow.Get()->RequestDestroyWindow();
 
