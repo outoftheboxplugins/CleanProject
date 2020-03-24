@@ -56,5 +56,4 @@ private:
 
 	TArray<FAssetData> AssetsToBlacklist;
 	bool bDidDeleteAssets = false;
-	bool bShouldAppend = true;
 };

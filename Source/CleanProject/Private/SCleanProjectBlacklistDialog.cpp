@@ -85,8 +85,7 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 
 	// Get info from settings.
 	auto Settings = GetDefault<UCleanProjectSettings>();
-	bShouldAppend = Settings->bShouldAppendDefault;
-
+	
 	// Prepare the display texts for the dropdowns.
 	TSharedPtr<FString> AllConfigurations(new FString("All Configurations"));
 	TSharedPtr<FString> AllPlatforms(new FString("All Platforms"));
@@ -238,7 +237,9 @@ FText SCleanProjectBlacklistDialog::GetPlatformText() const
 
 ECheckBoxState SCleanProjectBlacklistDialog::IsAppendCheckboxChcked() const
 {
-	if (bShouldAppend)
+    auto Settings = GetDefault<UCleanProjectSettings>();
+    
+	if (Settings->bShouldAppendDefault)
 	{
 		return ECheckBoxState::Checked;
 	}
@@ -266,10 +267,11 @@ FReply SCleanProjectBlacklistDialog::OnBlacklistOk()
 {
 	bDidDeleteAssets = true;
 
+    auto Settings = GetDefault<UCleanProjectSettings>();
 	FString SelectedPlatform = GetPlatformText().ToString();
 	FString SelectedConfiguration = GetConfigurationText().ToString();
 
-	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, bShouldAppend, SelectedPlatform, SelectedConfiguration);
+	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, Settings->bShouldAppendDefault, SelectedPlatform, SelectedConfiguration);
 
 	ParentWindow.Get()->RequestDestroyWindow();
 
@@ -293,7 +295,8 @@ void SCleanProjectBlacklistDialog::OnSkipDialogChanged(ECheckBoxState newState)
 
 void SCleanProjectBlacklistDialog::OnAppendCheckboxChecked(ECheckBoxState newState)
 {
-	bShouldAppend = (newState == ECheckBoxState::Checked);
+    auto Settings = GetMutableDefault<UCleanProjectSettings>();
+    Settings->bShouldAppendDefault = (newState == ECheckBoxState::Checked);
 }
 
 #undef LOCTEXT_NAMESPACE
