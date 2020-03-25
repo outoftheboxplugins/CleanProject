@@ -10,6 +10,7 @@
 #include "CleanProjectSettings.h"
 #include "CleanProjectGameSettings.h"
 #include "Misc/FileHelper.h"
+#include "AssetToolsModule.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -167,7 +168,28 @@ namespace CleanProjectOperations
 		}
 	}
 
-	TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes /* = TArray<FName>()*/)
+    void FixUpRedirectorsInProject()
+    {
+		TArray<UObject*> AssetsToRedirect;
+		bool bLoadSuccess = LoadRedirectAssetsInProject(AssetsToRedirect);
+
+        if (bLoadSuccess)
+        {
+            // Transform Objects array to ObjectRedirectors array
+            TArray<UObjectRedirector*> Redirectors;
+            for (auto Object : AssetsToRedirect)
+            {
+                auto Redirector = CastChecked<UObjectRedirector>(Object);
+                Redirectors.Add(Redirector);
+            }
+
+            // Load the asset tools module
+            FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>(TEXT("AssetTools"));
+            AssetToolsModule.Get().FixupReferencers(Redirectors);
+        }
+    }
+
+    TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes /* = TArray<FName>()*/)
 	{
 		TArray<FAssetData> AllAssetData;
 
@@ -209,6 +231,49 @@ namespace CleanProjectOperations
 
 		return Result;
 	}
+
+    bool LoadRedirectAssetsInProject(TArray<UObject*>& Objects)
+    {
+        FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+
+        // Form a filter from the paths
+        FARFilter Filter;
+        Filter.bRecursivePaths = true;
+        {
+            Filter.PackagePaths.Emplace(TEXT("/Game"));
+            Filter.ClassNames.Emplace(TEXT("ObjectRedirector"));
+        }
+
+        // Query for a list of assets in the selected paths
+        TArray<FAssetData> AssetList;
+        AssetRegistryModule.Get().GetAssets(Filter, AssetList);
+
+        bool bAllAreLoaded = true;
+        
+		for (const auto& Asset : AssetList)
+		{
+			UObject* FoundObject = FindObject<UObject>(NULL, *Asset.ObjectPath.ToString());
+			if (FoundObject)
+			{
+				Objects.Add(FoundObject);
+			}
+			else
+			{
+				UObject* LoadedObject = LoadObject<UObject>(NULL, *Asset.ObjectPath.ToString(), NULL, LOAD_None, NULL);
+				if (LoadedObject)
+				{
+					Objects.Add(LoadedObject);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Failed to fixup redirects."));
+					bAllAreLoaded = false;
+				}
+			}
+		}
+
+		return bAllAreLoaded;
+    }
 
 }
 

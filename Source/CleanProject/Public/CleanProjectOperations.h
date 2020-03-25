@@ -14,7 +14,7 @@ namespace CleanProjectOperations
     void CheckDependenciesBasedOn(TArray<FAssetData> SelectedAssets);
 
     /*
-    * Shows all all the selected assets which are not used by any other asset in the content broweser.
+    * Shows all all the selected assets which are not used by any other asset in the content browser.
     * Assets to test: selected assets
     * Dependencies of: all game assets
     */
@@ -26,8 +26,11 @@ namespace CleanProjectOperations
     // Recursively get all the dependencies of a certain package.
     void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies);
 
-	// Generate the blacklist for a specific platform or configuration
+	// Generate the blacklist for a specific platform or configuration.
 	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform = "", const FString& Configuration = "");
+
+    // Fix up the redirectors in the whole project.
+    void FixUpRedirectorsInProject();
 
     // Returns all the assets from the project (Game folder).
     TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes = TArray<FName>());
@@ -36,5 +39,11 @@ namespace CleanProjectOperations
     TArray<FAssetData> GetAllMapAssets();
 
 	// Helpers
+
+    // Returns the selection from a list, or the whole list if selection was not found.
 	TArray<FString> GetListFromSelection(const TArray<FString>& List, const FString& Selection);
+
+    // Loads the AssetData of redirects and populates a list with the loaded objects.
+    // Returns true if all the objects were loaded successfully or false if any of them fails.
+    bool LoadRedirectAssetsInProject(TArray<UObject*>& Objects);
 }

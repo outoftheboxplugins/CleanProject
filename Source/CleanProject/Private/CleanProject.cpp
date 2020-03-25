@@ -108,10 +108,10 @@ void FCleanProjectModule::RegisterMenus()
 		FToolMenuInsert("FileLoadAndSave", EToolMenuInsertType::After));
 
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
-		"ValidateData",
+		"CleanProjectReport",
 		LOCTEXT("CleanProjectMaiMenu", "Clean your project"),
 		LOCTEXT("CleanProjectMainMenuTooltip", "Check depedencies based on all your maps."),
-		FSlateIcon(FEditorStyle::GetStyleSetName(), "DeveloperTools.MenuIcon"),
+		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([]()
 			{
 				auto Settings = GetDefault<UCleanProjectGameSettings>();
@@ -121,6 +121,17 @@ void FCleanProjectModule::RegisterMenus()
 				CleanProjectOperations::CheckDependenciesBasedOn(MapAssetDatas);
 			})
 		)));
+
+    Section.AddEntry(FToolMenuEntry::InitMenuEntry(
+		"CleanProjectRedirects",
+        LOCTEXT("CleanProjectMaiMenuRedirects", "Clean Project Redirects"),
+        LOCTEXT("CleanProjectMainMenuRedirectsTooltip", "Fix redirects in your whole project."),
+        FSlateIcon(),
+        FUIAction(FExecuteAction::CreateLambda([]()
+            {
+                CleanProjectOperations::FixUpRedirectorsInProject();
+            })
+        )));
 }
 
 TSharedRef<FExtender> FCleanProjectModule::CreateContentBrowserExtender(const TArray<FAssetData>& SelectedAssets)
