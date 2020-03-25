@@ -79,7 +79,7 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 		Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateSP(this, &SCleanProjectAssetDialog::OnRequestOpenAsset);
 		Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SCleanProjectAssetDialog::OnGetAssetContextMenu);
 		Config.SetFilterDelegates.Add(&SetFilterDelegate);
-
+		Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
 
 		Config.bFocusSearchBoxWhenOpened = false;
 		Config.bPreloadAssetsForContextMenu = false;
@@ -138,7 +138,7 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 			.Padding(FMargin(3))
 			.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
 			[
-				ContentBrowserModule.Get().CreateAssetPicker(Config)
+                ContentBrowserModule.Get().CreateAssetPicker(Config)
 			]
 		]
 
@@ -334,29 +334,25 @@ FText SCleanProjectAssetDialog::GetDiskSizeDisplayText(FAssetData& AssetData, FN
 
 FReply SCleanProjectAssetDialog::OnDeleteClicked()
 {
-	DeleteAssets(ReportAssets);
-	CloseDialog();
-
+	DeleteAssets(GetAssetsForAction());
 	return FReply::Handled();
 }
 
 FReply SCleanProjectAssetDialog::OnAuditClicked()
 {
-	AuditAssets(ReportAssets);
+	AuditAssets(GetAssetsForAction());
 	return FReply::Handled();
 }
 
 FReply SCleanProjectAssetDialog::OnBlacklistClicked()
 {
-	BlackListAssets(ReportAssets);
-	
+	BlackListAssets(GetAssetsForAction());
 	return FReply::Handled();
 }
 
 FReply SCleanProjectAssetDialog::OnCancelClicked()
 {
 	CloseDialog();
-
 	return FReply::Handled();
 }
 
@@ -442,6 +438,20 @@ void SCleanProjectAssetDialog::RemoveFromList(const TArray<FAssetData> AssetsToR
 	else
 	{
 		SetFilterDelegate.Execute(ReportAssetsFilter);
+	}
+}
+
+TArray<FAssetData> SCleanProjectAssetDialog::GetAssetsForAction() const
+{
+	TArray<FAssetData> SelectedAssets = GetCurrentSelectionDelegate.Execute();
+
+	if (SelectedAssets.Num())
+	{
+		return SelectedAssets;
+	}
+	else
+	{
+		return ReportAssets;
 	}
 }
 

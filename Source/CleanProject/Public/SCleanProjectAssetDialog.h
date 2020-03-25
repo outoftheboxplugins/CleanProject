@@ -47,10 +47,14 @@ private:
 	void WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist);
 	void RemoveFromList(const TArray<FAssetData> AssetsToRemove);
 
+	TArray<FAssetData> GetAssetsForAction() const;
+
 // Internal state
 private:
 	TArray<FAssetData> ReportAssets;
 
-	FSetARFilterDelegate SetFilterDelegate;
 	FARFilter ReportAssetsFilter;
+
+	FSetARFilterDelegate SetFilterDelegate;
+	FGetCurrentSelectionDelegate GetCurrentSelectionDelegate;
 };
