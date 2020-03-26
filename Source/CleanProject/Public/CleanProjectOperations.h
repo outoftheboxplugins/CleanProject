@@ -32,6 +32,9 @@ namespace CleanProjectOperations
     // Fix up the redirectors in the whole project.
     void FixUpRedirectorsInProject();
 
+    // Delete all the empty folders of the project.
+    void DeleteEmptyProjectFolders();
+
     // Returns all the assets from the project (Game folder).
     TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes = TArray<FName>());
 
@@ -46,4 +49,6 @@ namespace CleanProjectOperations
     // Loads the AssetData of redirects and populates a list with the loaded objects.
     // Returns true if all the objects were loaded successfully or false if any of them fails.
     bool LoadRedirectAssetsInProject(TArray<UObject*>& Objects);
+
+    void GetEmptyFolderInPath(const FString& BaseDirectory, TArray<FString>& OutEmptyFolders);
 }

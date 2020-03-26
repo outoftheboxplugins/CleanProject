@@ -11,6 +11,7 @@
 #include "CleanProjectGameSettings.h"
 #include "Misc/FileHelper.h"
 #include "AssetToolsModule.h"
+#include "FileManager.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -189,6 +190,17 @@ namespace CleanProjectOperations
         }
     }
 
+    void DeleteEmptyProjectFolders()
+    {
+		TArray<FString> EmptyFoldersFound;
+		GetEmptyFolderInPath(FPaths::ProjectContentDir(), EmptyFoldersFound);
+
+		for (const FString& Folder : EmptyFoldersFound)
+		{
+			IFileManager::Get().DeleteDirectory(*Folder, false, true);
+		}
+    }
+
     TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes /* = TArray<FName>()*/)
 	{
 		TArray<FAssetData> AllAssetData;
@@ -275,6 +287,43 @@ namespace CleanProjectOperations
 		return bAllAreLoaded;
     }
 
+    void GetEmptyFolderInPath(const FString& BaseDirectory, TArray<FString>& OutEmptyFolders)
+    {
+        struct FEmptyFolderVisitor : public IPlatformFile::FDirectoryVisitor
+        {
+			TArray<FString>& EmptyFolders;
+			const FString& CurrentDirectory;
+            bool bIsEmpty;
+
+            FEmptyFolderVisitor(TArray<FString>& InEmptyFolders, const FString& InCurrentDirectory)
+                : EmptyFolders(InEmptyFolders)
+				, CurrentDirectory(InCurrentDirectory)
+				, bIsEmpty(true)
+            {
+            }
+
+            virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory) override
+            {
+				if (bIsDirectory)
+				{
+					FString DirectoryName(FilenameOrDirectory);
+					EmptyFolders.Add(DirectoryName);
+
+					GetEmptyFolderInPath(DirectoryName, EmptyFolders);
+				}
+				else
+				{
+					EmptyFolders.Remove(CurrentDirectory);
+                    bIsEmpty = false;
+				}
+
+                return true;
+            }
+        };
+
+		FEmptyFolderVisitor EmptyFolderVisitor(OutEmptyFolders, BaseDirectory);
+        IFileManager::Get().IterateDirectoryRecursively(*BaseDirectory, EmptyFolderVisitor);
+    }
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -109,7 +109,7 @@ void FCleanProjectModule::RegisterMenus()
 
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
 		"CleanProjectReport",
-		LOCTEXT("CleanProjectMaiMenu", "Clean your project"),
+		LOCTEXT("CleanProjectMaiMenu", "Cleanup unused assets"),
 		LOCTEXT("CleanProjectMainMenuTooltip", "Check depedencies based on all your maps."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([]()
@@ -124,12 +124,23 @@ void FCleanProjectModule::RegisterMenus()
 
     Section.AddEntry(FToolMenuEntry::InitMenuEntry(
 		"CleanProjectRedirects",
-        LOCTEXT("CleanProjectMaiMenuRedirects", "Clean Project Redirects"),
+        LOCTEXT("CleanProjectMaiMenuRedirects", "Cleanup Redirects"),
         LOCTEXT("CleanProjectMainMenuRedirectsTooltip", "Fix redirects in your whole project."),
         FSlateIcon(),
         FUIAction(FExecuteAction::CreateLambda([]()
             {
                 CleanProjectOperations::FixUpRedirectorsInProject();
+            })
+        )));
+	
+	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
+		"CleanProjectFolders",
+        LOCTEXT("CleanProjectMaiMenuFolders", "Cleanup empty folders"),
+        LOCTEXT("CleanProjectMainMenuFolderstip", "Delete all the empty folders from your project."),
+        FSlateIcon(),
+        FUIAction(FExecuteAction::CreateLambda([]()
+            {
+                CleanProjectOperations::DeleteEmptyProjectFolders();
             })
         )));
 }
