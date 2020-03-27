@@ -28,7 +28,6 @@
 #include "GameFramework/HUD.h"
 
 #include "Framework/Application/SlateApplication.h"
-#include "ToolMenus.h"
 #include "EditorStyleSet.h"
 #include "AssetRegistryModule.h"
 #include "Misc/MessageDialog.h"
@@ -45,6 +44,13 @@
 #include "CleanProjectGameSettings.h"
 
 #define LOCTEXT_NAMESPACE "FCleanProjectModule"
+
+
+#ifdef CLEANPROJECT_COMPATIBILITY
+
+#include "ToolMenus.h
+
+#endif // CLEANPROJECT_COMPATIBILITY
 
 namespace
 {
@@ -95,20 +101,51 @@ void FCleanProjectModule::ShutdownModule()
 		SettingsModule->UnregisterSettings(SettingsGameContainer, SettingsGameCategory, SettingsGameSection);
 	}
 
+#ifdef CLEANPROJECT_COMPATIBILITY
+
 	// Unregister main menu dropdown entry.
 	UToolMenus::UnregisterOwner(this);
+#else
+    FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>("LevelEditor");
+    if (LevelEditorModule)
+    {
+        LevelEditorModule->GetMenuExtensibilityManager()->RemoveExtender(MenuExtender);
+    }
+    MenuExtender = nullptr;
+
+#endif // CLEANPROJECT_COMPATIBILITY
 }
+
+#ifdef CLEANPROJECT_COMPATIBILITY
+	#define BEGIN_MENU_ENTRY(x) Section.AddEntry(FToolMenuEntry::InitMenuEntry(x,
+#else
+	#define BEGIN_MENU_ENTRY(x) MenuBuilder.AddMenuEntry(
+#endif // CLEANPROJECT_COMPATIBILITY
+
+#ifdef CLEANPROJECT_COMPATIBILITY
+	#define END_MENU_ENTRY )));
+#else
+	#define END_MENU_ENTRY ));
+#endif // CLEANPROJECT_COMPATIBILITY
+
 
 void FCleanProjectModule::RegisterMenus()
 {
+
+#ifdef CLEANPROJECT_COMPATIBILITY
 	FToolMenuOwnerScoped OwnerScoped(this);
 	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.File");
 	FToolMenuSection& Section = Menu->AddSection("Plugins",
 		LOCTEXT("CleanProjectSection", "Plugins"),
 		FToolMenuInsert("FileLoadAndSave", EToolMenuInsertType::After));
+#else
+    MenuExtender = MakeShareable(new FExtender);
+    MenuExtender->AddMenuExtension("FileLoadAndSave", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateLambda([](FMenuBuilder& MenuBuilder)
+        {
+            MenuBuilder.BeginSection("CleanProject", LOCTEXT("CleanProjectSection", "Plugins"));
+#endif
 
-	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
-		"CleanProjectReport",
+    BEGIN_MENU_ENTRY("CleanProjectReport")
 		LOCTEXT("CleanProjectMaiMenu", "Cleanup unused assets"),
 		LOCTEXT("CleanProjectMainMenuTooltip", "Check depedencies based on all your maps."),
 		FSlateIcon(),
@@ -120,10 +157,11 @@ void FCleanProjectModule::RegisterMenus()
 				TArray<FAssetData> MapAssetDatas = checkMaps ? CleanProjectOperations::GetAllMapAssets() : TArray<FAssetData>();
 				CleanProjectOperations::CheckDependenciesBasedOn(MapAssetDatas);
 			})
-		)));
 
-    Section.AddEntry(FToolMenuEntry::InitMenuEntry(
-		"CleanProjectRedirects",
+	END_MENU_ENTRY
+
+
+	BEGIN_MENU_ENTRY("CleanProjectRedirects")
         LOCTEXT("CleanProjectMaiMenuRedirects", "Cleanup Redirects"),
         LOCTEXT("CleanProjectMainMenuRedirectsTooltip", "Fix redirects in your whole project."),
         FSlateIcon(),
@@ -131,10 +169,9 @@ void FCleanProjectModule::RegisterMenus()
             {
                 CleanProjectOperations::FixUpRedirectorsInProject();
             })
-        )));
+	END_MENU_ENTRY
 	
-	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
-		"CleanProjectFolders",
+	BEGIN_MENU_ENTRY("CleanProjectFolders")
         LOCTEXT("CleanProjectMaiMenuFolders", "Cleanup empty folders"),
         LOCTEXT("CleanProjectMainMenuFolderstip", "Delete all the empty folders from your project."),
         FSlateIcon(),
@@ -142,7 +179,16 @@ void FCleanProjectModule::RegisterMenus()
             {
                 CleanProjectOperations::DeleteEmptyProjectFolders();
             })
-        )));
+	END_MENU_ENTRY
+
+#ifndef CLEANPROJECT_COMPATIBILITY
+
+			MenuBuilder.EndSection();
+		}));
+    
+	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+    LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
+#endif
 }
 
 TSharedRef<FExtender> FCleanProjectModule::CreateContentBrowserExtender(const TArray<FAssetData>& SelectedAssets)

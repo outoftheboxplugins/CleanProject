@@ -44,7 +44,6 @@
 #include "Framework/Application/SlateApplication.h"
 #include "DragAndDrop/AssetDragDropOp.h"
 #include "Blueprint/BlueprintSupport.h"
-#include "Subsystems/AssetEditorSubsystem.h"
 #include "Editor.h"
 #include "ContentBrowser/Private/SAssetDialog.h"
 #include "ContentBrowser/Private/SAssetPicker.h"
@@ -52,6 +51,14 @@
 #include "CleanProjectGameSettings.h"
 #include "SCleanProjectBlacklistDialog.h"
 #include "CleanProjectOperations.h"
+#include "CleanProject.h"
+
+#ifdef CLEANPROJECT_COMPATIBILITY
+
+#include "Subsystems/AssetEditorSubsystem.h"
+
+#endif // CLEANPROJECT_COMPATIBILITY
+
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -188,7 +195,9 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 		]
 	];
 
+#ifdef CLEANPROJECT_COMPATIBILITY
 	ManagerEditorModule.RefreshRegistryData();
+#endif // CLEANPROJECT_COMPATIBILITY
 }
 
 void SCleanProjectAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsToReport)
@@ -284,11 +293,21 @@ void SCleanProjectAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData) c
 	TArray<FName> AssetNames;
 	AssetNames.Add(AssetData.ObjectPath);
 
+#ifdef CLEANPROJECT_COMPATIBILITY
+
 	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorsForAssets(AssetNames);
+
+#endif // CLEANPROJECT_COMPATIBILITY
+
 }
 
 int64 SCleanProjectAssetDialog::GetAssetDiskSize(const FAssetData& Asset) const
 {
+	if (Asset.GetPackage() == nullptr)
+	{
+		return 0;
+	}
+
 	FName packageName = FName(*Asset.GetPackage()->GetName());
 
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));

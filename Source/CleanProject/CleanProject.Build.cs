@@ -37,7 +37,6 @@ public class CleanProject : ModuleRules
 					"AssetManagerEditor"
 			});
 
-
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
@@ -55,7 +54,7 @@ public class CleanProject : ModuleRules
                 "UnrealEd",
                 "Projects",
                 "MainFrame",
-				"ToolMenus",
+				//"ToolMenus",
 
 				// ... add private dependencies that you statically link with here ...	
 			}

@@ -9,6 +9,13 @@
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "AssetData.h"
 
+#include "Runtime/Launch/Resources/Version.h"
+
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 24
+	#define CLEANPROJECT_COMPATIBILITY 
+#endif
+
+
 /**
  * Implements the CleanProjectEditor module.
  */
@@ -27,4 +34,9 @@ private:
 	// Content browser action
 	void CreateContentBrowserEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
 	TSharedRef<FExtender> CreateContentBrowserExtender(const TArray<FAssetData>& SelectedAssets);
+
+private:
+#ifndef CLEANPROJECT_COMPATIBILITY
+    TSharedPtr<FExtender> MenuExtender;
+#endif
 };

@@ -45,7 +45,6 @@
 #include "Framework/Application/SlateApplication.h"
 #include "DragAndDrop/AssetDragDropOp.h"
 #include "Blueprint/BlueprintSupport.h"
-#include "Subsystems/AssetEditorSubsystem.h"
 #include "Editor.h"
 #include "ContentBrowser/Private/SAssetDialog.h"
 #include "ContentBrowser/Private/SAssetPicker.h"
@@ -53,6 +52,14 @@
 #include "CleanProjectGameSettings.h"
 #include "CleanProjectOperations.h"
 #include "SSpacer.h"
+#include "CleanProject.h"
+
+#ifdef CLEANPROJECT_COMPATIBILITY
+
+#include "Subsystems/AssetEditorSubsystem.h"
+
+#endif // CLEANPROJECT_COMPATIBILITY
+
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
