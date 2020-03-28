@@ -51,7 +51,7 @@
 #include "ContentBrowser/Private/SAssetView.h"
 #include "CleanProjectGameSettings.h"
 #include "CleanProjectOperations.h"
-#include "SSpacer.h"
+#include "Widgets/Layout/SSpacer.h"
 #include "CleanProject.h"
 
 #ifdef CLEANPROJECT_COMPATIBILITY
