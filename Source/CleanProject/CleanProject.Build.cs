@@ -6,8 +6,8 @@ public class CleanProject : ModuleRules
 {
 	public CleanProject(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
 		PublicIncludePaths.AddRange(
 			new string[] {
                 "Developer/AssetTools/Private",
