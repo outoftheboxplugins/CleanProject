@@ -36,7 +36,5 @@ private:
 	TSharedRef<FExtender> CreateContentBrowserExtender(const TArray<FAssetData>& SelectedAssets);
 
 private:
-#ifndef CLEANPROJECT_COMPATIBILITY
     TSharedPtr<FExtender> MenuExtender;
-#endif
 };

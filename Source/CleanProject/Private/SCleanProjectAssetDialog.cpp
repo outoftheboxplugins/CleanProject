@@ -383,8 +383,12 @@ void SCleanProjectAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDel
 		ObjectsToDelete.Add(AssetData.GetAsset());
 	}
 
-	RemoveFromList(AssetsToDelete);
-	ObjectTools::DeleteObjects(ObjectsToDelete);
+	int32 NumAssetsDeleted = ObjectTools::DeleteObjects(ObjectsToDelete);
+
+	if (NumAssetsDeleted > 0)
+	{
+		RemoveFromList(AssetsToDelete);
+	}
 }
 
 void SCleanProjectAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudit)
