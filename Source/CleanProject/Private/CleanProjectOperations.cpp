@@ -11,7 +11,7 @@
 #include "CleanProjectGameSettings.h"
 #include "Misc/FileHelper.h"
 #include "AssetToolsModule.h"
-#include "FileManager.h"
+#include "HAL/FileManager.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
