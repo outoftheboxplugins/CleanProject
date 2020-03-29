@@ -54,13 +54,6 @@
 #include "Widgets/Layout/SSpacer.h"
 #include "CleanProject.h"
 
-#ifdef CLEANPROJECT_COMPATIBILITY
-
-#include "Subsystems/AssetEditorSubsystem.h"
-
-#endif // CLEANPROJECT_COMPATIBILITY
-
-
 #define LOCTEXT_NAMESPACE "CleanProject"
 
 bool SCleanProjectBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist)

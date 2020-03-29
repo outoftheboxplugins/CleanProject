@@ -53,13 +53,6 @@
 #include "CleanProjectOperations.h"
 #include "CleanProject.h"
 
-#ifdef CLEANPROJECT_COMPATIBILITY
-
-#include "Subsystems/AssetEditorSubsystem.h"
-
-#endif // CLEANPROJECT_COMPATIBILITY
-
-
 #define LOCTEXT_NAMESPACE "CleanProject"
 
 void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
@@ -291,14 +284,10 @@ TSharedPtr<SWidget> SCleanProjectAssetDialog::OnGetAssetContextMenu(const TArray
 void SCleanProjectAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData) const
 {
 	TArray<FName> AssetNames;
-	AssetNames.Add(AssetData.ObjectPath);
+	AssetNames.Add(AssetData.PackageName);
 
-#ifdef CLEANPROJECT_COMPATIBILITY
-
-	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorsForAssets(AssetNames);
-
-#endif // CLEANPROJECT_COMPATIBILITY
-
+    IAssetManagerEditorModule& ManagerEditorModule = IAssetManagerEditorModule::Get();
+	ManagerEditorModule.OpenReferenceViewerUI(AssetNames);
 }
 
 int64 SCleanProjectAssetDialog::GetAssetDiskSize(const FAssetData& Asset) const
