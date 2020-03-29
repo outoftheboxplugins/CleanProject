@@ -11,11 +11,6 @@
 
 #include "Runtime/Launch/Resources/Version.h"
 
-#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 24
-	#define CLEANPROJECT_COMPATIBILITY 
-#endif
-
-
 /**
  * Implements the CleanProjectEditor module.
  */

@@ -187,10 +187,6 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 			]
 		]
 	];
-
-#ifdef CLEANPROJECT_COMPATIBILITY
-	ManagerEditorModule.RefreshRegistryData();
-#endif // CLEANPROJECT_COMPATIBILITY
 }
 
 void SCleanProjectAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsToReport)
