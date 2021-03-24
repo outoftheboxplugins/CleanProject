@@ -19,6 +19,9 @@ private:
 	void RegisterMenus();
 	void UnregisterMenus();
 
+	void RegisterSettings();
+	void UnregisterSettings();
+
 private:
 	TSharedPtr<FExtender> MenuExtender;
 };

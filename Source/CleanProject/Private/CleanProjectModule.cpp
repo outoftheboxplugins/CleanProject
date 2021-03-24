@@ -70,7 +70,7 @@ void FCleanProjectModule::StartupModule()
 	LOG_TRACE();
 
 	RegisterMenus();
-
+	RegisterSettings();
 
 
 
@@ -82,7 +82,48 @@ void FCleanProjectModule::StartupModule()
 	CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::CreateContentBrowserExtender));
 	FDelegateHandle ContentBrowserAssetExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
 	
-	// Register the settings entry.
+	*/
+}
+
+void FCleanProjectModule::ShutdownModule()
+{
+	LOG_TRACE();
+
+	UnregisterSettings();
+	UnregisterMenus();
+
+	/*
+	// Unregister the settings entry.
+	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+	{
+		SettingsModule->UnregisterSettings(SettingsContainer, SettingsCategory, SettingsSection);
+		SettingsModule->UnregisterSettings(SettingsGameContainer, SettingsGameCategory, SettingsGameSection);
+	}
+	*/
+}
+
+void FCleanProjectModule::RegisterMenus()
+{
+	MenuExtender = CPMenuExtensions::CreateMenuExtender();
+
+	if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>("LevelEditor"))
+	{
+	    LevelEditorModule->GetMenuExtensibilityManager()->AddExtender(MenuExtender);
+	}
+}
+
+void FCleanProjectModule::UnregisterMenus()
+{
+	if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>("LevelEditor"))
+	{
+		LevelEditorModule->GetMenuExtensibilityManager()->RemoveExtender(MenuExtender);
+	}
+
+	MenuExtender = nullptr;
+}
+
+void FCleanProjectModule::RegisterSettings()
+{
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
 		SettingsModule->RegisterSettings(SettingsContainer, SettingsCategory, SettingsSection,
@@ -95,41 +136,9 @@ void FCleanProjectModule::StartupModule()
 			LOCTEXT("CleanProjectSettingsDescription", "Cleanup and project management improvements."),
 			GetMutableDefault<UCleanProjectGameSettings>());
 	}
-	*/
 }
 
-void FCleanProjectModule::ShutdownModule()
-{
-	LOG_TRACE();
-
-	UnregisterMenus();
-
-	/*
-	// Unregister the settings entry.
-	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
-	{
-		SettingsModule->UnregisterSettings(SettingsContainer, SettingsCategory, SettingsSection);
-		SettingsModule->UnregisterSettings(SettingsGameContainer, SettingsGameCategory, SettingsGameSection);
-	}
-
-    FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>("LevelEditor");
-    if (LevelEditorModule)
-    {
-        LevelEditorModule->GetMenuExtensibilityManager()->RemoveExtender(MenuExtender);
-    }
-    MenuExtender = nullptr;
-	*/
-}
-
-void FCleanProjectModule::RegisterMenus()
-{
-	MenuExtender = CPMenuExtensions::CreateMenuExtender();
-
-	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
-    LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
-}
-
-void FCleanProjectModule::UnregisterMenus()
+void FCleanProjectModule::UnregisterSettings()
 {
 
 }
