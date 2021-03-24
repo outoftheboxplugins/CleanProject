@@ -1,8 +1,8 @@
 // Copyright Out-of-the-Box Plugins 2018-2019. All Rights Reserved.
 
-#include "CleanProjectSettings.h"
+#include "CPEditorSettings.h"
 
-UCleanProjectSettings::UCleanProjectSettings()
+UCPEditorSettings::UCPEditorSettings()
 {
     PlatformsPaths = 
     { 

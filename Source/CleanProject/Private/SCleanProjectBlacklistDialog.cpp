@@ -10,7 +10,6 @@
 #include "Slate/Public/Widgets/Text/STextBlock.h"
 #include "EditorStyle/Public/EditorStyleSet.h"
 #include "UnrealEd/Public/ObjectTools.h"
-#include "CleanProjectSettings.h"
 #include "Misc/FileHelper.h"
 #include "AssetManagerEditorModule.h"
 #include "IAssetRegistry.h"
@@ -49,7 +48,6 @@
 #include "ContentBrowser/Private/SAssetDialog.h"
 #include "ContentBrowser/Private/SAssetPicker.h"
 #include "ContentBrowser/Private/SAssetView.h"
-#include "CleanProjectGameSettings.h"
 #include "CPOperations.h"
 #include "Widgets/Layout/SSpacer.h"
 #include "CleanProjectModule.h"
@@ -85,7 +83,7 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 	AssetsToBlacklist = AssetsToReport;
 
 	// Get info from settings.
-	auto Settings = GetDefault<UCleanProjectSettings>();
+	auto Settings = GetDefault<UCPEditorSettings>();
 	
 	// Prepare the display texts for the dropdowns.
 	TSharedPtr<FString> AllConfigurations(new FString("All Configurations"));
@@ -242,7 +240,7 @@ FText SCleanProjectBlacklistDialog::GetPlatformText() const
 
 ECheckBoxState SCleanProjectBlacklistDialog::IsAppendCheckboxChcked() const
 {
-    auto Settings = GetDefault<UCleanProjectSettings>();
+    auto Settings = GetDefault<UCPEditorSettings>();
     
 	if (Settings->bShouldAppendDefault)
 	{
@@ -256,7 +254,7 @@ ECheckBoxState SCleanProjectBlacklistDialog::IsAppendCheckboxChcked() const
 
 ECheckBoxState SCleanProjectBlacklistDialog::IsSkipCheckboxChcked() const
 {
-	auto Settings = GetDefault<UCleanProjectSettings>();
+	auto Settings = GetDefault<UCPEditorSettings>();
 
 	if (Settings->bShouldSkipBlacklistDialog)
 	{
@@ -272,7 +270,7 @@ FReply SCleanProjectBlacklistDialog::OnBlacklistOk()
 {
 	bDidDeleteAssets = true;
 
-    auto Settings = GetDefault<UCleanProjectSettings>();
+    auto Settings = GetDefault<UCPEditorSettings>();
 	FString SelectedPlatform = GetPlatformText().ToString();
 	FString SelectedConfiguration = GetConfigurationText().ToString();
 
@@ -294,13 +292,13 @@ FReply SCleanProjectBlacklistDialog::OnBlacklistCancel()
 
 void SCleanProjectBlacklistDialog::OnSkipDialogChanged(ECheckBoxState newState)
 {
-	auto Settings = GetMutableDefault<UCleanProjectSettings>();
+	auto Settings = GetMutableDefault<UCPEditorSettings>();
 	Settings->bShouldSkipBlacklistDialog = (newState == ECheckBoxState::Checked);
 }
 
 void SCleanProjectBlacklistDialog::OnAppendCheckboxChecked(ECheckBoxState newState)
 {
-    auto Settings = GetMutableDefault<UCleanProjectSettings>();
+    auto Settings = GetMutableDefault<UCPEditorSettings>();
     Settings->bShouldAppendDefault = (newState == ECheckBoxState::Checked);
 }
 

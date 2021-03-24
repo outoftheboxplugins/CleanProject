@@ -5,19 +5,19 @@
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
 #include "AssetData.h"
-#include "CleanProjectGameSettings.generated.h"
+#include "CPProjectSettings.generated.h"
 
 /**
  * Holds the configurable settings for the Clean Project
  */
 
 UCLASS(config = Engine, defaultconfig)
-class UCleanProjectGameSettings : public UObject
+class UCPProjectSettings : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	UCleanProjectGameSettings();
+	UCPProjectSettings();
 
 public:
 	void WhitelistAsset(const FAssetData& Asset);

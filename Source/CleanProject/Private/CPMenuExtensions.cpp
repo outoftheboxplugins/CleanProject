@@ -6,11 +6,16 @@
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
+namespace
+{
+	const FName MainMenuExtensionHook = FName("FileLoadAndSave");
+}
+
 TSharedPtr<FExtender> CPMenuExtensions::CreateMenuExtender()
 {
 	TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender);
 
-	MenuExtender->AddMenuExtension("FileLoadAndSave", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateStatic(CPMenuExtensions::AddMenuExtension));
+	MenuExtender->AddMenuExtension(MainMenuExtensionHook, EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateStatic(CPMenuExtensions::AddMenuExtension));
 
 	return MenuExtender;
 }
@@ -25,7 +30,7 @@ void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([]()
 			{
-				auto Settings = GetDefault<UCleanProjectGameSettings>();
+				auto Settings = GetDefault<UCPProjectSettings>();
 				bool checkMaps = Settings->bCheckAllMapsRefernece;
 
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* with CheckMaps: %s"), (checkMaps ? "enabled" : "disabled"));

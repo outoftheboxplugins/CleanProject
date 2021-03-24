@@ -4,19 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
-#include "CleanProjectSettings.generated.h"
+#include "CPEditorSettings.generated.h"
 
 /**
  * Holds the configurable settings for the Clean Project
  */
 
 UCLASS(config = Editor)
-class UCleanProjectSettings : public UObject
+class UCPEditorSettings : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	UCleanProjectSettings();
+	UCPEditorSettings();
 
 	// Outputs the blacklist result to a intermediate file instead of creating them directly.
 	UPROPERTY(EditAnywhere, config, Category = "Blacklist")

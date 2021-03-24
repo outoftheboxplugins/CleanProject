@@ -7,8 +7,6 @@
 #include "Core/Public/Misc/MessageDialog.h"
 #include "Engine/World.h"
 #include "SCleanProjectAssetDialog.h"
-#include "CleanProjectSettings.h"
-#include "CleanProjectGameSettings.h"
 #include "Misc/FileHelper.h"
 #include "AssetToolsModule.h"
 #include "HAL/FileManager.h"
@@ -36,7 +34,7 @@ namespace CPOperations
 
 	void CheckDependenciesInternal(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest)
 	{
-		auto Settings = GetDefault<UCleanProjectGameSettings>();
+		auto Settings = GetDefault<UCPProjectSettings>();
 
 		for (const FName& WhitelistAssetPath : Settings->WhitelistAssetsPaths)
 		{
@@ -131,7 +129,7 @@ namespace CPOperations
 
 	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform /*= ""*/, const FString& Configuration /*= ""*/)
 	{
-		auto Settings = GetDefault<UCleanProjectSettings>();
+		auto Settings = GetDefault<UCPEditorSettings>();
 		
 		const EFileWrite WriteFlags = bAppend ? EFileWrite::FILEWRITE_Append : EFileWrite::FILEWRITE_None;
 		TArray<FString> SelectedConfigurations = GetListFromSelection(Settings->BlacklistFiles, Configuration);

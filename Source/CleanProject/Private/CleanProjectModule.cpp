@@ -11,9 +11,9 @@
 #include "AssetRegistryModule.h"
 #include "AssetRegistryModule.h"
 #include "AssetTools/Private/SPackageReportDialog.h"
-#include "CleanProjectGameSettings.h"
+#include "CPEditorSettings.h"
+#include "CPProjectSettings.h"
 #include "CPOperations.h"
-#include "CleanProjectSettings.h"
 #include "Containers/Array.h"
 #include "ContentBrowserDelegates.h"
 #include "ContentBrowserModule.h"
@@ -50,20 +50,16 @@
 #include "UObject/SoftObjectPath.h"
 #include "UnrealEd/Public/ObjectTools.h"
 
-/*
+
 namespace
 {
-	const FName SettingsContainer	= FName("Editor");
-	const FName SettingsCategory	= FName("Plugins");
-	const FName SettingsSection		= FName("Clean Project");
+	const FName SettingsEditorContainer		= FName("Editor");
+	const FName SettingsProjectContainer	= FName("Project");
 	
-	const FName SettingsGameContainer	= FName("Project");
-	const FName SettingsGameCategory	= FName("Plugins");
-	const FName SettingsGameSection		= FName("Clean Project");
-
-	const FName MainMenuExtensionHook = FName("FileLoadSave");
+	const FName SettingsCategory			= FName("Plugins");
+	const FName SettingsSection				= FName("Clean Project");
 }
-*/
+
 
 void FCleanProjectModule::StartupModule()
 {
@@ -91,15 +87,6 @@ void FCleanProjectModule::ShutdownModule()
 
 	UnregisterSettings();
 	UnregisterMenus();
-
-	/*
-	// Unregister the settings entry.
-	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
-	{
-		SettingsModule->UnregisterSettings(SettingsContainer, SettingsCategory, SettingsSection);
-		SettingsModule->UnregisterSettings(SettingsGameContainer, SettingsGameCategory, SettingsGameSection);
-	}
-	*/
 }
 
 void FCleanProjectModule::RegisterMenus()
@@ -126,21 +113,25 @@ void FCleanProjectModule::RegisterSettings()
 {
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
-		SettingsModule->RegisterSettings(SettingsContainer, SettingsCategory, SettingsSection,
-			LOCTEXT("CleanProjectSettings", "Clean Project"),
-			LOCTEXT("CleanProjectSettingsDescription", "Cleanup and project management improvements."),
-			GetMutableDefault<UCleanProjectSettings>());
+		SettingsModule->RegisterSettings(SettingsEditorContainer, SettingsCategory, SettingsSection,
+			NSLOCTEXT("CleanProject", "SettingsName", "Clean Project"),
+			NSLOCTEXT("CleanProject", "ettingsDescription", "Cleanup and project management improvements."),
+			GetMutableDefault<UCPEditorSettings>());
 
-		SettingsModule->RegisterSettings(SettingsGameContainer, SettingsGameCategory, SettingsGameSection,
-			LOCTEXT("CleanProjectSettings", "Clean Project"),
-			LOCTEXT("CleanProjectSettingsDescription", "Cleanup and project management improvements."),
-			GetMutableDefault<UCleanProjectGameSettings>());
+		SettingsModule->RegisterSettings(SettingsProjectContainer, SettingsCategory, SettingsSection,
+			NSLOCTEXT("CleanProject", "SettingsName", "Clean Project"),
+			NSLOCTEXT("CleanProject", "ettingsDescription", "Cleanup and project management improvements."),
+			GetMutableDefault<UCPProjectSettings>());
 	}
 }
 
 void FCleanProjectModule::UnregisterSettings()
 {
-
+	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+	{
+		SettingsModule->UnregisterSettings(SettingsEditorContainer, SettingsCategory, SettingsSection);
+		SettingsModule->UnregisterSettings(SettingsProjectContainer, SettingsCategory, SettingsSection);
+	}
 }
 
 /*

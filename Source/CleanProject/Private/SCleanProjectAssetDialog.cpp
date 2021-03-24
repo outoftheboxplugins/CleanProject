@@ -9,7 +9,6 @@
 #include "Slate/Public/Widgets/Text/STextBlock.h"
 #include "EditorStyle/Public/EditorStyleSet.h"
 #include "UnrealEd/Public/ObjectTools.h"
-#include "CleanProjectSettings.h"
 #include "Misc/FileHelper.h"
 #include "AssetManagerEditorModule.h"
 #include "IAssetRegistry.h"
@@ -48,7 +47,6 @@
 #include "ContentBrowser/Private/SAssetDialog.h"
 #include "ContentBrowser/Private/SAssetPicker.h"
 #include "ContentBrowser/Private/SAssetView.h"
-#include "CleanProjectGameSettings.h"
 #include "SCleanProjectBlacklistDialog.h"
 #include "CPOperations.h"
 #include "CleanProjectModule.h"
@@ -85,7 +83,7 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 		Config.bPreloadAssetsForContextMenu = false;
 
 		// Hide path and type by default
-		auto Settings = GetDefault<UCleanProjectSettings>();
+		auto Settings = GetDefault<UCPEditorSettings>();
 		Config.HiddenColumnNames.Append(Settings->ReportHiddenColumns);
 		
 		// Add custom columns
@@ -395,7 +393,7 @@ void SCleanProjectAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudi
 void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 {
 	bool bRemoveAssets = true;
-	auto Settings = GetDefault<UCleanProjectSettings>();
+	auto Settings = GetDefault<UCPEditorSettings>();
 	if (Settings->bShouldSkipBlacklistDialog)
 	{
 		CPOperations::GenerateBlacklist(AssetsToBlacklist, Settings->bShouldAppendDefault);
@@ -413,7 +411,7 @@ void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsTo
 
 void SCleanProjectAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)
 {
-	auto Settings = GetMutableDefault<UCleanProjectGameSettings>();
+	auto Settings = GetMutableDefault<UCPProjectSettings>();
 	Settings->WhitelistAssetes(AssetsToWhitelist);
 
 	RemoveFromList(AssetsToWhitelist);
