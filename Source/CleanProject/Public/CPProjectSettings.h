@@ -23,8 +23,8 @@ public:
 	void WhitelistAsset(const FAssetData& Asset);
 	void WhitelistAsset(const FName& AssetPath);
 
-	void WhitelistAssetes(const TArray<FAssetData> Assets);
-	void WhitelistAssetes(const TArray<FName> AssetPaths);
+	void WhitelistAssets(const TArray<FAssetData> Assets);
+	void WhitelistAssets(const TArray<FName> AssetPaths);
 
 public:
 	// Assets inside the whitelist are always considered referenced.

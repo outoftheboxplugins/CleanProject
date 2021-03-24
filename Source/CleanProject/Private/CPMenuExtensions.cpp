@@ -35,7 +35,7 @@ void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
 				auto Settings = GetDefault<UCPProjectSettings>();
 				bool checkMaps = Settings->bCheckAllMapsRefernece;
 
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* with CheckMaps: %s"), (checkMaps ? "enabled" : "disabled"));
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* with CheckMaps: %s from menu."), (checkMaps ? "enabled" : "disabled"));
 
 				TArray<FAssetData> MapAssetDatas = checkMaps ? CPOperations::GetAllMapAssets() : TArray<FAssetData>();
 				CPOperations::CheckDependenciesBasedOn(MapAssetDatas);
@@ -49,7 +49,7 @@ void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects*"));
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects* from menu."));
 
 				CPOperations::FixUpRedirectorsInProject();
 			})
@@ -61,7 +61,7 @@ void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders*"));
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from menu."));
 
 				CPOperations::DeleteEmptyProjectFolders();
 			})
@@ -84,40 +84,45 @@ TSharedRef<FExtender> CPMenuExtensions::CreateContentBrowserExtender(const TArra
 
 void CPMenuExtensions::CreateContentBrowserEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets)
 {
-	MenuBuilder.BeginSection(TEXT("CleanProject_ContentBrowserSection"),
-		LOCTEXT("CleanProject_ContentBrowserSection", "Clean Project"));
+	MenuBuilder.BeginSection("CleanProject", LOCTEXT("ContentBrowserSection", "Clean Project"));
 
 	MenuBuilder.AddMenuEntry
 	(
-		LOCTEXT("CleanProject_ContentBrowserBasedTitle", "Check unused assets based on selected"),
-		LOCTEXT("CleanProject_ContentBrowserBasedTooltip", "Returns all the assets not used by the selected assets."),
+		LOCTEXT("ContentBrowserUnusedAssets", "Check unused assets based on selected"),
+		LOCTEXT("ContentBrowserUnusedAssetsTooltip", "Returns all the assets not used by the selected assets."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
 			{
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* from selected assets."));
+
 				CPOperations::CheckDependenciesBasedOn(SelectedAssets);
 			})
 		));
 
 	MenuBuilder.AddMenuEntry
 	(
-		LOCTEXT("CleanProject_ContentBrowserForTitle", "Check if selected assets are unused"),
-		LOCTEXT("CleanProject_ContentBrowserForTooltip", "Returns the unused assets from the list of selected assets based on the dependencies of all."),
+		LOCTEXT("ContentBrowserCheckUnused", "Check if selected assets are unused"),
+		LOCTEXT("ContentBrowserCheckUnusedTooltip", "Returns the unused assets from the list of selected assets based on the dependencies of all."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
 			{
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets* from selected assets."));
+
 				CPOperations::CheckDependenciesOf(SelectedAssets);
 			})
 		));
 
 	MenuBuilder.AddMenuEntry
 	(
-		LOCTEXT("CleanProject_ContentBrowserWhitelistTitle", "Whitelist selected assets"),
-		LOCTEXT("CleanProject_ContentBrowserWhitelistTooltip", "Add the selected assets to the whitelist."),
+		LOCTEXT("ContentBrowserWhitelistAssets", "Whitelist selected assets"),
+		LOCTEXT("ContentBrowserWhitelistAssetsTooltip", "Add the selected assets to the whitelist."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
 			{
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Whitelist Assets* from selected assets."));
+
 				auto Settings = GetMutableDefault<UCPProjectSettings>();
-				Settings->WhitelistAssetes(SelectedAssets);
+				Settings->WhitelistAssets(SelectedAssets);
 			})
 		));
 

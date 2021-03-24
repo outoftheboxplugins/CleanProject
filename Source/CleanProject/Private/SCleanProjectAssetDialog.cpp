@@ -412,7 +412,7 @@ void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsTo
 void SCleanProjectAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)
 {
 	auto Settings = GetMutableDefault<UCPProjectSettings>();
-	Settings->WhitelistAssetes(AssetsToWhitelist);
+	Settings->WhitelistAssets(AssetsToWhitelist);
 
 	RemoveFromList(AssetsToWhitelist);
 }

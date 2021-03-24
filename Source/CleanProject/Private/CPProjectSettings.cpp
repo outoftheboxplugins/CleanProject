@@ -15,7 +15,7 @@ void UCPProjectSettings::WhitelistAsset(const FName& AssetPath)
 	WhitelistAssetsPaths.Add(AssetPath);
 }
 
-void UCPProjectSettings::WhitelistAssetes(const TArray<FAssetData> Assets)
+void UCPProjectSettings::WhitelistAssets(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
 	{
@@ -23,7 +23,7 @@ void UCPProjectSettings::WhitelistAssetes(const TArray<FAssetData> Assets)
 	}
 }
 
-void UCPProjectSettings::WhitelistAssetes(const TArray<FName> AssetPaths)
+void UCPProjectSettings::WhitelistAssets(const TArray<FName> AssetPaths)
 {
 	for (const FName& AssetPath : AssetPaths)
 	{
