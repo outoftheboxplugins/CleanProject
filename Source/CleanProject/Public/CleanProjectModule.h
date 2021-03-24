@@ -22,15 +22,12 @@ private:
 	void RegisterSettings();
 	void UnregisterSettings();
 
+	void RegisterAssetActions();
+	void UnregisterAssetActions();
+
 private:
 	TSharedPtr<FExtender> MenuExtender;
+	FDelegateHandle CBExtenderDelegateHandle;
 };
 
 IMPLEMENT_MODULE(FCleanProjectModule, CleanProject);
-
-/*	
-	// Content browser action
-	void CreateContentBrowserEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
-	TSharedRef<FExtender> CreateContentBrowserExtender(const TArray<FAssetData>& SelectedAssets);
-};
-*/

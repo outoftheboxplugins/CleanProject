@@ -50,16 +50,13 @@
 #include "UObject/SoftObjectPath.h"
 #include "UnrealEd/Public/ObjectTools.h"
 
-
 namespace
 {
 	const FName SettingsEditorContainer		= FName("Editor");
-	const FName SettingsProjectContainer	= FName("Project");
-	
+	const FName SettingsProjectContainer	= FName("Project");	
 	const FName SettingsCategory			= FName("Plugins");
 	const FName SettingsSection				= FName("Clean Project");
 }
-
 
 void FCleanProjectModule::StartupModule()
 {
@@ -67,24 +64,14 @@ void FCleanProjectModule::StartupModule()
 
 	RegisterMenus();
 	RegisterSettings();
-
-
-
-	/*
-	// Register content browser right-click
-	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
-	TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuExtenderDelegates = ContentBrowserModule.GetAllAssetViewContextMenuExtenders();
-
-	CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::CreateContentBrowserExtender));
-	FDelegateHandle ContentBrowserAssetExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
-	
-	*/
+	RegisterAssetActions();
 }
 
 void FCleanProjectModule::ShutdownModule()
 {
 	LOG_TRACE();
 
+	UnregisterAssetActions();
 	UnregisterSettings();
 	UnregisterMenus();
 }
@@ -134,61 +121,22 @@ void FCleanProjectModule::UnregisterSettings()
 	}
 }
 
-/*
-TSharedRef<FExtender> FCleanProjectModule::CreateContentBrowserExtender(const TArray<FAssetData>& SelectedAssets)
+void FCleanProjectModule::RegisterAssetActions()
 {
-	TSharedRef<FExtender> ContentBrowserExtender = MakeShareable(new FExtender);
-	ContentBrowserExtender->AddMenuExtension(
-		"AssetContextAdvancedActions",
-		EExtensionHook::After,
-		nullptr,
-		FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateContentBrowserEntry, SelectedAssets));
-
-	return ContentBrowserExtender;
+	if (FContentBrowserModule* ContentBrowserModule = FModuleManager::GetModulePtr<FContentBrowserModule>(TEXT("ContentBrowser")))
+	{
+		TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuExtenderDelegates = ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
+		CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateStatic(CPMenuExtensions::CreateContentBrowserExtender));
+		CBExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
+	}
 }
 
-void FCleanProjectModule::CreateContentBrowserEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets)
+void FCleanProjectModule::UnregisterAssetActions()
 {
-	MenuBuilder.BeginSection(TEXT("CleanProject_ContentBrowserSection"),
-		LOCTEXT("CleanProject_ContentBrowserSection", "Clean Project"));
-
-	MenuBuilder.AddMenuEntry
-	(
-		LOCTEXT("CleanProject_ContentBrowserBasedTitle", "Check unused assets based on selected"),
-		LOCTEXT("CleanProject_ContentBrowserBasedTooltip", "Returns all the assets not used by the selected assets."),
-		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]() 
-			{ 
-				CleanProjectOperations::CheckDependenciesBasedOn(SelectedAssets); 
-			})
-	));
-
-	MenuBuilder.AddMenuEntry
-	(
-		LOCTEXT("CleanProject_ContentBrowserForTitle", "Check if selected assets are unused"),
-		LOCTEXT("CleanProject_ContentBrowserForTooltip", "Returns the unused assets from the list of selected assets based on the dependencies of all."),
-		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
-			{
-				CleanProjectOperations::CheckDependenciesOf(SelectedAssets);
-			})
-	));
-
-	MenuBuilder.AddMenuEntry
-	(
-		LOCTEXT("CleanProject_ContentBrowserWhitelistTitle", "Whitelist selected assets"),
-		LOCTEXT("CleanProject_ContentBrowserWhitelistTooltip", "Add the selected assets to the whitelist."),
-		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
-			{
-				auto Settings = GetMutableDefault<UCleanProjectGameSettings>();
-				Settings->WhitelistAssetes(SelectedAssets);
-			})
-	));
-
-	MenuBuilder.EndSection();
+	if (FContentBrowserModule* ContentBrowserModule = FModuleManager::GetModulePtr<FContentBrowserModule>(TEXT("ContentBrowser")))
+	{
+		TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuExtenderDelegates = ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
+		CBAssetMenuExtenderDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedAssets& Delegate) { return Delegate.GetHandle() == CBExtenderDelegateHandle; });
+	}
 }
-
-*/
-
 #undef LOCTEXT_NAMESPACE
