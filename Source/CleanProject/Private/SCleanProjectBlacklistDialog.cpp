@@ -52,7 +52,7 @@
 #include "CleanProjectGameSettings.h"
 #include "CleanProjectOperations.h"
 #include "Widgets/Layout/SSpacer.h"
-#include "CleanProject.h"
+#include "CleanProjectModule.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 

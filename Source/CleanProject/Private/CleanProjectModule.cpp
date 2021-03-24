@@ -1,50 +1,56 @@
-// Copyright Out-of-the-Box Plugins 2018-2019. All Rights Reserved.
+// Copyright Out-of-the-Box Plugins 2018-2020. All Rights Reserved.
 
-#include "CleanProject.h"
+#include "CleanProjectModule.h"
 
+#include "CPMenuExtensions.h"
+#include "CPLog.h"
+
+
+// Unsorted includes.
+#include "AssetData.h"
+#include "AssetRegistryModule.h"
+#include "AssetRegistryModule.h"
+#include "AssetTools/Private/SPackageReportDialog.h"
+#include "CleanProjectGameSettings.h"
+#include "CleanProjectOperations.h"
+#include "CleanProjectSettings.h"
 #include "Containers/Array.h"
+#include "ContentBrowserDelegates.h"
+#include "ContentBrowserModule.h"
+#include "ContentBrowserModule.h"
+#include "CoreMinimal.h"
+#include "Developer/AssetTools/Public/AssetToolsModule.h"
+#include "Developer/AssetTools/Public/IAssetTools.h"
+#include "Editor/LevelEditor/Public/LevelEditor.h"
+#include "EditorStyleSet.h"
+#include "EditorStyleSet.h"
+#include "EngineUtils.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Framework/MultiBox/MultiBoxExtender.h"
+#include "GameFramework/HUD.h"
 #include "ISettingsModule.h"
 #include "ISettingsSection.h"
-#include "Modules/ModuleInterface.h"
-#include "Modules/ModuleManager.h"
-#include "Templates/SharedPointer.h"
-#include "Toolkits/AssetEditorToolkit.h"
-
-#include "ContentBrowserModule.h"
-#include "Editor/LevelEditor/Public/LevelEditor.h"
-#include "Developer/AssetTools/Public/IAssetTools.h"
-#include "Developer/AssetTools/Public/AssetToolsModule.h"
-#include "Misc/ScopedSlowTask.h"
-#include "AssetRegistryModule.h"
-#include "Misc/MessageDialog.h"
-#include "EngineUtils.h"
-#include "UnrealEd/Public/ObjectTools.h"
-#include "EditorStyleSet.h"
-#include "AssetTools/Private/SPackageReportDialog.h"
-#include "Misc/Paths.h"
-
-#include "UObject/Object.h"
-#include "UObject/SoftObjectPath.h"
-#include "GameFramework/HUD.h"
-
-#include "Framework/Application/SlateApplication.h"
-#include "EditorStyleSet.h"
-#include "AssetRegistryModule.h"
-#include "Misc/MessageDialog.h"
 #include "LevelEditor.h"
 #include "Misc/FeedbackContext.h"
+#include "Misc/MessageDialog.h"
+#include "Misc/MessageDialog.h"
 #include "Misc/OutputDeviceConsole.h"
+#include "Misc/Paths.h"
+#include "Misc/ScopedSlowTask.h"
+#include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
+#include "Modules/ModuleManager.h"
+#include "Modules/ModuleManager.h"
+#include "Runtime/Launch/Resources/Version.h"
+#include "Templates/SharedPointer.h"
+#include "Templates/SharedPointer.h"
+#include "Toolkits/AssetEditorToolkit.h"
+#include "UObject/Object.h"
+#include "UObject/SoftObjectPath.h"
+#include "UnrealEd/Public/ObjectTools.h"
 
-#include "ContentBrowserModule.h"
-#include "ContentBrowserDelegates.h"
-
-#include "CleanProjectSettings.h"
-#include "CleanProjectOperations.h"
-#include "CleanProjectGameSettings.h"
-
-#define LOCTEXT_NAMESPACE "FCleanProjectModule"
-
+/*
 namespace
 {
 	const FName SettingsContainer	= FName("Editor");
@@ -57,9 +63,18 @@ namespace
 
 	const FName MainMenuExtensionHook = FName("FileLoadSave");
 }
+*/
 
 void FCleanProjectModule::StartupModule()
 {
+	LOG_TRACE();
+
+	RegisterMenus();
+
+
+
+
+	/*
 	// Register content browser right-click
 	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
 	TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuExtenderDelegates = ContentBrowserModule.GetAllAssetViewContextMenuExtenders();
@@ -67,9 +82,6 @@ void FCleanProjectModule::StartupModule()
 	CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::CreateContentBrowserExtender));
 	FDelegateHandle ContentBrowserAssetExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
 	
-	// Hook the extender to the editor module.
-	FCoreDelegates::OnPostEngineInit.AddRaw(this, &FCleanProjectModule::RegisterMenus);
-
 	// Register the settings entry.
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
@@ -83,10 +95,16 @@ void FCleanProjectModule::StartupModule()
 			LOCTEXT("CleanProjectSettingsDescription", "Cleanup and project management improvements."),
 			GetMutableDefault<UCleanProjectGameSettings>());
 	}
+	*/
 }
 
 void FCleanProjectModule::ShutdownModule()
 {
+	LOG_TRACE();
+
+	UnregisterMenus();
+
+	/*
 	// Unregister the settings entry.
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
@@ -100,58 +118,23 @@ void FCleanProjectModule::ShutdownModule()
         LevelEditorModule->GetMenuExtensibilityManager()->RemoveExtender(MenuExtender);
     }
     MenuExtender = nullptr;
+	*/
 }
 
 void FCleanProjectModule::RegisterMenus()
 {
-    MenuExtender = MakeShareable(new FExtender);
-    MenuExtender->AddMenuExtension("FileLoadAndSave", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateLambda([](FMenuBuilder& MenuBuilder)
-        {
-            MenuBuilder.BeginSection("CleanProject", LOCTEXT("CleanProjectSection", "Plugins"));
+	MenuExtender = CPMenuExtensions::CreateMenuExtender();
 
-    MenuBuilder.AddMenuEntry(
-		LOCTEXT("CleanProjectMaiMenu", "Cleanup unused assets"),
-		LOCTEXT("CleanProjectMainMenuTooltip", "Check depedencies based on all your maps."),
-		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateLambda([]()
-			{
-				auto Settings = GetDefault<UCleanProjectGameSettings>();
-				bool checkMaps = Settings->bCheckAllMapsRefernece;
-
-				TArray<FAssetData> MapAssetDatas = checkMaps ? CleanProjectOperations::GetAllMapAssets() : TArray<FAssetData>();
-				CleanProjectOperations::CheckDependenciesBasedOn(MapAssetDatas);
-			})
-
-	));
-
-
-	MenuBuilder.AddMenuEntry(
-        LOCTEXT("CleanProjectMaiMenuRedirects", "Cleanup Redirects"),
-        LOCTEXT("CleanProjectMainMenuRedirectsTooltip", "Fix redirects in your whole project."),
-        FSlateIcon(),
-        FUIAction(FExecuteAction::CreateLambda([]()
-            {
-                CleanProjectOperations::FixUpRedirectorsInProject();
-            })
-	));
-	
-	MenuBuilder.AddMenuEntry(
-        LOCTEXT("CleanProjectMaiMenuFolders", "Cleanup empty folders"),
-        LOCTEXT("CleanProjectMainMenuFolderstip", "Delete all the empty folders from your project."),
-        FSlateIcon(),
-        FUIAction(FExecuteAction::CreateLambda([]()
-            {
-                CleanProjectOperations::DeleteEmptyProjectFolders();
-            })
-	));
-
-			MenuBuilder.EndSection();
-		}));
-    
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
     LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
 }
 
+void FCleanProjectModule::UnregisterMenus()
+{
+
+}
+
+/*
 TSharedRef<FExtender> FCleanProjectModule::CreateContentBrowserExtender(const TArray<FAssetData>& SelectedAssets)
 {
 	TSharedRef<FExtender> ContentBrowserExtender = MakeShareable(new FExtender);
@@ -206,6 +189,6 @@ void FCleanProjectModule::CreateContentBrowserEntry(FMenuBuilder& MenuBuilder, T
 	MenuBuilder.EndSection();
 }
 
-#undef LOCTEXT_NAMESPACE
+*/
 
-IMPLEMENT_MODULE(FCleanProjectModule, CleanProject)
+#undef LOCTEXT_NAMESPACE

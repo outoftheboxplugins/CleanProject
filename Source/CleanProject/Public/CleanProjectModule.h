@@ -1,35 +1,33 @@
-// Copyright Out-of-the-Box Plugins 2018-2019. All Rights Reserved.
+// Copyright Out-of-the-Box Plugins 2018-2020. All Rights Reserved.
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
-#include "Templates/SharedPointer.h"
-#include "Framework/MultiBox/MultiBoxExtender.h"
-#include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "AssetData.h"
-
-#include "Runtime/Launch/Resources/Version.h"
 
 /**
- * Implements the CleanProjectEditor module.
+ * Implements the CleanProject editor module.
  */
 class FCleanProjectModule : public IModuleInterface
 {
-
-//~ IModuleInterface interface
-public:	
+	// IModuleInterface interface
+public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+	// Register & Unregister
 private:
-	// Main menu
 	void RegisterMenus();
+	void UnregisterMenus();
 
+private:
+	TSharedPtr<FExtender> MenuExtender;
+};
+
+IMPLEMENT_MODULE(FCleanProjectModule, CleanProject);
+
+/*	
 	// Content browser action
 	void CreateContentBrowserEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
 	TSharedRef<FExtender> CreateContentBrowserExtender(const TArray<FAssetData>& SelectedAssets);
-
-private:
-    TSharedPtr<FExtender> MenuExtender;
 };
+*/

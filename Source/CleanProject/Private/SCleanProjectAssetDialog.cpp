@@ -51,7 +51,7 @@
 #include "CleanProjectGameSettings.h"
 #include "SCleanProjectBlacklistDialog.h"
 #include "CleanProjectOperations.h"
-#include "CleanProject.h"
+#include "CleanProjectModule.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
