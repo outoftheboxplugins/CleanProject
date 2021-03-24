@@ -1,6 +1,6 @@
 // Copyright Out-of-the-Box Plugins 2018-2019. All Rights Reserved.
 
-#include "CleanProjectOperations.h"
+#include "CPOperations.h"
 
 #include "AssetRegistryModule.h"
 #include "Core/Public/Misc/ScopedSlowTask.h"
@@ -15,7 +15,7 @@
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-namespace CleanProjectOperations
+namespace CPOperations
 {
 	void CheckDependenciesBasedOn(TArray<FAssetData> SelectedAssets)
 	{

@@ -12,7 +12,7 @@
 #include "AssetRegistryModule.h"
 #include "AssetTools/Private/SPackageReportDialog.h"
 #include "CleanProjectGameSettings.h"
-#include "CleanProjectOperations.h"
+#include "CPOperations.h"
 #include "CleanProjectSettings.h"
 #include "Containers/Array.h"
 #include "ContentBrowserDelegates.h"

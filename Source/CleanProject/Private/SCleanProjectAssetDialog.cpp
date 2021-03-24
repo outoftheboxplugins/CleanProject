@@ -50,7 +50,7 @@
 #include "ContentBrowser/Private/SAssetView.h"
 #include "CleanProjectGameSettings.h"
 #include "SCleanProjectBlacklistDialog.h"
-#include "CleanProjectOperations.h"
+#include "CPOperations.h"
 #include "CleanProjectModule.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
@@ -398,7 +398,7 @@ void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsTo
 	auto Settings = GetDefault<UCleanProjectSettings>();
 	if (Settings->bShouldSkipBlacklistDialog)
 	{
-		CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, Settings->bShouldAppendDefault);
+		CPOperations::GenerateBlacklist(AssetsToBlacklist, Settings->bShouldAppendDefault);
 	}
 	else
 	{

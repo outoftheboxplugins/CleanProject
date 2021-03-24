@@ -50,7 +50,7 @@
 #include "ContentBrowser/Private/SAssetPicker.h"
 #include "ContentBrowser/Private/SAssetView.h"
 #include "CleanProjectGameSettings.h"
-#include "CleanProjectOperations.h"
+#include "CPOperations.h"
 #include "Widgets/Layout/SSpacer.h"
 #include "CleanProjectModule.h"
 
@@ -276,7 +276,7 @@ FReply SCleanProjectBlacklistDialog::OnBlacklistOk()
 	FString SelectedPlatform = GetPlatformText().ToString();
 	FString SelectedConfiguration = GetConfigurationText().ToString();
 
-	CleanProjectOperations::GenerateBlacklist(AssetsToBlacklist, Settings->bShouldAppendDefault, SelectedPlatform, SelectedConfiguration);
+	CPOperations::GenerateBlacklist(AssetsToBlacklist, Settings->bShouldAppendDefault, SelectedPlatform, SelectedConfiguration);
 
 	ParentWindow.Get()->RequestDestroyWindow();
 

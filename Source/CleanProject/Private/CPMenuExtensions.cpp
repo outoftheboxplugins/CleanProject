@@ -28,8 +28,8 @@ void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
 				auto Settings = GetDefault<UCleanProjectGameSettings>();
 				bool checkMaps = Settings->bCheckAllMapsRefernece;
 
-				TArray<FAssetData> MapAssetDatas = checkMaps ? CleanProjectOperations::GetAllMapAssets() : TArray<FAssetData>();
-				CleanProjectOperations::CheckDependenciesBasedOn(MapAssetDatas);
+				TArray<FAssetData> MapAssetDatas = checkMaps ? CPOperations::GetAllMapAssets() : TArray<FAssetData>();
+				CPOperations::CheckDependenciesBasedOn(MapAssetDatas);
 			})
 
 		));
@@ -40,7 +40,7 @@ void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([]()
 			{
-				CleanProjectOperations::FixUpRedirectorsInProject();
+				CPOperations::FixUpRedirectorsInProject();
 			})
 		));
 
@@ -50,7 +50,7 @@ void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([]()
 			{
-				CleanProjectOperations::DeleteEmptyProjectFolders();
+				CPOperations::DeleteEmptyProjectFolders();
 			})
 		));
 

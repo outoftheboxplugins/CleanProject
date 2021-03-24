@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-namespace CleanProjectOperations
+namespace CPOperations
 {
     /*
     * Shows all other assets from the content browser which are not used by the selected assets or their dependencies.
