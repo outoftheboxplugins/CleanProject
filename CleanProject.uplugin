@@ -1,16 +1,16 @@
 {
 	"FileVersion": 3,
-	"VersionName" : "versionplugin",
-	"EngineVersion" : "versionengine",
+	"VersionName": "2.3",
+	"EngineVersion": "4.26",
 	"FriendlyName": "Clean Project",
 	"Description": "Keep your project organized all the time while improving productivity and reduce packing size.",
 	"Category": "Editor",
-	"CreatedBy" : "Out-of-the-Box Plugis",
-	"CreatedByURL" : "https://outofthebox-plugins.com",
-	"DocsURL" : "https://bitbucket.org/pasotee-marketplace/cleanproject/wiki/Home",
+	"CreatedBy": "Out-of-the-Box Plugins",
+	"CreatedByURL": "https://outofthebox-plugins.com",
+	"DocsURL": "https://bitbucket.org/pasotee-marketplace/cleanproject/wiki/Home",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/13d45e838b954d67b9d5d01fa82635d9",
-	"SupportURL" : "https://outofthebox-plugins.com/pages/about",
-	"EnabledByDefault" : true,
+	"SupportURL": "https://outofthebox-plugins.com/pages/about",
+	"EnabledByDefault": true,
 	"Modules": [
 		{
 			"Name": "CleanProject",
@@ -20,9 +20,9 @@
 		}
 	],
 	"Plugins": [
-    		{
-      			"Name": "AssetManagerEditor",
-      			"Enabled": true
-    		}
-    	]
+		{
+			"Name": "AssetManagerEditor",
+			"Enabled": true
+		}
+	]
 }
