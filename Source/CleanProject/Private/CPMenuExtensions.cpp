@@ -2,6 +2,8 @@
 
 #include "CPMenuExtensions.h"
 
+#include "CPOperations.h"
+
 #include "Framework/MultiBox/MultiBoxExtender.h" // for FExtender
 
 #define LOCTEXT_NAMESPACE "CleanProject"

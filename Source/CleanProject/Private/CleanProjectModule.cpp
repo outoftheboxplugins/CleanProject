@@ -2,53 +2,14 @@
 
 #include "CleanProjectModule.h"
 
-#include "CPMenuExtensions.h"
-#include "CPLog.h"
-
-
-// Unsorted includes.
-#include "AssetData.h"
-#include "AssetRegistryModule.h"
-#include "AssetRegistryModule.h"
-#include "AssetTools/Private/SPackageReportDialog.h"
 #include "CPEditorSettings.h"
+#include "CPLog.h"
+#include "CPMenuExtensions.h"
 #include "CPProjectSettings.h"
-#include "CPOperations.h"
-#include "Containers/Array.h"
-#include "ContentBrowserDelegates.h"
+
 #include "ContentBrowserModule.h"
-#include "ContentBrowserModule.h"
-#include "CoreMinimal.h"
-#include "Developer/AssetTools/Public/AssetToolsModule.h"
-#include "Developer/AssetTools/Public/IAssetTools.h"
-#include "Editor/LevelEditor/Public/LevelEditor.h"
-#include "EditorStyleSet.h"
-#include "EditorStyleSet.h"
-#include "EngineUtils.h"
-#include "Framework/Application/SlateApplication.h"
-#include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "Framework/MultiBox/MultiBoxExtender.h"
-#include "GameFramework/HUD.h"
 #include "ISettingsModule.h"
-#include "ISettingsSection.h"
 #include "LevelEditor.h"
-#include "Misc/FeedbackContext.h"
-#include "Misc/MessageDialog.h"
-#include "Misc/MessageDialog.h"
-#include "Misc/OutputDeviceConsole.h"
-#include "Misc/Paths.h"
-#include "Misc/ScopedSlowTask.h"
-#include "Modules/ModuleInterface.h"
-#include "Modules/ModuleManager.h"
-#include "Modules/ModuleManager.h"
-#include "Modules/ModuleManager.h"
-#include "Runtime/Launch/Resources/Version.h"
-#include "Templates/SharedPointer.h"
-#include "Templates/SharedPointer.h"
-#include "Toolkits/AssetEditorToolkit.h"
-#include "UObject/Object.h"
-#include "UObject/SoftObjectPath.h"
-#include "UnrealEd/Public/ObjectTools.h"
 
 namespace
 {
@@ -139,4 +100,3 @@ void FCleanProjectModule::UnregisterAssetActions()
 		CBAssetMenuExtenderDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedAssets& Delegate) { return Delegate.GetHandle() == CBExtenderDelegateHandle; });
 	}
 }
-#undef LOCTEXT_NAMESPACE
