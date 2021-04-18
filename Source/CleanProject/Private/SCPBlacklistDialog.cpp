@@ -1,80 +1,6 @@
 // Copyright Out-of-the-Box Plugins 2018-2019. All Rights Reserved.
 
-
-#include "SCPBlacklistDialog.h"
-
-#include "Interfaces/IMainFrameModule.h"
-#include "Framework/Application/SlateApplication.h"
-#include "Slate/Public/Widgets/Layout/SUniformGridPanel.h"
-#include "Slate/Public/Widgets/Input/SButton.h"
-#include "Slate/Public/Widgets/Text/STextBlock.h"
-#include "EditorStyle/Public/EditorStyleSet.h"
-#include "UnrealEd/Public/ObjectTools.h"
-#include "Misc/FileHelper.h"
-#include "AssetManagerEditorModule.h"
-#include "IAssetRegistry.h"
-#include "AssetRegistry/Public/AssetRegistryModule.h"
-
-#include "Framework/Commands/UIAction.h"
-#include "Framework/Commands/UICommandList.h"
-#include "Widgets/Layout/SBorder.h"
-#include "Widgets/SBoxPanel.h"
-#include "Widgets/Text/STextBlock.h"
-#include "Widgets/Input/SMenuAnchor.h"
-#include "Framework/MultiBox/MultiBoxBuilder.h"
-
-#include "EditorStyleSet.h"
-#include "Widgets/Layout/SBox.h"
-#include "Widgets/Input/SButton.h"
-#include "Widgets/SViewport.h"
-#include "FileHelpers.h"
-#include "ARFilter.h"
-#include "ClassViewerModule.h"
-#include "ClassViewerFilter.h"
-#include "IContentBrowserSingleton.h"
-#include "ContentBrowserModule.h"
-#include "AssetRegistryModule.h"
-#include "Toolkits/GlobalEditorCommonCommands.h"
-#include "FrontendFilterBase.h"
-#include "Slate/SceneViewport.h"
-#include "ObjectEditorUtils.h"
-#include "Engine/AssetManager.h"
-#include "Engine/BlueprintCore.h"
-#include "Widgets/Input/SComboBox.h"
-#include "Framework/Application/SlateApplication.h"
-#include "DragAndDrop/AssetDragDropOp.h"
-#include "Blueprint/BlueprintSupport.h"
-#include "Editor.h"
-#include "ContentBrowser/Private/SAssetDialog.h"
-#include "ContentBrowser/Private/SAssetPicker.h"
-#include "ContentBrowser/Private/SAssetView.h"
-#include "CPOperations.h"
-#include "Widgets/Layout/SSpacer.h"
-#include "CleanProjectModule.h"
-
 #define LOCTEXT_NAMESPACE "CleanProject"
-
-bool SCPBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist)
-{
-	const FVector2D DEFAULT_WINDOW_SIZE = FVector2D(400, 100);
-
-	/** Create the window to host our package dialog widget */
-	TSharedRef< SWindow > DeleteAssetsWindow = SNew(SWindow)
-		.Title(LOCTEXT("CleanProject_BlacklistDialogTitle", "Clean Project Blacklist"))
-		.ClientSize(DEFAULT_WINDOW_SIZE);
-
-	/** Set the content of the window to our package dialog widget */
-	TSharedRef< SCPBlacklistDialog > DeleteDialog =
-		SNew(SCPBlacklistDialog, AssetsToBlacklist)
-		.ParentWindow(DeleteAssetsWindow);
-
-	DeleteAssetsWindow->SetContent(DeleteDialog);
-
-	/** Show the package dialog window as a modal window */
-	GEditor->EditorAddModalWindow(DeleteAssetsWindow);
-
-	return DeleteDialog->DidDeleteAssets();
-}
 
 void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
@@ -84,40 +10,23 @@ void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAsset
 
 	// Get info from settings.
 	auto Settings = GetDefault<UCPEditorSettings>();
-	
-	// Prepare the display texts for the dropdowns.
-	TSharedPtr<FString> AllConfigurations(new FString("All Configurations"));
-	TSharedPtr<FString> AllPlatforms(new FString("All Platforms"));
 
-	ConfigurationsDisplayTexts.Add(AllConfigurations);
-	PlatformsDisplayTexts.Add(AllPlatforms);
-
-	for (const FString& Configuration : Settings->BlacklistFiles)
-	{
-		TSharedPtr<FString> ConfigurationStr(new FString(Configuration));
-		ConfigurationsDisplayTexts.Add(ConfigurationStr);
-	}
-
-	for (const FString& Platform : Settings->PlatformsPaths)
-	{
-		TSharedPtr<FString> PlatformStr(new FString(Platform));
-		PlatformsDisplayTexts.Add(PlatformStr);
-	}
+	PrepareComboTexts(ConfigurationsDisplayTexts, FString("All Configurations"), Settings->BlacklistFiles);
+	PrepareComboTexts(PlatformsDisplayTexts, FString("All Platforms"), Settings->PlatformsPaths);
 
 	ChildSlot
 	[
 		SNew(SVerticalBox)
-
-		+ SVerticalBox::Slot()
+		+SVerticalBox::Slot()
 		.AutoHeight()
 		.Padding(4, 4)
 		[
 			SNew(STextBlock)
-			.Text(LOCTEXT("CleanProject_BlacklistDialogSubtitle", "Choose how to blacklist the selected assets."))
+			.Text(LOCTEXT("BlacklistDialogSubtitle", "Choose how to blacklist the selected assets."))
 			.TextStyle(FEditorStyle::Get(), "PackageMigration.DialogTitle")
 		]
 		
-		+ SVerticalBox::Slot()
+		+SVerticalBox::Slot()
 		.AutoHeight()
 		.Padding(4, 4)
 		[
@@ -126,12 +35,12 @@ void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAsset
 			.MinDesiredSlotWidth(FEditorStyle::GetFloat("StandardDialog.MinDesiredSlotWidth"))
 			.MinDesiredSlotHeight(FEditorStyle::GetFloat("StandardDialog.MinDesiredSlotHeight"))
 
-			+ SUniformGridPanel::Slot(0, 0)
+			+SUniformGridPanel::Slot(0, 0)
 			[
-				SAssignNew(PlatformCombobox, SComboBox<TSharedPtr<FString>>)
+				SAssignNew(PlatformCombobox, SComboBox<FStringPtr>)
 				.OptionsSource(&PlatformsDisplayTexts)
 				.InitiallySelectedItem(PlatformsDisplayTexts[0])
-				.OnGenerateWidget_Lambda([](TSharedPtr<FString> Item)
+				.OnGenerateWidget_Lambda([](FStringPtr Item)
 					{
 						return SNew(STextBlock).Text(FText::FromString(*Item));
 					})
@@ -140,12 +49,12 @@ void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAsset
 						SNew(STextBlock).Text(this, &SCPBlacklistDialog::GetPlatformText)
 					]
 			]
-			+ SUniformGridPanel::Slot(1, 0)
+			+SUniformGridPanel::Slot(1, 0)
 			[
-				SAssignNew(ConfigurationCombobox, SComboBox<TSharedPtr<FString>>)
+				SAssignNew(ConfigurationCombobox, SComboBox<FStringPtr>)
 				.OptionsSource(&ConfigurationsDisplayTexts)
 				.InitiallySelectedItem(ConfigurationsDisplayTexts[0])
-				.OnGenerateWidget_Lambda([](TSharedPtr<FString> Item)
+				.OnGenerateWidget_Lambda([](FStringPtr Item)
 					{
 						return SNew(STextBlock).Text(FText::FromString(*Item));
 					})
@@ -154,15 +63,15 @@ void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAsset
 						SNew(STextBlock).Text(this, &SCPBlacklistDialog::GetConfigurationText)
 					]
 			]
-			+ SUniformGridPanel::Slot(2, 0)
+			+SUniformGridPanel::Slot(2, 0)
 			[
 				SAssignNew(ToggleAppendCheckbox, SCheckBox)
 				.IsChecked(this, &SCPBlacklistDialog::IsAppendCheckboxChcked)
 				.OnCheckStateChanged(this, &SCPBlacklistDialog::OnAppendCheckboxChecked)
-				.ToolTipText(LOCTEXT("CleanProject_BlacklistAppendTip", "Ticking this checkbox will append the generated blacklist to the existing one instead of overridding it completly."))
+				.ToolTipText(LOCTEXT("BlacklistAppendTip", "Ticking this checkbox will append the generated blacklist to the existing one instead of overridding it completly."))
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("CleanProject_BlacklistAppend", "Append?"))
+					.Text(LOCTEXT("BlacklistAppend", "Append?"))
 				]
 			]
 		]
@@ -181,10 +90,10 @@ void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAsset
                 SAssignNew(ToggleSkipCheckbox, SCheckBox)
                 .IsChecked(this, &SCPBlacklistDialog::IsSkipCheckboxChcked)
 				.OnCheckStateChanged(this, &SCPBlacklistDialog::OnSkipDialogChanged)
-				.ToolTipText(LOCTEXT("CleanProject_BlacklistSkipTip", "Skip this step next time and automatically generate for all configurations."))
+				.ToolTipText(LOCTEXT("BlacklistSkipTip", "Skip this step next time and automatically generate for all configurations."))
 				[
 				    SNew(STextBlock)
-				    .Text(LOCTEXT("CleanProject_BlacklistSkipStep", "Skip next time."))
+				    .Text(LOCTEXT("BlacklistSkipStep", "Skip next time."))
 				]
 			]
 			+SHorizontalBox::Slot()
@@ -200,9 +109,9 @@ void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAsset
                 .HAlign(HAlign_Center)
                 .ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
                 .OnClicked(this, &SCPBlacklistDialog::OnBlacklistOk)
-                .Text(LOCTEXT("CleanProject_BlacklistDialogOk", "Blacklist"))
+                .Text(LOCTEXT("BlacklistDialogOk", "Blacklist"))
 			]
-			+ SHorizontalBox::Slot()
+			+SHorizontalBox::Slot()
 			.AutoWidth()
 			.VAlign(VAlign_Center)
 			[
@@ -210,32 +119,51 @@ void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAsset
                 .HAlign(HAlign_Center)
                 .ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
                 .OnClicked(this, &SCPBlacklistDialog::OnBlacklistCancel)
-                .Text(LOCTEXT("CleanProject_BlacklistDialogCancel", "Cancel"))
+                .Text(LOCTEXT("BlacklistDialogCancel", "Cancel"))
 			]
 		]
 	];
 }
 
+bool SCPBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist)
+{
+	TSharedPtr<SCPBlacklistDialog> DeleteDialog;
+
+	TSharedRef<SWindow> DeleteAssetsWindow = SNew(SWindow)
+		.Title(LOCTEXT("BlacklistDialogTitle", "Clean Project Blacklist"))
+		.ClientSize(FVector2D(400, 100))
+		.SupportsMaximize(false)
+		.SupportsMinimize(false)
+		[
+			SAssignNew(DeleteDialog, SCPBlacklistDialog, AssetsToBlacklist)
+			.ParentWindow(DeleteAssetsWindow)
+		];
+
+	GEditor->EditorAddModalWindow(DeleteAssetsWindow);
+	
+	return DeleteDialog->DidDeleteAssets();
+}
+
 FText SCPBlacklistDialog::GetConfigurationText() const
 {
-	TSharedPtr<FString> SelectedText = ConfigurationCombobox->GetSelectedItem();
+	FStringPtr SelectedText = ConfigurationCombobox->GetSelectedItem();
 	if (SelectedText.IsValid())
 	{
 		return FText::FromString(*SelectedText);
 	}
 	
-	return LOCTEXT("CleanProject_BlacklistDialogComoboboxDefault", "Select option.");
+	return LOCTEXT("BlacklistDialogComoboboxDefault", "Select option.");
 }
 
 FText SCPBlacklistDialog::GetPlatformText() const
 {
-	TSharedPtr<FString> SelectedText = PlatformCombobox->GetSelectedItem();
+	FStringPtr SelectedText = PlatformCombobox->GetSelectedItem();
 	if (SelectedText.IsValid())
 	{
 		return FText::FromString(*SelectedText);
 	}
 
-	return LOCTEXT("CleanProject_BlacklistDialogComoboboxDefault", "Select option.");
+	return LOCTEXT("BlacklistDialogComoboboxDefault", "Select option.");
 }
 
 ECheckBoxState SCPBlacklistDialog::IsAppendCheckboxChcked() const
@@ -271,8 +199,8 @@ FReply SCPBlacklistDialog::OnBlacklistOk()
 	bDidDeleteAssets = true;
 
     auto Settings = GetDefault<UCPEditorSettings>();
-	FString SelectedPlatform = GetPlatformText().ToString();
-	FString SelectedConfiguration = GetConfigurationText().ToString();
+	const FString SelectedPlatform = GetPlatformText().ToString();
+	const FString SelectedConfiguration = GetConfigurationText().ToString();
 
 	CPOperations::GenerateBlacklist(AssetsToBlacklist, Settings->bShouldAppendDefault, SelectedPlatform, SelectedConfiguration);
 
@@ -300,6 +228,19 @@ void SCPBlacklistDialog::OnAppendCheckboxChecked(ECheckBoxState newState)
 {
     auto Settings = GetMutableDefault<UCPEditorSettings>();
     Settings->bShouldAppendDefault = (newState == ECheckBoxState::Checked);
+}
+
+void SCPBlacklistDialog::PrepareComboTexts(TArray<FStringPtr>& OptionsArray, const FString& DefaultOption, const TArray<FString>& OtherOptions)
+{
+	FStringPtr DefaultOptionPtr = FStringPtr(new FString(DefaultOption));
+
+	OptionsArray.Add(DefaultOptionPtr);
+
+	for (const FString& Configuration : OtherOptions)
+	{
+		FStringPtr OptionStr = FStringPtr(new FString(Configuration));
+		OptionsArray.Emplace(OptionStr);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -1,5 +1,15 @@
 // Copyright Out-of-the-Box Plugins 2018-2019. All Rights Reserved.
 
+#include "SCPAssetDialog.h"
+
+#include "SCPBlacklistDialog.h"
+
+#include "AssetManagerEditorModule.h"
+#include "IContentBrowserSingleton.h"
+#include "Interfaces/IMainFrameModule.h"
+#include "ObjectTools.h"
+#include "Widgets/Layout/SUniformGridPanel.h"
+
 #define LOCTEXT_NAMESPACE "CleanProject"
 
 void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
@@ -108,15 +118,7 @@ void SCPAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsToReport)
 			SNew(SCPAssetDialog, AssetsToReport)
 		];
 
-	IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
-	if (MainFrameModule.GetParentWindow().IsValid())
-	{
-		FSlateApplication::Get().AddWindowAsNativeChild(ReportWindow, MainFrameModule.GetParentWindow().ToSharedRef());
-	}
-	else
-	{
-		FSlateApplication::Get().AddWindow(ReportWindow);
-	}
+	GEditor->EditorAddModalWindow(ReportWindow);
 }
 
 void SCPAssetDialog::CloseAssetDialog()

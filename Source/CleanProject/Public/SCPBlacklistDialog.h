@@ -3,30 +3,31 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "Widgets/SCompoundWidget.h"
-#include "Widgets/DeclarativeSyntaxSupport.h"
-#include "SlateCore/Public/Styling/SlateTypes.h"
 
 class SCheckBox;
 
 class SCPBlacklistDialog : public SCompoundWidget
 {
-private:
-	using FStringComboBoxPtr = TSharedPtr<SComboBox<TSharedPtr<FString>>>;
-
 public:
 	SLATE_BEGIN_ARGS(SCPBlacklistDialog) {}
-
-	// The parent window hosting this dialog
 	SLATE_ATTRIBUTE(TSharedPtr<SWindow>, ParentWindow)
-
 	SLATE_END_ARGS()
+
+	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);
 
 // Interface
 public:
 	// Returns true if the assets were successfully blacklisted. False for cancel.
 	static bool OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist);
-	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);
+
+private:
+	using FStringPtr = TSharedPtr<FString>;
+	using FStringComboBoxPtr = TSharedPtr<SComboBox<FStringPtr>>;
+
+private:
+    bool DidDeleteAssets() const { return bDidDeleteAssets; }
 
 	FText GetConfigurationText() const;
 	FText GetPlatformText() const;
@@ -40,8 +41,7 @@ public:
 	void OnSkipDialogChanged(ECheckBoxState newState);
 	void OnAppendCheckboxChecked(ECheckBoxState newState);
 
-private:
-    bool DidDeleteAssets() const { return bDidDeleteAssets; }
+	void PrepareComboTexts(TArray<FStringPtr>& OptionsArray, const FString& DefaultOption, const TArray<FString>& OtherOptions);
 
 private:
 	TAttribute<TSharedPtr<SWindow>> ParentWindow;
@@ -51,8 +51,8 @@ private:
 	FStringComboBoxPtr ConfigurationCombobox;
 	FStringComboBoxPtr PlatformCombobox;
 
-	TArray<TSharedPtr<FString>> ConfigurationsDisplayTexts;
-	TArray<TSharedPtr<FString>> PlatformsDisplayTexts;
+	TArray<FStringPtr> ConfigurationsDisplayTexts;
+	TArray<FStringPtr> PlatformsDisplayTexts;
 
 	TArray<FAssetData> AssetsToBlacklist;
 	bool bDidDeleteAssets = false;
