@@ -10,7 +10,7 @@ class SCPAssetDialog : public SCompoundWidget
 {
 // Slate interface
 public:
-	SLATE_BEGIN_ARGS(SCPAssetDialog) {}
+	SLATE_BEGIN_ARGS(SCPAssetDialog) { }
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);	
@@ -48,6 +48,7 @@ private:
 
 private:
 	TArray<FAssetData> GetAssetsForAction() const;
+	TSharedRef<SWidget> CreateAssetPickerWidget();
 
 // Internal state
 private:

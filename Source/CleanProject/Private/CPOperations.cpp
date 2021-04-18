@@ -190,11 +190,11 @@ namespace CPOperations
 		{
 			if (PackageNamesChecked.Num() == 0)
 			{
-				FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("CleanProject_NoFilesChecked", "No dependency files were selected."));
+				FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("NoFilesChecked", "No files were checked."));
 			}
 			else if (AssetsToTest.Num() == 0)
 			{
-				FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("CleanProject_NoFilesToDelete", "No unused assets found."));
+				FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("NoFilesToDelete", "No unused assets found."));
 			}
 			else
 			{
