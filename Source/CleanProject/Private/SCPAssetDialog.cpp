@@ -283,7 +283,7 @@ void SCPAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 	}
 	else
 	{
-		bRemoveAssets = SCleanProjectBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
+		bRemoveAssets = SCPBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
 	}
 
 	if (bRemoveAssets)

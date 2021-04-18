@@ -1,7 +1,7 @@
 // Copyright Out-of-the-Box Plugins 2018-2019. All Rights Reserved.
 
 
-#include "SCleanProjectBlacklistDialog.h"
+#include "SCPBlacklistDialog.h"
 
 #include "Interfaces/IMainFrameModule.h"
 #include "Framework/Application/SlateApplication.h"
@@ -54,7 +54,7 @@
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-bool SCleanProjectBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist)
+bool SCPBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>& AssetsToBlacklist)
 {
 	const FVector2D DEFAULT_WINDOW_SIZE = FVector2D(400, 100);
 
@@ -64,8 +64,8 @@ bool SCleanProjectBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>&
 		.ClientSize(DEFAULT_WINDOW_SIZE);
 
 	/** Set the content of the window to our package dialog widget */
-	TSharedRef< SCleanProjectBlacklistDialog > DeleteDialog =
-		SNew(SCleanProjectBlacklistDialog, AssetsToBlacklist)
+	TSharedRef< SCPBlacklistDialog > DeleteDialog =
+		SNew(SCPBlacklistDialog, AssetsToBlacklist)
 		.ParentWindow(DeleteAssetsWindow);
 
 	DeleteAssetsWindow->SetContent(DeleteDialog);
@@ -76,7 +76,7 @@ bool SCleanProjectBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>&
 	return DeleteDialog->DidDeleteAssets();
 }
 
-void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
+void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
 	// Get info from args.
 	ParentWindow = InArgs._ParentWindow;
@@ -137,7 +137,7 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 					})
 				.Content()
 					[
-						SNew(STextBlock).Text(this, &SCleanProjectBlacklistDialog::GetPlatformText)
+						SNew(STextBlock).Text(this, &SCPBlacklistDialog::GetPlatformText)
 					]
 			]
 			+ SUniformGridPanel::Slot(1, 0)
@@ -151,14 +151,14 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
 					})
 				.Content()
 					[
-						SNew(STextBlock).Text(this, &SCleanProjectBlacklistDialog::GetConfigurationText)
+						SNew(STextBlock).Text(this, &SCPBlacklistDialog::GetConfigurationText)
 					]
 			]
 			+ SUniformGridPanel::Slot(2, 0)
 			[
 				SAssignNew(ToggleAppendCheckbox, SCheckBox)
-				.IsChecked(this, &SCleanProjectBlacklistDialog::IsAppendCheckboxChcked)
-				.OnCheckStateChanged(this, &SCleanProjectBlacklistDialog::OnAppendCheckboxChecked)
+				.IsChecked(this, &SCPBlacklistDialog::IsAppendCheckboxChcked)
+				.OnCheckStateChanged(this, &SCPBlacklistDialog::OnAppendCheckboxChecked)
 				.ToolTipText(LOCTEXT("CleanProject_BlacklistAppendTip", "Ticking this checkbox will append the generated blacklist to the existing one instead of overridding it completly."))
 				[
 					SNew(STextBlock)
@@ -179,8 +179,8 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
             .Padding(FEditorStyle::GetMargin("StandardDialog.SlotPadding"))
 			[
                 SAssignNew(ToggleSkipCheckbox, SCheckBox)
-                .IsChecked(this, &SCleanProjectBlacklistDialog::IsSkipCheckboxChcked)
-				.OnCheckStateChanged(this, &SCleanProjectBlacklistDialog::OnSkipDialogChanged)
+                .IsChecked(this, &SCPBlacklistDialog::IsSkipCheckboxChcked)
+				.OnCheckStateChanged(this, &SCPBlacklistDialog::OnSkipDialogChanged)
 				.ToolTipText(LOCTEXT("CleanProject_BlacklistSkipTip", "Skip this step next time and automatically generate for all configurations."))
 				[
 				    SNew(STextBlock)
@@ -199,7 +199,7 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
                 SNew(SButton)
                 .HAlign(HAlign_Center)
                 .ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-                .OnClicked(this, &SCleanProjectBlacklistDialog::OnBlacklistOk)
+                .OnClicked(this, &SCPBlacklistDialog::OnBlacklistOk)
                 .Text(LOCTEXT("CleanProject_BlacklistDialogOk", "Blacklist"))
 			]
 			+ SHorizontalBox::Slot()
@@ -209,14 +209,14 @@ void SCleanProjectBlacklistDialog::Construct(const FArguments& InArgs, const TAr
                 SNew(SButton)
                 .HAlign(HAlign_Center)
                 .ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-                .OnClicked(this, &SCleanProjectBlacklistDialog::OnBlacklistCancel)
+                .OnClicked(this, &SCPBlacklistDialog::OnBlacklistCancel)
                 .Text(LOCTEXT("CleanProject_BlacklistDialogCancel", "Cancel"))
 			]
 		]
 	];
 }
 
-FText SCleanProjectBlacklistDialog::GetConfigurationText() const
+FText SCPBlacklistDialog::GetConfigurationText() const
 {
 	TSharedPtr<FString> SelectedText = ConfigurationCombobox->GetSelectedItem();
 	if (SelectedText.IsValid())
@@ -227,7 +227,7 @@ FText SCleanProjectBlacklistDialog::GetConfigurationText() const
 	return LOCTEXT("CleanProject_BlacklistDialogComoboboxDefault", "Select option.");
 }
 
-FText SCleanProjectBlacklistDialog::GetPlatformText() const
+FText SCPBlacklistDialog::GetPlatformText() const
 {
 	TSharedPtr<FString> SelectedText = PlatformCombobox->GetSelectedItem();
 	if (SelectedText.IsValid())
@@ -238,7 +238,7 @@ FText SCleanProjectBlacklistDialog::GetPlatformText() const
 	return LOCTEXT("CleanProject_BlacklistDialogComoboboxDefault", "Select option.");
 }
 
-ECheckBoxState SCleanProjectBlacklistDialog::IsAppendCheckboxChcked() const
+ECheckBoxState SCPBlacklistDialog::IsAppendCheckboxChcked() const
 {
     auto Settings = GetDefault<UCPEditorSettings>();
     
@@ -252,7 +252,7 @@ ECheckBoxState SCleanProjectBlacklistDialog::IsAppendCheckboxChcked() const
 	}
 }
 
-ECheckBoxState SCleanProjectBlacklistDialog::IsSkipCheckboxChcked() const
+ECheckBoxState SCPBlacklistDialog::IsSkipCheckboxChcked() const
 {
 	auto Settings = GetDefault<UCPEditorSettings>();
 
@@ -266,7 +266,7 @@ ECheckBoxState SCleanProjectBlacklistDialog::IsSkipCheckboxChcked() const
 	}
 }
 
-FReply SCleanProjectBlacklistDialog::OnBlacklistOk()
+FReply SCPBlacklistDialog::OnBlacklistOk()
 {
 	bDidDeleteAssets = true;
 
@@ -281,7 +281,7 @@ FReply SCleanProjectBlacklistDialog::OnBlacklistOk()
 	return FReply::Handled();
 }
 
-FReply SCleanProjectBlacklistDialog::OnBlacklistCancel()
+FReply SCPBlacklistDialog::OnBlacklistCancel()
 {
 	bDidDeleteAssets = false;
 
@@ -290,13 +290,13 @@ FReply SCleanProjectBlacklistDialog::OnBlacklistCancel()
 	return FReply::Handled();
 }
 
-void SCleanProjectBlacklistDialog::OnSkipDialogChanged(ECheckBoxState newState)
+void SCPBlacklistDialog::OnSkipDialogChanged(ECheckBoxState newState)
 {
 	auto Settings = GetMutableDefault<UCPEditorSettings>();
 	Settings->bShouldSkipBlacklistDialog = (newState == ECheckBoxState::Checked);
 }
 
-void SCleanProjectBlacklistDialog::OnAppendCheckboxChecked(ECheckBoxState newState)
+void SCPBlacklistDialog::OnAppendCheckboxChecked(ECheckBoxState newState)
 {
     auto Settings = GetMutableDefault<UCPEditorSettings>();
     Settings->bShouldAppendDefault = (newState == ECheckBoxState::Checked);

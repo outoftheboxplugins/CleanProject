@@ -9,13 +9,13 @@
 
 class SCheckBox;
 
-class SCleanProjectBlacklistDialog : public SCompoundWidget
+class SCPBlacklistDialog : public SCompoundWidget
 {
 private:
 	using FStringComboBoxPtr = TSharedPtr<SComboBox<TSharedPtr<FString>>>;
 
 public:
-	SLATE_BEGIN_ARGS(SCleanProjectBlacklistDialog) {}
+	SLATE_BEGIN_ARGS(SCPBlacklistDialog) {}
 
 	// The parent window hosting this dialog
 	SLATE_ATTRIBUTE(TSharedPtr<SWindow>, ParentWindow)
