@@ -3,23 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "Widgets/SCompoundWidget.h"
-#include "Widgets/DeclarativeSyntaxSupport.h"
-#include "Slate/Public/Widgets/Views/SListView.h"
 
-class SAssetView;
-
-class SCleanProjectAssetDialog : public SCompoundWidget
+class SCPAssetDialog : public SCompoundWidget
 {
+// Slate interface
 public:
-	SLATE_BEGIN_ARGS(SCleanProjectAssetDialog) {}
+	SLATE_BEGIN_ARGS(SCPAssetDialog) {}
 	SLATE_END_ARGS()
 
-// Interface
+	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);	
+
+// Window commands
 public:
 	static void OpenAssetDialog(const TArray<FAssetData>& AssetsToReport);
-	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);
-	void CloseDialog();
+	void CloseAssetDialog();
 
 // Slate Delegates
 private:
@@ -47,14 +46,14 @@ private:
 	void WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist);
 	void RemoveFromList(const TArray<FAssetData> AssetsToRemove);
 
+private:
 	TArray<FAssetData> GetAssetsForAction() const;
 
 // Internal state
 private:
 	TArray<FAssetData> ReportAssets;
+	FGetCurrentSelectionDelegate GetCurrentSelectionDelegate;
 
 	FARFilter ReportAssetsFilter;
-
 	FSetARFilterDelegate SetFilterDelegate;
-	FGetCurrentSelectionDelegate GetCurrentSelectionDelegate;
 };

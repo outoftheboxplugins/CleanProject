@@ -37,7 +37,7 @@ void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
 
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* with CheckMaps: %s from menu."), (checkMaps ? "enabled" : "disabled"));
 
-				TArray<FAssetData> MapAssetDatas = checkMaps ? CPOperations::GetAllMapAssets() : TArray<FAssetData>();
+				TArray<FAssetData> MapAssetDatas = checkMaps ? CPOperations::GetAllGameAssets<UWorld>() : TArray<FAssetData>();
 				CPOperations::CheckDependenciesBasedOn(MapAssetDatas);
 			})
 

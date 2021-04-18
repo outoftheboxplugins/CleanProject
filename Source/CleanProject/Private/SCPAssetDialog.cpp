@@ -1,59 +1,59 @@
 // Copyright Out-of-the-Box Plugins 2018-2019. All Rights Reserved.
 
 
-#include "SCleanProjectAssetDialog.h"
-#include "Interfaces/IMainFrameModule.h"
-#include "Framework/Application/SlateApplication.h"
-#include "Slate/Public/Widgets/Layout/SUniformGridPanel.h"
-#include "Slate/Public/Widgets/Input/SButton.h"
-#include "Slate/Public/Widgets/Text/STextBlock.h"
-#include "EditorStyle/Public/EditorStyleSet.h"
-#include "UnrealEd/Public/ObjectTools.h"
-#include "Misc/FileHelper.h"
-#include "AssetManagerEditorModule.h"
-#include "IAssetRegistry.h"
-#include "AssetRegistry/Public/AssetRegistryModule.h"
-
-#include "Framework/Commands/UIAction.h"
-#include "Framework/Commands/UICommandList.h"
-#include "Widgets/Layout/SBorder.h"
-#include "Widgets/SBoxPanel.h"
-#include "Widgets/Text/STextBlock.h"
-#include "Widgets/Input/SMenuAnchor.h"
-#include "Framework/MultiBox/MultiBoxBuilder.h"
-
-#include "EditorStyleSet.h"
-#include "Widgets/Layout/SBox.h"
-#include "Widgets/Input/SButton.h"
-#include "Widgets/SViewport.h"
-#include "FileHelpers.h"
 #include "ARFilter.h"
-#include "ClassViewerModule.h"
-#include "ClassViewerFilter.h"
-#include "IContentBrowserSingleton.h"
-#include "ContentBrowserModule.h"
+#include "AssetManagerEditorModule.h"
+#include "AssetRegistry/Public/AssetRegistryModule.h"
 #include "AssetRegistryModule.h"
-#include "Toolkits/GlobalEditorCommonCommands.h"
-#include "FrontendFilterBase.h"
-#include "Slate/SceneViewport.h"
-#include "ObjectEditorUtils.h"
-#include "Engine/AssetManager.h"
-#include "Engine/BlueprintCore.h"
-#include "Widgets/Input/SComboBox.h"
-#include "Framework/Application/SlateApplication.h"
-#include "DragAndDrop/AssetDragDropOp.h"
 #include "Blueprint/BlueprintSupport.h"
-#include "Editor.h"
+#include "CPOperations.h"
+#include "ClassViewerFilter.h"
+#include "ClassViewerModule.h"
+#include "CleanProjectModule.h"
 #include "ContentBrowser/Private/SAssetDialog.h"
 #include "ContentBrowser/Private/SAssetPicker.h"
 #include "ContentBrowser/Private/SAssetView.h"
+#include "ContentBrowserModule.h"
+#include "DragAndDrop/AssetDragDropOp.h"
+#include "Editor.h"
+#include "EditorStyle/Public/EditorStyleSet.h"
+#include "EditorStyleSet.h"
+#include "Engine/AssetManager.h"
+#include "Engine/BlueprintCore.h"
+#include "FileHelpers.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Framework/Commands/UIAction.h"
+#include "Framework/Commands/UICommandList.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "FrontendFilterBase.h"
+#include "IAssetRegistry.h"
+#include "IContentBrowserSingleton.h"
+#include "Interfaces/IMainFrameModule.h"
+#include "Misc/FileHelper.h"
+#include "ObjectEditorUtils.h"
+#include "SCPAssetDialog.h"
 #include "SCleanProjectBlacklistDialog.h"
-#include "CPOperations.h"
-#include "CleanProjectModule.h"
+#include "Slate/Public/Widgets/Input/SButton.h"
+#include "Slate/Public/Widgets/Layout/SUniformGridPanel.h"
+#include "Slate/Public/Widgets/Text/STextBlock.h"
+#include "Slate/Public/Widgets/Views/SListView.h"
+#include "Slate/SceneViewport.h"
+#include "Toolkits/GlobalEditorCommonCommands.h"
+#include "UnrealEd/Public/ObjectTools.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SComboBox.h"
+#include "Widgets/Input/SMenuAnchor.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/SBoxPanel.h"
+#include "Widgets/SViewport.h"
+#include "Widgets/Text/STextBlock.h"
+
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
+void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
 	ReportAssets.Append(AssetsToReport);
 	int64 TotalDiskSize = 0;
@@ -74,8 +74,8 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 		Config.bSortByPathInColumnView = true;
 
 		// Configure response to double-click and context-menu
-		Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateSP(this, &SCleanProjectAssetDialog::OnRequestOpenAsset);
-		Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SCleanProjectAssetDialog::OnGetAssetContextMenu);
+		Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateSP(this, &SCPAssetDialog::OnRequestOpenAsset);
+		Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SCPAssetDialog::OnGetAssetContextMenu);
 		Config.SetFilterDelegates.Add(&SetFilterDelegate);
 		Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
 
@@ -91,8 +91,8 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 			LOCTEXT("CleanProject_SizeColumn", "Disk Size"),
 			LOCTEXT("CleanProject_SizeColumnTooltip", "Size of saved file on disk for only this asset"), 
 			UObject::FAssetRegistryTag::TT_Numerical, 
-			FOnGetCustomAssetColumnData::CreateSP(this, &SCleanProjectAssetDialog::GetDiskSizeData),
-			FOnGetCustomAssetColumnDisplayText::CreateSP(this, &SCleanProjectAssetDialog::GetDiskSizeDisplayText));
+			FOnGetCustomAssetColumnData::CreateSP(this, &SCPAssetDialog::GetDiskSizeData),
+			FOnGetCustomAssetColumnDisplayText::CreateSP(this, &SCPAssetDialog::GetDiskSizeDisplayText));
 	}
 
 	TArray<FName>& ReportObjectsPaths = ReportAssetsFilter.ObjectPaths;
@@ -156,7 +156,7 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCleanProjectAssetDialog::OnDeleteClicked)
+				.OnClicked(this, &SCPAssetDialog::OnDeleteClicked)
 				.Text(LOCTEXT("CleanProject_DeleteButton", "Delete"))
 			]
 			+SUniformGridPanel::Slot(1, 0)
@@ -164,7 +164,7 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCleanProjectAssetDialog::OnAuditClicked)
+				.OnClicked(this, &SCPAssetDialog::OnAuditClicked)
 				.Text(LOCTEXT("CleanProject_AuditButton", "More Info"))
 			]
 			+SUniformGridPanel::Slot(2, 0)
@@ -172,7 +172,7 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCleanProjectAssetDialog::OnBlacklistClicked)
+				.OnClicked(this, &SCPAssetDialog::OnBlacklistClicked)
 				.Text(LOCTEXT("CleanProject_BlacklistButton", "Blacklist"))
 			]
 			+SUniformGridPanel::Slot(3, 0)
@@ -180,14 +180,14 @@ void SCleanProjectAssetDialog::Construct(const FArguments& InArgs, const TArray<
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCleanProjectAssetDialog::OnCancelClicked)
+				.OnClicked(this, &SCPAssetDialog::OnCancelClicked)
 				.Text(LOCTEXT("CleanProject_CancelButton", "Cancel"))
 			]
 		]
 	];
 }
 
-void SCleanProjectAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsToReport)
+void SCPAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsToReport)
 {
 	TSharedRef<SWindow> ReportWindow = SNew(SWindow)
 		.Title(LOCTEXT("CleanProject_AssetDialogTitle", "Clean Project Analyser"))
@@ -195,7 +195,7 @@ void SCleanProjectAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsT
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
 		[
-			SNew(SCleanProjectAssetDialog, AssetsToReport)
+			SNew(SCPAssetDialog, AssetsToReport)
 		];
 
 	IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
@@ -209,7 +209,7 @@ void SCleanProjectAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsT
 	}
 }
 
-void SCleanProjectAssetDialog::CloseDialog()
+void SCPAssetDialog::CloseAssetDialog()
 {
 	TSharedPtr<SWindow> Window = FSlateApplication::Get().FindWidgetWindow(AsShared());
 
@@ -219,7 +219,7 @@ void SCleanProjectAssetDialog::CloseDialog()
 	}
 }
 
-TSharedPtr<SWidget> SCleanProjectAssetDialog::OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets)
+TSharedPtr<SWidget> SCPAssetDialog::OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets)
 {
 	FMenuBuilder MenuBuilder(/*bInShouldCloseWindowAfterMenuSelection=*/ true, NULL);
 	
@@ -231,7 +231,7 @@ TSharedPtr<SWidget> SCleanProjectAssetDialog::OnGetAssetContextMenu(const TArray
 		LOCTEXT("CleanProject_RemoveActionTooltip", "Remove selected assets from the report, so they won't get deleted."),
 		FSlateIcon(),
 		FUIAction(
-			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::RemoveFromList, SelectedAssets),
+			FExecuteAction::CreateSP(this, &SCPAssetDialog::RemoveFromList, SelectedAssets),
 			FCanExecuteAction()
 		));
 
@@ -240,7 +240,7 @@ TSharedPtr<SWidget> SCleanProjectAssetDialog::OnGetAssetContextMenu(const TArray
 		LOCTEXT("CleanProject_AuditActionTooltip", "Get more information about the selected assets."),
 		FSlateIcon(),
 		FUIAction(
-			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::AuditAssets, SelectedAssets),
+			FExecuteAction::CreateSP(this, &SCPAssetDialog::AuditAssets, SelectedAssets),
 			FCanExecuteAction()
 		));
 
@@ -249,7 +249,7 @@ TSharedPtr<SWidget> SCleanProjectAssetDialog::OnGetAssetContextMenu(const TArray
 		LOCTEXT("CleanProject_BlacklistActionTooltip", "Blacklist only selected assets and remove from report."),
 		FSlateIcon(),
 		FUIAction(
-			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::BlackListAssets, SelectedAssets),
+			FExecuteAction::CreateSP(this, &SCPAssetDialog::BlackListAssets, SelectedAssets),
 			FCanExecuteAction()
 		));
 	
@@ -258,7 +258,7 @@ TSharedPtr<SWidget> SCleanProjectAssetDialog::OnGetAssetContextMenu(const TArray
 		LOCTEXT("CleanProject_WhitelistActionTooltip", "Whitelist only selected assets and remove from report."),
 		FSlateIcon(),
 		FUIAction(
-			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::WhiteListAssets, SelectedAssets),
+			FExecuteAction::CreateSP(this, &SCPAssetDialog::WhiteListAssets, SelectedAssets),
 			FCanExecuteAction()
 		));
 
@@ -267,7 +267,7 @@ TSharedPtr<SWidget> SCleanProjectAssetDialog::OnGetAssetContextMenu(const TArray
 		LOCTEXT("CleanProject_DeleteActionTooltip", "Delete only selected assets."),
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "ContentBrowser.AssetActions.Delete"),
 		FUIAction(
-			FExecuteAction::CreateSP(this, &SCleanProjectAssetDialog::DeleteAssets, SelectedAssets),
+			FExecuteAction::CreateSP(this, &SCPAssetDialog::DeleteAssets, SelectedAssets),
 			FCanExecuteAction()
 		));
 
@@ -275,7 +275,7 @@ TSharedPtr<SWidget> SCleanProjectAssetDialog::OnGetAssetContextMenu(const TArray
 	return MenuBuilder.MakeWidget();
 }
 
-void SCleanProjectAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData) const
+void SCPAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData) const
 {
 	TArray<FName> AssetNames;
 	AssetNames.Add(AssetData.PackageName);
@@ -284,7 +284,7 @@ void SCleanProjectAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData) c
 	ManagerEditorModule.OpenReferenceViewerUI(AssetNames);
 }
 
-int64 SCleanProjectAssetDialog::GetAssetDiskSize(const FAssetData& Asset) const
+int64 SCPAssetDialog::GetAssetDiskSize(const FAssetData& Asset) const
 {
 	if (Asset.GetPackage() == nullptr)
 	{
@@ -306,7 +306,7 @@ int64 SCleanProjectAssetDialog::GetAssetDiskSize(const FAssetData& Asset) const
 	}
 }
 
-FString SCleanProjectAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const
+FString SCPAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const
 {
 	const int64 DiskSize = GetAssetDiskSize(AssetData);
 
@@ -320,7 +320,7 @@ FString SCleanProjectAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName C
 	}
 }
 
-FText SCleanProjectAssetDialog::GetDiskSizeDisplayText(FAssetData& AssetData, FName ColumnName) const
+FText SCPAssetDialog::GetDiskSizeDisplayText(FAssetData& AssetData, FName ColumnName) const
 {
 	const int64 DiskSize = GetAssetDiskSize(AssetData);
 
@@ -334,31 +334,31 @@ FText SCleanProjectAssetDialog::GetDiskSizeDisplayText(FAssetData& AssetData, FN
 	}
 }
 
-FReply SCleanProjectAssetDialog::OnDeleteClicked()
+FReply SCPAssetDialog::OnDeleteClicked()
 {
 	DeleteAssets(GetAssetsForAction());
 	return FReply::Handled();
 }
 
-FReply SCleanProjectAssetDialog::OnAuditClicked()
+FReply SCPAssetDialog::OnAuditClicked()
 {
 	AuditAssets(GetAssetsForAction());
 	return FReply::Handled();
 }
 
-FReply SCleanProjectAssetDialog::OnBlacklistClicked()
+FReply SCPAssetDialog::OnBlacklistClicked()
 {
 	BlackListAssets(GetAssetsForAction());
 	return FReply::Handled();
 }
 
-FReply SCleanProjectAssetDialog::OnCancelClicked()
+FReply SCPAssetDialog::OnCancelClicked()
 {
-	CloseDialog();
+	CloseAssetDialog();
 	return FReply::Handled();
 }
 
-void SCleanProjectAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
+void SCPAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
 {
 	TArray<UObject*> ObjectsToDelete;
 	for(const FAssetData& AssetData : AssetsToDelete)
@@ -374,7 +374,7 @@ void SCleanProjectAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDel
 	}
 }
 
-void SCleanProjectAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudit)
+void SCPAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudit)
 {
 	if (FModuleManager::Get().ModuleExists(TEXT("AssetManagerEditor")))
 	{
@@ -390,7 +390,7 @@ void SCleanProjectAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudi
 	}
 }
 
-void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
+void SCPAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 {
 	bool bRemoveAssets = true;
 	auto Settings = GetDefault<UCPEditorSettings>();
@@ -409,7 +409,7 @@ void SCleanProjectAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsTo
 	}
 }
 
-void SCleanProjectAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)
+void SCPAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)
 {
 	auto Settings = GetMutableDefault<UCPProjectSettings>();
 	Settings->WhitelistAssets(AssetsToWhitelist);
@@ -417,7 +417,7 @@ void SCleanProjectAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsTo
 	RemoveFromList(AssetsToWhitelist);
 }
 
-void SCleanProjectAssetDialog::RemoveFromList(const TArray<FAssetData> AssetsToRemove)
+void SCPAssetDialog::RemoveFromList(const TArray<FAssetData> AssetsToRemove)
 {
 	ReportAssets.RemoveAllSwap([&AssetsToRemove](const FAssetData& AssetData) 
 		{
@@ -439,7 +439,7 @@ void SCleanProjectAssetDialog::RemoveFromList(const TArray<FAssetData> AssetsToR
 
 	if (ReportAssets.Num() == 0)
 	{
-		CloseDialog();
+		CloseAssetDialog();
 	}
 	else
 	{
@@ -447,7 +447,7 @@ void SCleanProjectAssetDialog::RemoveFromList(const TArray<FAssetData> AssetsToR
 	}
 }
 
-TArray<FAssetData> SCleanProjectAssetDialog::GetAssetsForAction() const
+TArray<FAssetData> SCPAssetDialog::GetAssetsForAction() const
 {
 	TArray<FAssetData> SelectedAssets = GetCurrentSelectionDelegate.Execute();
 
