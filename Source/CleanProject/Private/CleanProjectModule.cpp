@@ -1,5 +1,4 @@
-// Copyright Out-of-the-Box Plugins 2018-2020. All Rights Reserved.
-
+// Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
 #include "CleanProjectModule.h"
 
 #include "CPEditorSettings.h"

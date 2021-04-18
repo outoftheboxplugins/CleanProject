@@ -1,5 +1,4 @@
-// Copyright Out-of-the-Box Plugins 2018-2019. All Rights Reserved.
-
+// Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
 #include "CPEditorSettings.h"
 
 UCPEditorSettings::UCPEditorSettings()
