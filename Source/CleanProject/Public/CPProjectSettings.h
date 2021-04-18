@@ -15,10 +15,6 @@ UCLASS(config = Engine, defaultconfig)
 class UCPProjectSettings : public UObject
 {
 	GENERATED_BODY()
-
-public:
-	UCPProjectSettings();
-
 public:
 	void WhitelistAsset(const FAssetData& Asset);
 	void WhitelistAsset(const FName& AssetPath);

@@ -2,9 +2,6 @@
 
 #include "CPProjectSettings.h"
 
-UCPProjectSettings::UCPProjectSettings()
-{ }
-
 void UCPProjectSettings::WhitelistAsset(const FAssetData& Asset)
 {
 	WhitelistAsset(Asset.ObjectPath);
