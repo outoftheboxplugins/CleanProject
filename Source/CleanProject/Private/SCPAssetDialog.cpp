@@ -117,7 +117,7 @@ void SCPAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsToReport)
 			SNew(SCPAssetDialog, AssetsToReport)
 		];
 
-	GEditor->EditorAddModalWindow(ReportWindow);
+	FSlateApplication::Get().AddWindow(ReportWindow);
 }
 
 void SCPAssetDialog::CloseAssetDialog()

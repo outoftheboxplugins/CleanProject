@@ -171,7 +171,7 @@ namespace CPOperations
 			{
 				const FText CurrentAssetName = FText::FromName(CurrentPackageName);
 				const FText CurrentAssetText = FText::Format(LOCTEXT("CurrentAsset", "Current Asset: {0}"), CurrentAssetName);
-				SlowTask.EnterProgressFrame(1.0f, CurrentAssetText);
+				SlowTask.EnterProgressFrame(1.f, CurrentAssetText);
 
 				// Check if we already found the dependencies for this asset, if not, get them now.
 				if (!PackageNamesChecked.Contains(CurrentPackageName))

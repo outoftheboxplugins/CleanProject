@@ -86,8 +86,14 @@ void FCleanProjectModule::RegisterAssetActions()
 	if (FContentBrowserModule* ContentBrowserModule = FModuleManager::GetModulePtr<FContentBrowserModule>(TEXT("ContentBrowser")))
 	{
 		TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuExtenderDelegates = ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
-		CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateStatic(CPMenuExtensions::CreateContentBrowserExtender));
+		CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateStatic(CPMenuExtensions::CreateContentBrowserAssetsExtender));
 		CBExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
+
+		TArray<FContentBrowserMenuExtender_SelectedPaths>& CBFolderMenuExtenderDelegates = ContentBrowserModule->GetAllPathViewContextMenuExtenders();
+		CBFolderMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedPaths::CreateStatic(CPMenuExtensions::CreateContentBrowserFoldersExtender));
+		
+			
+			//.Add(FContentBrowserMenuExtender_SelectedPaths::CreateLambda([WeakThis](const
 	}
 }
 
