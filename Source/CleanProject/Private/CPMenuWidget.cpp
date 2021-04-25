@@ -2,6 +2,7 @@
 
 #include "CPMenuWidget.h"
 #include "Widgets/Layout/SSeparator.h"
+#include "../Private/PluginManager.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -56,16 +57,16 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			+SHorizontalBox::Slot()
 			[
 				SNew(SButton)
-				.Text(LOCTEXT("RunCleanupNow", "Run Cleanup"))
-				.ToolTipText(LOCTEXT("RunCleanupNowTip", "Start the Cleanup-Unused-Assets check now."))
-				.OnClicked(this, &SCPMenuWidget::OnRunCleanupNow)
+				.Text(LOCTEXT("GoToDocs", "Open Documentation"))
+				.ToolTipText(LOCTEXT("GoToDocsTip", "Open our documentation to get a better understand of the plugin."))
+				.OnClicked(this, &SCPMenuWidget::OnGoToDocumentation)
 			]
 			+SHorizontalBox::Slot()
 			[
 				SNew(SButton)
-				.Text(LOCTEXT("RunCleanupNow", "Run Cleanup"))
-				.ToolTipText(LOCTEXT("RunCleanupNowTip", "Start the Cleanup-Unused-Assets check now."))
-				.OnClicked(this, &SCPMenuWidget::OnRunCleanupNow)
+				.Text(LOCTEXT("RefreshMemoryToGain", "Refresh Stats"))
+				.ToolTipText(LOCTEXT("RefreshMemoryToGainTip", "Update the memory to gained to running a check. WARNING: This might take a while."))
+				.OnClicked(this, &SCPMenuWidget::OnRefreshSpaceToGain)
 			]
 		]
 
@@ -129,19 +130,26 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<int6
 
 int64 SCPMenuWidget::GetSpaceToWinNow() const
 {
-	return CPOperations::GetUnusuedAssetsDiskSize();
+	return SpaceToGain;
+}
+
+FReply SCPMenuWidget::OnRefreshSpaceToGain()
+{
+	SpaceToGain = CPOperations::GetUnusuedAssetsDiskSize();
+	return FReply::Handled();
 }
 
 FReply SCPMenuWidget::OnRunCleanupNow()
 {
-
-
+	CPOperations::CheckAllDependencies();
 	return FReply::Handled();
 }
 
 FReply SCPMenuWidget::OnGoToDocumentation()
 {
-
+	TSharedPtr<IPlugin> CleanProjectPlugin = FPluginManager::Get().FindPlugin("CleanProject");
+	FString DocsURL = CleanProjectPlugin->GetDescriptor().DocsURL;
+	FPlatformProcess::LaunchURL(*DocsURL, nullptr, nullptr);
 
 	return FReply::Handled();
 }

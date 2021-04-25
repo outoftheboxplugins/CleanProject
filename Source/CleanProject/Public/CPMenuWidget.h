@@ -32,8 +32,10 @@ private:
 
 // Buttons
 private:
+	FReply OnRefreshSpaceToGain();
 	FReply OnRunCleanupNow();
 	FReply OnGoToDocumentation();
 
+	int64 SpaceToGain = 1024;
 	float UniformInfoSlotSize = 0.5f;
 };

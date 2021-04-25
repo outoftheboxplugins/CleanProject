@@ -18,6 +18,7 @@ public class CleanProject : ModuleRules
                 "UnrealEd",
 				"AssetManagerEditor",
 				"Slate",
+				"Projects",
 				"WorkspaceMenuStructure",
 			} );
 	}
