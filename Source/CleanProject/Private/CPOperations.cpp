@@ -126,18 +126,18 @@ namespace OperationsHelpers
 
 namespace CPOperations
 {
-	void CheckDependenciesOf(TArray<FAssetData> SelectedAssets)
-	{
-		CheckDependenciesInternal(SelectedAssets, GetAllGameAssets<UWorld>());
-	}
+    TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest)
+    {
+		return CheckForUnusuedAssets(AssetsToTest, GetAllGameAssets<UWorld>());
+    }
 
-	void CheckDependenciesInternal(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest)
+	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest)
 	{
 		auto Settings = GetDefault<UCPProjectSettings>();
-		
+
 		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, Settings->WhitelistAssetsPaths);
 		OperationsHelpers::RemoveAllAssets(AssetsToTest, DependenciesToTest);
-		
+
 		// Collect all the names we want to check dependencies for.
 		TSet<FName> PackageNameToCheck;
 		{
@@ -179,22 +179,64 @@ namespace CPOperations
 
 		// Removed the dependenices found from the ones tested.
 		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, PackageNamesChecked);
+
+		return AssetsToTest;
+	}
+
+	void CheckAllDependencies()
+	{
+		TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
+		CheckDependenciesOf(AllAssets);
+	}
+
+	void CheckDependenciesOf(TArray<FAssetData> AssetsToTest)
+	{
+		TArray<FAssetData> UnusuedAssets = CheckForUnusuedAssets(AssetsToTest);
 		
 		// Open dialogs based on the results.
+		if (AssetsToTest.Num() == 0)
 		{
-			if (PackageNamesChecked.Num() == 0)
-			{
-				FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("NoFilesChecked", "No files were checked."));
-			}
-			else if (AssetsToTest.Num() == 0)
-			{
-				FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("NoFilesToDelete", "No unused assets found."));
-			}
-			else
-			{
-				SCPAssetDialog::OpenAssetDialog(AssetsToTest);
-			}
-		}	
+			FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("NoFilesToDelete", "No unused assets found."));
+		}
+		else
+		{
+			SCPAssetDialog::OpenAssetDialog(AssetsToTest);
+		}
+	}
+
+	int64 GetAssetDiskSize(const FAssetData& Asset)
+	{
+		const FName PackageName = FName(*Asset.GetPackage()->GetName());
+
+		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+		if (const FAssetPackageData* PackageData = AssetRegistryModule.Get().GetAssetPackageData(PackageName))
+		{
+			return PackageData->DiskSize;
+		}
+		return -1;
+	}
+
+	int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList)
+	{
+		int64 TotalDiskSize = 0;
+		for (const FAssetData& AssetDataReported : AssetsList)
+		{
+			TotalDiskSize += GetAssetDiskSize(AssetDataReported);
+		}
+
+		return TotalDiskSize;
+	}
+
+	int64 GetUnusuedAssetsDiskSize(TArray<FAssetData> AssetsToTest)
+	{
+		TArray<FAssetData> UnusuedAssets = CheckForUnusuedAssets(AssetsToTest);
+		return GetAssetsDiskSize(UnusuedAssets);
+	}
+
+	int64 GetUnusuedAssetsDiskSize()
+	{
+		TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
+		return GetUnusuedAssetsDiskSize(AllAssets);
 	}
 
 	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies)

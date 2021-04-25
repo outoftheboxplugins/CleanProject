@@ -10,10 +10,18 @@ namespace CPOperations
 	* Assets to test: selected assets
 	* Dependencies of: all game assets
 	*/
+	void CheckAllDependencies();
 	void CheckDependenciesOf(TArray<FAssetData> SelectedAssets);
 
-	// Check if the AssetsToTest are used by any of the DependenciesToTest.
-	void CheckDependenciesInternal(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest);
+	// Return which of the assets are unusued based on the selected one.
+	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest);
+	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest);
+
+	int64 GetAssetDiskSize(const FAssetData& Asset);
+	int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList);
+
+	int64 GetUnusuedAssetsDiskSize();
+	int64 GetUnusuedAssetsDiskSize(TArray<FAssetData> AssetsToTest);
 
 	// Recursively get all the dependencies of a certain package.
 	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies);

@@ -127,6 +127,11 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<int6
 		];
 }
 
+int64 SCPMenuWidget::GetSpaceToWinNow() const
+{
+	return CPOperations::GetUnusuedAssetsDiskSize();
+}
+
 FReply SCPMenuWidget::OnRunCleanupNow()
 {
 

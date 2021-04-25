@@ -15,7 +15,7 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 {
 	ReportAssets = AssetsToReport;
 
-	const int64 TotalDiskSize = GetAssetsDiskSize(ReportAssets);
+	const int64 TotalDiskSize = CPOperations::GetAssetsDiskSize(ReportAssets);
 	
 	ChildSlot
 	[
@@ -181,38 +181,15 @@ void SCPAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData) const
 
 //////////////////////////////////////////////////////////////////////////
 // Custom Report column
-int64 SCPAssetDialog::GetAssetsDiskSize(const TArray<FAssetData>& AssetsList) const
-{
-	int64 TotalDiskSize = 0;
-	for (const FAssetData& AssetDataReported : AssetsList)
-	{
-		TotalDiskSize += GetAssetDiskSize(AssetDataReported);
-	}
-
-	return TotalDiskSize;
-}
-
-int64 SCPAssetDialog::GetAssetDiskSize(const FAssetData& Asset) const
-{
-	const FName PackageName = FName(*Asset.GetPackage()->GetName());
-	
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	if (const FAssetPackageData* PackageData = AssetRegistryModule.Get().GetAssetPackageData(PackageName))
-	{
-		return PackageData->DiskSize;
-	}
-	return -1;
-}
-
 FString SCPAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const
 {
-	const int64 DiskSize = GetAssetDiskSize(AssetData);
+	const int64 DiskSize = CPOperations::GetAssetDiskSize(AssetData);
 	return (DiskSize > 0) ? LexToString(DiskSize) : FString("Invalid");
 }
 
 FText SCPAssetDialog::GetDiskSizeDisplayText(FAssetData& AssetData, FName ColumnName) const
 {
-	const int64 DiskSize = GetAssetDiskSize(AssetData);
+	const int64 DiskSize = CPOperations::GetAssetDiskSize(AssetData);
 	return (DiskSize > 0) ? FText::AsMemory(DiskSize) : LOCTEXT("UnkownSize", "UnkownSize");
 }
 
@@ -256,7 +233,7 @@ void SCPAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
 		ObjectsToDelete.Add(AssetData.GetAsset());
 	}
 
-	const int64 SizeGained = GetAssetsDiskSize(AssetsToDelete);
+	const int64 SizeGained = CPOperations::GetAssetsDiskSize(AssetsToDelete);
 	GetMutableDefault<UCPProjectSettings>()->IncreaseSpaceGained(SizeGained);
 	
 	ObjectTools::DeleteObjects(ObjectsToDelete);

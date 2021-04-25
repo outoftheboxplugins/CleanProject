@@ -65,8 +65,7 @@ void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* from menu."));
 
-				TArray<FAssetData> MapAssetDatas = CPOperations::GetAllGameAssets();
-				CPOperations::CheckDependenciesOf(MapAssetDatas);
+				CPOperations::CheckAllDependencies();
 			})
 
 		));

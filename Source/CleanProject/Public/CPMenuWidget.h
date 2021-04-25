@@ -22,7 +22,7 @@ private:
 	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<int64> SizeGainedAttribute);
 
 private:
-	int64 GetSpaceToWinNow() const { return 1024; }
+	int64 GetSpaceToWinNow() const;
 
 // Resizing
 private:
