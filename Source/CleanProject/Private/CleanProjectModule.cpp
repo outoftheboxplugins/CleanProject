@@ -9,6 +9,10 @@
 #include "ContentBrowserModule.h"
 #include "ISettingsModule.h"
 #include "LevelEditor.h"
+#include "WorkspaceMenuStructure.h"
+#include "WorkspaceMenuStructureModule.h"
+
+#define LOCTEXT_NAMESPACE "CleanProject"
 
 namespace
 {
@@ -16,6 +20,8 @@ namespace
 	const FName SettingsProjectContainer	= FName("Project");	
 	const FName SettingsCategory			= FName("Plugins");
 	const FName SettingsSection				= FName("Clean Project");
+
+	const FName MenuTabName					= FName("CleanProjectMenuTab");
 }
 
 void FCleanProjectModule::StartupModule()
@@ -25,12 +31,14 @@ void FCleanProjectModule::StartupModule()
 	RegisterMenus();
 	RegisterSettings();
 	RegisterAssetActions();
+	RegisterMenuSpawner();
 }
 
 void FCleanProjectModule::ShutdownModule()
 {
 	LOG_TRACE();
 
+	UnregisterMenuSpawner();
 	UnregisterAssetActions();
 	UnregisterSettings();
 	UnregisterMenus();
@@ -61,13 +69,13 @@ void FCleanProjectModule::RegisterSettings()
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
 		SettingsModule->RegisterSettings(SettingsEditorContainer, SettingsCategory, SettingsSection,
-			NSLOCTEXT("CleanProject", "SettingsName", "Clean Project"),
-			NSLOCTEXT("CleanProject", "ettingsDescription", "Cleanup and project management improvements."),
+			LOCTEXT("EditorSettingsName", "Clean Project"),
+			LOCTEXT("EditorSettingsDescription", "Cleanup and project management improvements within this editor."),
 			GetMutableDefault<UCPEditorSettings>());
 
 		SettingsModule->RegisterSettings(SettingsProjectContainer, SettingsCategory, SettingsSection,
-			NSLOCTEXT("CleanProject", "SettingsName", "Clean Project"),
-			NSLOCTEXT("CleanProject", "ettingsDescription", "Cleanup and project management improvements."),
+			LOCTEXT("ProjectSettingsName", "Clean Project"),
+			LOCTEXT("ProjectSettingsDescription", "Cleanup and project management improvements within this project."),
 			GetMutableDefault<UCPProjectSettings>());
 	}
 }
@@ -87,13 +95,11 @@ void FCleanProjectModule::RegisterAssetActions()
 	{
 		TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuExtenderDelegates = ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
 		CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateStatic(CPMenuExtensions::CreateContentBrowserAssetsExtender));
-		CBExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
+		CBAssetsExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
 
 		TArray<FContentBrowserMenuExtender_SelectedPaths>& CBFolderMenuExtenderDelegates = ContentBrowserModule->GetAllPathViewContextMenuExtenders();
 		CBFolderMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedPaths::CreateStatic(CPMenuExtensions::CreateContentBrowserFoldersExtender));
-		
-			
-			//.Add(FContentBrowserMenuExtender_SelectedPaths::CreateLambda([WeakThis](const
+		CBFoldersExtenderDelegateHandle = CBFolderMenuExtenderDelegates.Last().GetHandle();
 	}
 }
 
@@ -102,6 +108,26 @@ void FCleanProjectModule::UnregisterAssetActions()
 	if (FContentBrowserModule* ContentBrowserModule = FModuleManager::GetModulePtr<FContentBrowserModule>(TEXT("ContentBrowser")))
 	{
 		TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuExtenderDelegates = ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
-		CBAssetMenuExtenderDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedAssets& Delegate) { return Delegate.GetHandle() == CBExtenderDelegateHandle; });
+		CBAssetMenuExtenderDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedAssets& Delegate) { return Delegate.GetHandle() == CBAssetsExtenderDelegateHandle; });
+		
+		TArray<FContentBrowserMenuExtender_SelectedPaths>& CBFolderMenuExtenderDelegates = ContentBrowserModule->GetAllPathViewContextMenuExtenders();
+		CBFolderMenuExtenderDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedPaths& Delegate) { return Delegate.GetHandle() == CBFoldersExtenderDelegateHandle; });
 	}
 }
+
+void FCleanProjectModule::RegisterMenuSpawner()
+{
+	FTabSpawnerEntry& WatchTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateStatic(CPMenuExtensions::SpawnMenuTab));
+
+	WatchTab
+		.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Clean Project Menu"))
+		.SetTooltipText(LOCTEXT("MenuTabTooltip", "Organize your project and visualize the data behind the process."))
+		.SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory());
+}
+
+void FCleanProjectModule::UnregisterMenuSpawner()
+{
+	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(MenuTabName);
+}
+
+#undef LOCTEXT_NAMESPACE

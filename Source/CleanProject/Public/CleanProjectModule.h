@@ -24,9 +24,13 @@ private:
 	void RegisterAssetActions();
 	void UnregisterAssetActions();
 
+	void RegisterMenuSpawner();
+	void UnregisterMenuSpawner();
+
 private:
 	TSharedPtr<FExtender> MenuExtender;
-	FDelegateHandle CBExtenderDelegateHandle;
+	FDelegateHandle CBAssetsExtenderDelegateHandle;
+	FDelegateHandle CBFoldersExtenderDelegateHandle;
 };
 
 IMPLEMENT_MODULE(FCleanProjectModule, CleanProject);

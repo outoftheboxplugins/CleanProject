@@ -15,12 +15,8 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 {
 	ReportAssets = AssetsToReport;
 
-	int64 TotalDiskSize = 0;
-	for (const FAssetData& AssetDataReported : ReportAssets)
-	{
-		TotalDiskSize += GetAssetDiskSize(AssetDataReported);
-	}
-
+	const int64 TotalDiskSize = GetAssetsDiskSize(ReportAssets);
+	
 	ChildSlot
 	[
 		SNew(SVerticalBox)
@@ -185,6 +181,16 @@ void SCPAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData) const
 
 //////////////////////////////////////////////////////////////////////////
 // Custom Report column
+int64 SCPAssetDialog::GetAssetsDiskSize(const TArray<FAssetData>& AssetsList) const
+{
+	int64 TotalDiskSize = 0;
+	for (const FAssetData& AssetDataReported : AssetsList)
+	{
+		TotalDiskSize += GetAssetDiskSize(AssetDataReported);
+	}
+
+	return TotalDiskSize;
+}
 
 int64 SCPAssetDialog::GetAssetDiskSize(const FAssetData& Asset) const
 {
@@ -250,6 +256,9 @@ void SCPAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
 		ObjectsToDelete.Add(AssetData.GetAsset());
 	}
 
+	const int64 SizeGained = GetAssetsDiskSize(AssetsToDelete);
+	GetMutableDefault<UCPProjectSettings>()->IncreaseSpaceGained(SizeGained);
+	
 	ObjectTools::DeleteObjects(ObjectsToDelete);
 	RemoveFromList(AssetsToDelete);
 }

@@ -1,6 +1,7 @@
 // Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
 #include "CPMenuExtensions.h"
 
+#include "CPMenuWidget.h"
 #include "CPOperations.h"
 
 #include "Framework/MultiBox/MultiBoxExtender.h" // for FExtender
@@ -34,6 +35,15 @@ namespace Helpers
 	}
 }
 
+TSharedRef<SDockTab> CPMenuExtensions::SpawnMenuTab(const FSpawnTabArgs& Args)
+{
+	return SNew(SDockTab)
+		.TabRole(ETabRole::NomadTab)
+		[
+			SNew(SCPMenuWidget)
+		];
+}
+
 TSharedPtr<FExtender> CPMenuExtensions::CreateMenuExtender()
 {
 	TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender);
@@ -53,13 +63,10 @@ void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([]()
 			{
-				auto Settings = GetDefault<UCPProjectSettings>();
-				bool checkMaps = Settings->bCheckAllMapsRefernece;
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* from menu."));
 
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* with CheckMaps: %s from menu."), (checkMaps ? "enabled" : "disabled"));
-
-				TArray<FAssetData> MapAssetDatas = checkMaps ? CPOperations::GetAllGameAssets<UWorld>() : TArray<FAssetData>();
-				CPOperations::CheckDependenciesBasedOn(MapAssetDatas);
+				TArray<FAssetData> MapAssetDatas = CPOperations::GetAllGameAssets();
+				CPOperations::CheckDependenciesOf(MapAssetDatas);
 			})
 
 		));

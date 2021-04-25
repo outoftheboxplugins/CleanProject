@@ -6,13 +6,6 @@
 namespace CPOperations
 {
 	/*
-	* Shows all other assets from the content browser which are not used by the selected assets or their dependencies.
-	* Assets to test: all game assets
-	* Dependencies of: selected assets
-	*/
-	void CheckDependenciesBasedOn(TArray<FAssetData> SelectedAssets);
-
-	/*
 	* Shows all all the selected assets which are not used by any other asset in the content browser.
 	* Assets to test: selected assets
 	* Dependencies of: all game assets

@@ -5,6 +5,8 @@
 
 namespace CPMenuExtensions
 {
+	TSharedRef<SDockTab> SpawnMenuTab(const FSpawnTabArgs& Args);
+
 	TSharedPtr<FExtender> CreateMenuExtender();
 	void AddMenuExtension(FMenuBuilder& MenuBuilder);
 

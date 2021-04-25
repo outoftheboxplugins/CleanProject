@@ -21,6 +21,9 @@ public:
 	void WhitelistAssets(const TArray<FAssetData> Assets);
 	void WhitelistAssets(const TArray<FName> AssetPaths);
 
+	void IncreaseSpaceGained(int64 ExtraSpaceGained);
+	int64 GetSpaceGained() const { return SpaceGained; }
+
 public:
 	// Assets inside the whitelist are always considered referenced.
 	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
@@ -33,5 +36,9 @@ public:
 	// When performing a project-wide clean, should all the maps be included in the reference check?
 	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
 	bool bCheckAllMapsRefernece = true;
+
+protected:
+	UPROPERTY(VisibleAnywhere, config, Category = "Report")
+	int64 SpaceGained;
 };
 

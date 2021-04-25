@@ -8,16 +8,17 @@ public class CleanProject : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"AssetManagerEditor",
                 "Core",
                 "CoreUObject",
                 "EditorStyle",
                 "Engine",
                 "InputCore",
                 "MainFrame",
-                "Slate",
                 "SlateCore",
                 "UnrealEd",
+				"AssetManagerEditor",
+				"Slate",
+				"WorkspaceMenuStructure",
 			} );
 	}
 }

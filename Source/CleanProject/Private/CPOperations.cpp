@@ -126,14 +126,9 @@ namespace OperationsHelpers
 
 namespace CPOperations
 {
-	void CheckDependenciesBasedOn(TArray<FAssetData> SelectedAssets)
-	{
-		CheckDependenciesInternal(GetAllGameAssets(), SelectedAssets);
-	}
-
 	void CheckDependenciesOf(TArray<FAssetData> SelectedAssets)
 	{
-		CheckDependenciesInternal(SelectedAssets, GetAllGameAssets());
+		CheckDependenciesInternal(SelectedAssets, GetAllGameAssets<UWorld>());
 	}
 
 	void CheckDependenciesInternal(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest)
