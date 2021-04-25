@@ -13,6 +13,29 @@ namespace
 	const FMargin RightRowPadding		= FMargin(3.0f, 2.5f, 2.0f, 2.5f);
 }
 
+class CalculateSpaceGainedAsyncTask : public FNonAbandonableTask
+{
+	TArray<FAssetData> AllAssets;
+	TArray<FAssetData> AllWorlds;
+public:
+	CalculateSpaceGainedAsyncTask(TArray<FAssetData> InAllAssets, TArray<FAssetData> InAllWorlds) 
+	{
+		AllAssets = InAllAssets; 
+		AllWorlds = InAllWorlds;
+	}
+
+	FORCEINLINE TStatId GetStatId() const { RETURN_QUICK_DECLARE_CYCLE_STAT(CalculateSpaceGainedAsyncTask, STATGROUP_ThreadPoolAsyncTasks); }
+
+	/*This function is executed when we tell our task to execute*/
+	void DoWork()
+	{
+		TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusuedAssets(AllAssets, AllWorlds);
+		int64 SpaceToGain = CPOperations::GetAssetsDiskSize(UnusedAssets);
+
+		UE_LOG(LogTemp, Warning, TEXT("DONE %lld"), SpaceToGain);
+	}
+};
+
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
     ChildSlot
@@ -135,7 +158,17 @@ int64 SCPMenuWidget::GetSpaceToWinNow() const
 
 FReply SCPMenuWidget::OnRefreshSpaceToGain()
 {
-	SpaceToGain = CPOperations::GetUnusuedAssetsDiskSize();
+	TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
+	TArray<FAssetData> AllWorlds = CPOperations::GetAllGameAssets<UWorld>();
+
+	for (const auto& AssetToLoad : AllAssets)
+	{
+		AssetToLoad.GetPackage();
+	}
+
+	(new FAutoDeleteAsyncTask<CalculateSpaceGainedAsyncTask>(AllAssets, AllWorlds))->StartBackgroundTask();
+
+	//SpaceToGain = CPOperations::GetUnusuedAssetsDiskSize();
 	return FReply::Handled();
 }
 
