@@ -3,6 +3,7 @@
 #include "CPMenuWidget.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "../Private/PluginManager.h"
+#include "Misc/ScopedSlowTask.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -160,10 +161,18 @@ FReply SCPMenuWidget::OnRefreshSpaceToGain()
 {
 	TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
 	TArray<FAssetData> AllWorlds = CPOperations::GetAllGameAssets<UWorld>();
-
-	for (const auto& AssetToLoad : AllAssets)
 	{
-		AssetToLoad.GetPackage();
+		FScopedSlowTask SlowTask(AllAssets.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
+		bool bShowCancelButton = true;
+		bool bAllowPIE = false;
+		SlowTask.MakeDialog(bShowCancelButton, bAllowPIE);
+
+		for (const FAssetData& AssetToLoad : AllAssets)
+		{
+			FString AssetName = AssetToLoad.GetFullName();
+			SlowTask.EnterProgressFrame(1.f, FText::FromString(AssetName));
+			AssetToLoad.GetPackage();
+		}
 	}
 
 	(new FAutoDeleteAsyncTask<CalculateSpaceGainedAsyncTask>(AllAssets, AllWorlds))->StartBackgroundTask();

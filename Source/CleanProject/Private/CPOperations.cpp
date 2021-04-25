@@ -159,7 +159,7 @@ namespace CPOperations
 		{
 			FScopedSlowTask SlowTask(DependenciesToTest.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
 			bool bShowCancelButton = true;
-			bool bAllowPIE = true;
+			bool bAllowPIE = false;
 			SlowTask.MakeDialog(bShowCancelButton, bAllowPIE);
 
 			for (const FName& CurrentPackageName : PackageNameToCheck)
