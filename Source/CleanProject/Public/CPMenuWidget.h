@@ -18,11 +18,11 @@ public:
 
     void Construct(const FArguments& InArgs);
 
-private:
-	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<int64> SizeGainedAttribute);
+	SCPMenuWidget();
+	~SCPMenuWidget();
 
 private:
-	int64 GetSpaceToWinNow() const;
+	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute);
 
 // Resizing
 private:
@@ -30,12 +30,15 @@ private:
 	float GetInfoSlotSizeLeft() const { return UniformInfoSlotSize; }
 	float GetInfoSlotSizeRight() const { return 1.0f - UniformInfoSlotSize; }
 
+	FTimerHandle RefreshTimerHandle;
+	int64 GetUnusedAssetsCount() const;
+	void RefreshUnusedAssets();
+
 // Buttons
 private:
-	FReply OnRefreshSpaceToGain();
 	FReply OnRunCleanupNow();
 	FReply OnGoToDocumentation();
 
-	int64 SpaceToGain = 1024;
+	int64 UnusedAssetsCount = 1024;
 	float UniformInfoSlotSize = 0.5f;
 };

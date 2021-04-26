@@ -9,36 +9,26 @@
 
 namespace
 {
+	const float UnusedRefreshInterval	= 7.5f;
 	const float ScrollbarPaddingSize	= 16.0f;
 	const FMargin LeftRowPadding		= FMargin(0.0f, 2.5f, 2.0f, 2.5f);
 	const FMargin RightRowPadding		= FMargin(3.0f, 2.5f, 2.0f, 2.5f);
 }
 
-class CalculateSpaceGainedAsyncTask : public FNonAbandonableTask
+SCPMenuWidget::SCPMenuWidget()
 {
-	TArray<FAssetData> AllAssets;
-	TArray<FAssetData> AllWorlds;
-public:
-	CalculateSpaceGainedAsyncTask(TArray<FAssetData> InAllAssets, TArray<FAssetData> InAllWorlds) 
-	{
-		AllAssets = InAllAssets; 
-		AllWorlds = InAllWorlds;
-	}
+	GEditor->GetTimerManager()->SetTimer(RefreshTimerHandle, [=]() { RefreshUnusedAssets(); }, UnusedRefreshInterval, true);
+}
 
-	FORCEINLINE TStatId GetStatId() const { RETURN_QUICK_DECLARE_CYCLE_STAT(CalculateSpaceGainedAsyncTask, STATGROUP_ThreadPoolAsyncTasks); }
-
-	/*This function is executed when we tell our task to execute*/
-	void DoWork()
-	{
-		TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusuedAssets(AllAssets, AllWorlds);
-		int64 SpaceToGain = CPOperations::GetAssetsDiskSize(UnusedAssets);
-
-		UE_LOG(LogTemp, Warning, TEXT("DONE %lld"), SpaceToGain);
-	}
-};
+SCPMenuWidget::~SCPMenuWidget()
+{
+	GEditor->GetTimerManager()->ClearTimer(RefreshTimerHandle);
+}
 
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
+	RefreshUnusedAssets();
+
     ChildSlot
     [
 		SNew(SVerticalBox)
@@ -47,16 +37,22 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		.AutoHeight()
 		[
 			CreateInfoWidget(LOCTEXT("ProjectSpaceGained", "Space gained in project"), 
-			TAttribute<int64>::Create(TAttribute<int64>::FGetter::CreateLambda([=]()
+			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([=]()
 					{
-						return GetDefault<UCPProjectSettings>()->GetSpaceGained();
+						int64 SizeGained = GetDefault<UCPProjectSettings>()->GetSpaceGained();
+						return (SizeGained > 0) ? FText::AsMemory(SizeGained) : LOCTEXT("UnkownSize", "UnkownSize");
 					})))
 		]
 		
 		+SVerticalBox::Slot()
 		.AutoHeight()
 		[
-			CreateInfoWidget(LOCTEXT("ProjectSpaceToGain", "Run the Cleanup now to save"), TAttribute<int64>(this, &SCPMenuWidget::GetSpaceToWinNow))
+			CreateInfoWidget(LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets"), 
+			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([=]()
+				{
+					int64 UsedAssets = GetUnusedAssetsCount();
+					return FText::AsNumber(UsedAssets);
+				})))
 		]
 
 		+SVerticalBox::Slot()
@@ -85,13 +81,6 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 				.ToolTipText(LOCTEXT("GoToDocsTip", "Open our documentation to get a better understand of the plugin."))
 				.OnClicked(this, &SCPMenuWidget::OnGoToDocumentation)
 			]
-			+SHorizontalBox::Slot()
-			[
-				SNew(SButton)
-				.Text(LOCTEXT("RefreshMemoryToGain", "Refresh Stats"))
-				.ToolTipText(LOCTEXT("RefreshMemoryToGainTip", "Update the memory to gained to running a check. WARNING: This might take a while."))
-				.OnClicked(this, &SCPMenuWidget::OnRefreshSpaceToGain)
-			]
 		]
 
 		+SVerticalBox::Slot()
@@ -118,7 +107,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
     ];
 }
 
-TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<int64> SizeGainedAttribute)
+TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute)
 {
 	return SNew(SBorder)
 		.BorderImage(FEditorStyle::GetBrush("DetailsView.CategoryMiddle"))
@@ -142,43 +131,21 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<int6
 			.Value(TAttribute<float>::Create(TAttribute<float>::FGetter::CreateSP(this, &SCPMenuWidget::GetInfoSlotSizeRight)))
 			[
 				SNew(STextBlock)
-				.Text_Lambda([SizeGainedAttribute]
-					{ 
-						const int64 SizeGained = SizeGainedAttribute.Get();
-						return (SizeGained > 0) ? FText::AsMemory(SizeGained) : LOCTEXT("UnkownSize", "UnkownSize");
-					})
+				.Text(MetricValueAttribute)
 				.Justification(ETextJustify::Center)
 			]
 		];
 }
 
-int64 SCPMenuWidget::GetSpaceToWinNow() const
+int64 SCPMenuWidget::GetUnusedAssetsCount() const
 {
-	return SpaceToGain;
+	return UnusedAssetsCount;
 }
 
-FReply SCPMenuWidget::OnRefreshSpaceToGain()
+void SCPMenuWidget::RefreshUnusedAssets()
 {
-	TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
-	TArray<FAssetData> AllWorlds = CPOperations::GetAllGameAssets<UWorld>();
-	{
-		FScopedSlowTask SlowTask(AllAssets.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
-		bool bShowCancelButton = true;
-		bool bAllowPIE = false;
-		SlowTask.MakeDialog(bShowCancelButton, bAllowPIE);
-
-		for (const FAssetData& AssetToLoad : AllAssets)
-		{
-			FString AssetName = AssetToLoad.GetFullName();
-			SlowTask.EnterProgressFrame(1.f, FText::FromString(AssetName));
-			AssetToLoad.GetPackage();
-		}
-	}
-
-	(new FAutoDeleteAsyncTask<CalculateSpaceGainedAsyncTask>(AllAssets, AllWorlds))->StartBackgroundTask();
-
-	//SpaceToGain = CPOperations::GetUnusuedAssetsDiskSize();
-	return FReply::Handled();
+	TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusuedAssets();
+	UnusedAssetsCount = UnusedAssets.Num();
 }
 
 FReply SCPMenuWidget::OnRunCleanupNow()

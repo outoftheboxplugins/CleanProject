@@ -14,6 +14,7 @@ namespace CPOperations
 	void CheckDependenciesOf(TArray<FAssetData> SelectedAssets);
 
 	// Return which of the assets are unusued based on the selected one.
+	TArray<FAssetData> CheckForUnusuedAssets();
 	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest);
 	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest);
 

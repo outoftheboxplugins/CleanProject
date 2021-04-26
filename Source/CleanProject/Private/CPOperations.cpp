@@ -126,6 +126,12 @@ namespace OperationsHelpers
 
 namespace CPOperations
 {
+	TArray<FAssetData> CheckForUnusuedAssets()
+	{
+		TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
+		return CheckForUnusuedAssets(AllAssets);
+	}
+
     TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest)
     {
 		return CheckForUnusuedAssets(AssetsToTest, GetAllGameAssets<UWorld>());
@@ -219,11 +225,22 @@ namespace CPOperations
 	int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList)
 	{
 		int64 TotalDiskSize = 0;
-		for (const FAssetData& AssetDataReported : AssetsList)
 		{
-			TotalDiskSize += GetAssetDiskSize(AssetDataReported);
-		}
+			FScopedSlowTask SlowTask(AssetsList.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
+			bool bShowCancelButton = true;
+			bool bAllowPIE = false;
+			SlowTask.MakeDialog(bShowCancelButton, bAllowPIE);
 
+			for (const FAssetData& AssetDataReported : AssetsList)
+			{
+				const FText CurrentAssetName = FText::FromName(AssetDataReported.PackageName);
+				const FText CurrentAssetText = FText::Format(LOCTEXT("CurrentAsset", "Current Asset: {0}"), CurrentAssetName);
+				SlowTask.EnterProgressFrame(1.f, CurrentAssetText);
+
+				TotalDiskSize += GetAssetDiskSize(AssetDataReported);
+			}
+		}
+		
 		return TotalDiskSize;
 	}
 

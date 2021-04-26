@@ -221,6 +221,4 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 	MenuBuilder.EndSection();
 }
 
-
 #undef LOCTEXT_NAMESPACE
-
