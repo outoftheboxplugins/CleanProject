@@ -30,4 +30,5 @@ void UCPProjectSettings::WhitelistAssets(const TArray<FName> AssetPaths)
 void UCPProjectSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)
 {
 	SpaceGained += ExtraSpaceGained;
+	SaveConfig();
 }
