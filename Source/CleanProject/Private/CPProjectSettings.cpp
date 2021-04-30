@@ -9,6 +9,7 @@ void UCPProjectSettings::WhitelistAsset(const FAssetData& Asset)
 void UCPProjectSettings::WhitelistAsset(const FName& AssetPath)
 {
 	WhitelistAssetsPaths.Add(AssetPath);
+	SaveConfig();
 }
 
 void UCPProjectSettings::WhitelistAssets(const TArray<FAssetData> Assets)

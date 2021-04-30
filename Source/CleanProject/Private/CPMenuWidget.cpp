@@ -9,15 +9,48 @@
 
 namespace
 {
-	const float UnusedRefreshInterval	= 7.5f;
-	const float ScrollbarPaddingSize	= 16.0f;
-	const FMargin LeftRowPadding		= FMargin(0.0f, 2.5f, 2.0f, 2.5f);
-	const FMargin RightRowPadding		= FMargin(3.0f, 2.5f, 2.0f, 2.5f);
+	const float UnusedRefreshDelay = 1.5f;
+	const float UnusedRefreshInterval = 7.5f;
+	const float ScrollbarPaddingSize = 16.0f;
+
+	const FName ColumnVariableName = FName("AssetName");
+	
+	const FMargin LeftRowPadding = FMargin(0.0f, 2.5f, 2.0f, 2.5f);
+	const FMargin RightRowPadding = FMargin(3.0f, 2.5f, 2.0f, 2.5f);
 }
 
-SCPMenuWidget::SCPMenuWidget()
+class SVSVariableRow : public SMultiColumnTableRow<FAssetDataPtr>
 {
-	GEditor->GetTimerManager()->SetTimer(RefreshTimerHandle, [=]() { RefreshUnusedAssets(); }, UnusedRefreshInterval, true);
+public:
+	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem);
+
+private:
+	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
+
+private:
+	FAssetDataPtr Item;
+};
+
+void SVSVariableRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem)
+{
+	// Setting the list item since it will be used by the super constructor.
+	Item = InListItem;
+
+	FSuperRowType::Construct(InArgs, InOwnerTable);
+}
+
+TSharedRef<SWidget> SVSVariableRow::GenerateWidgetForColumn(const FName& ColumnName)
+{
+	if (ColumnName == ColumnVariableName)
+	{
+		return SNew(STextBlock)
+			.Text(FText::FromName(*Item));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Could not identify column based on name."));
+		return SNew(STextBlock).Text(LOCTEXT("WatchUnkownColumn", "Unknown Column"));
+	}
 }
 
 SCPMenuWidget::~SCPMenuWidget()
@@ -27,8 +60,6 @@ SCPMenuWidget::~SCPMenuWidget()
 
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
-	RefreshUnusedAssets();
-
     ChildSlot
     [
 		SNew(SVerticalBox)
@@ -61,7 +92,36 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		[
 			SNew(SSeparator)
 		]
-		
+
+		+SVerticalBox::Slot()
+		[
+			SAssignNew(MapAssetsListView, SListView<FAssetDataPtr>)
+			.ListItemsSource(&MapAssets)
+			.OnGenerateRow(this, &SCPMenuWidget::MakeVariableTableRow)
+			.HeaderRow(
+				SNew(SHeaderRow)
+				+SHeaderRow::Column(ColumnVariableName).DefaultLabel(LOCTEXT("MapAssetsColumn", "Map Assets"))
+			)
+		]
+
+		+SVerticalBox::Slot()
+		[
+			SAssignNew(WhitelistAssetsListView, SListView<FAssetDataPtr>)
+			.ListItemsSource(&WhitelistAssets)
+			.OnGenerateRow(this, &SCPMenuWidget::MakeVariableTableRow)
+			.HeaderRow(
+				SNew(SHeaderRow)
+				+SHeaderRow::Column(ColumnVariableName).DefaultLabel(LOCTEXT("WhitelistAssetsColumn", "Whitelist Assets"))
+			)
+		]
+
+		+SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(0, 5, 0, 5)
+		[
+			SNew(SSeparator)
+		]
+
 		+SVerticalBox::Slot()
 		.AutoHeight()
 		[
@@ -81,30 +141,17 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 				.ToolTipText(LOCTEXT("GoToDocsTip", "Open our documentation to get a better understand of the plugin."))
 				.OnClicked(this, &SCPMenuWidget::OnGoToDocumentation)
 			]
-		]
-
-		+SVerticalBox::Slot()
-		.AutoHeight()
-		.Padding(0, 5, 0, 5)
-		[
-			SNew(SSeparator)
-		]
-
-		+SVerticalBox::Slot()
-		.FillHeight(1.0f)
-		[
-			SNew(SSpacer)
-		]
-
-		+SVerticalBox::Slot()
-		.AutoHeight()
-		[
-			SNew(SButton)
-			.Text(LOCTEXT("GoToDocumentation", "Go to documentation"))
-			.ToolTipText(LOCTEXT("GoToDocumentationTip", "Visit our impressive and comprehensive documentation to help you use the system."))
-			.OnClicked(this, &SCPMenuWidget::OnGoToDocumentation)
+			+SHorizontalBox::Slot()
+			[
+				SNew(SButton)
+				.Text(LOCTEXT("Refresh", "Refresh"))
+				.ToolTipText(LOCTEXT("RefreshTip", "Refresh the stats right now."))
+				.OnClicked(this, &SCPMenuWidget::OnRefreshUnushed)
+			]
 		]
     ];
+
+	GEditor->GetTimerManager()->SetTimer(RefreshTimerHandle, [=]() { RefreshUnusedAssets(); }, UnusedRefreshInterval, true, UnusedRefreshDelay);
 }
 
 TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute)
@@ -137,6 +184,27 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FTex
 		];
 }
 
+TSharedRef<ITableRow> SCPMenuWidget::MakeVariableTableRow(FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
+{
+	return SNew(SVSVariableRow, OwnerTable, InInfo);
+}
+
+bool SCPMenuWidget::InsertUniqueAsset(TArray<FAssetDataPtr>& ListToAdd, FName NameToAdd)
+{
+	FAssetDataPtr* FoundAssetPtr = ListToAdd.FindByPredicate([&NameToAdd](const FAssetDataPtr& CurrentElement)
+		{
+			return (*CurrentElement == NameToAdd);
+		});
+
+	if (!FoundAssetPtr)
+	{
+		ListToAdd.Add(MakeShareable(new FName(NameToAdd)));
+		return true;
+	}
+
+	return false;
+}
+
 int64 SCPMenuWidget::GetUnusedAssetsCount() const
 {
 	return UnusedAssetsCount;
@@ -146,11 +214,35 @@ void SCPMenuWidget::RefreshUnusedAssets()
 {
 	TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusuedAssets();
 	UnusedAssetsCount = UnusedAssets.Num();
+
+	for (const FAssetData& WorldMapAsset : CPOperations::GetAllGameAssets<UWorld>())
+	{
+		const bool bNeedsRefresh = InsertUniqueAsset(MapAssets, WorldMapAsset.ObjectPath);
+		if (bNeedsRefresh)
+		{
+			MapAssetsListView->RebuildList();
+		}
+	}
+
+	for (const FName& WhiteListAsset : GetDefault<UCPProjectSettings>()->WhitelistAssetsPaths)
+	{
+		const bool bNeedsRefresh = InsertUniqueAsset(WhitelistAssets, WhiteListAsset);
+		if (bNeedsRefresh)
+		{
+			WhitelistAssetsListView->RebuildList();
+		}
+	}
 }
 
 FReply SCPMenuWidget::OnRunCleanupNow()
 {
 	CPOperations::CheckAllDependencies();
+	return FReply::Handled();
+}
+
+FReply SCPMenuWidget::OnRefreshUnushed()
+{
+	RefreshUnusedAssets();
 	return FReply::Handled();
 }
 

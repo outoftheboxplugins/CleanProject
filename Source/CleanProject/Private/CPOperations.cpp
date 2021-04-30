@@ -163,7 +163,7 @@ namespace CPOperations
 		// Check the dependencies of the collected packages with a progressbar.
 		TSet<FName> PackageNamesChecked;
 		{
-			FScopedSlowTask SlowTask(DependenciesToTest.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
+			FScopedSlowTask SlowTask(PackageNameToCheck.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
 			bool bShowCancelButton = true;
 			bool bAllowPIE = false;
 			SlowTask.MakeDialog(bShowCancelButton, bAllowPIE);

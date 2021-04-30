@@ -10,6 +10,8 @@
  * Menu Widget containing a UI interface for the developer to interact with the Clean Project.
  */
 
+using FAssetDataPtr = TSharedPtr<FName>;
+
 class SCPMenuWidget : public SCompoundWidget
 {
 public:
@@ -17,18 +19,19 @@ public:
 	SLATE_END_ARGS()
 
     void Construct(const FArguments& InArgs);
-
-	SCPMenuWidget();
 	~SCPMenuWidget();
 
 private:
 	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute);
+	TSharedRef<ITableRow> MakeVariableTableRow(FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable);
 
 // Resizing
 private:
 	void OnInfoSlotResized(float newSize) { UniformInfoSlotSize = newSize; }
 	float GetInfoSlotSizeLeft() const { return UniformInfoSlotSize; }
 	float GetInfoSlotSizeRight() const { return 1.0f - UniformInfoSlotSize; }
+
+	bool InsertUniqueAsset(TArray<FAssetDataPtr>& ListToAdd, FName NameToAdd);
 
 	FTimerHandle RefreshTimerHandle;
 	int64 GetUnusedAssetsCount() const;
@@ -37,7 +40,14 @@ private:
 // Buttons
 private:
 	FReply OnRunCleanupNow();
+	FReply OnRefreshUnushed();
 	FReply OnGoToDocumentation();
+
+	TSharedPtr<SListView<FAssetDataPtr>> MapAssetsListView;
+	TArray<FAssetDataPtr> MapAssets;
+
+	TSharedPtr<SListView<FAssetDataPtr>> WhitelistAssetsListView;
+	TArray<FAssetDataPtr> WhitelistAssets;
 
 	int64 UnusedAssetsCount = 1024;
 	float UniformInfoSlotSize = 0.5f;
