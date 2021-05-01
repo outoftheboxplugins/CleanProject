@@ -16,7 +16,6 @@ namespace CPOperations
 	// Return which of the assets are unusued based on the selected one.
 	TArray<FAssetData> CheckForUnusuedAssets();
 	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest);
-	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest);
 
 	int64 GetAssetDiskSize(const FAssetData& Asset);
 	int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList);

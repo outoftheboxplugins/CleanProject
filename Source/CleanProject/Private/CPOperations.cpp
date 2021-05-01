@@ -20,7 +20,7 @@ namespace OperationsHelpers
 		{
 			AssetsList.RemoveAllSwap([&WhitelistAssetPath](const FAssetData& AssetData)
 				{
-					return AssetData.ObjectPath == WhitelistAssetPath;
+					return AssetData.PackageName == WhitelistAssetPath;
 				});
 		}
 	}
@@ -28,17 +28,6 @@ namespace OperationsHelpers
 	void RemoveAllAssetsByName(TArray<FAssetData>& AssetsList, const TSet<FName>& AssetsNameToRemove)
 	{
 		RemoveAllAssetsByName(AssetsList, AssetsNameToRemove.Array());
-	}
-
-	void RemoveAllAssets(TArray<FAssetData>& AssetsList, const TArray<FAssetData>& AssetsToRemove)
-	{
-		TArray<FName> AssetsPaths;
-		for (auto PackageIt = AssetsToRemove.CreateConstIterator(); PackageIt; ++PackageIt)
-		{
-			AssetsPaths.Add(PackageIt->ObjectPath);
-		}
-
-		RemoveAllAssetsByName(AssetsList, AssetsPaths);
 	}
 
 	void GetEmptyFolderInPath(const FString& BaseDirectory, TArray<FString>& OutEmptyFolders)
@@ -132,17 +121,9 @@ namespace CPOperations
 		return CheckForUnusuedAssets(AllAssets);
 	}
 
-    TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest)
-    {
-		return CheckForUnusuedAssets(AssetsToTest, GetAllGameAssets<UWorld>());
-    }
-
-	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest, TArray<FAssetData> DependenciesToTest)
+	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest)
 	{
 		auto Settings = GetDefault<UCPProjectSettings>();
-
-		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, Settings->WhitelistAssetsPaths);
-		OperationsHelpers::RemoveAllAssets(AssetsToTest, DependenciesToTest);
 
 		// Collect all the names we want to check dependencies for.
 		TSet<FName> PackageNameToCheck;
@@ -154,11 +135,20 @@ namespace CPOperations
 					PackageNameToCheck.Add(WhitelistAssetPath);
 				}
 			}
-			for (const FAssetData& AssetData : DependenciesToTest)
+			if (Settings->bCheckAllMapsRefernece)
 			{
-				PackageNameToCheck.Add(AssetData.PackageName);
+				for (const FAssetData& WorldAsset : GetAllGameAssets<UWorld>())
+				{
+					PackageNameToCheck.Add(WorldAsset.PackageName);
+				}
 			}
 		}
+
+		// Remove the whitelisted assets regardless if they are used selected for depedencies or not.
+		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, Settings->WhitelistAssetsPaths);
+
+		// Remove the packages we are going to check dependencies for from the assets to test, because they depend on themselves.
+		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, PackageNameToCheck);
 
 		// Check the dependencies of the collected packages with a progressbar.
 		TSet<FName> PackageNamesChecked;

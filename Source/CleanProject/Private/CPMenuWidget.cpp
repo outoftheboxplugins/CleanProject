@@ -14,43 +14,78 @@ namespace
 	const float ScrollbarPaddingSize = 16.0f;
 
 	const FName ColumnVariableName = FName("AssetName");
+
+	const FLinearColor EnabledDepedencyColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	const FLinearColor DisabledDepedencyColor = FLinearColor(0.25f, 0.25f, 0.25f, 1.0f);
 	
 	const FMargin LeftRowPadding = FMargin(0.0f, 2.5f, 2.0f, 2.5f);
 	const FMargin RightRowPadding = FMargin(3.0f, 2.5f, 2.0f, 2.5f);
 }
 
-class SVSVariableRow : public SMultiColumnTableRow<FAssetDataPtr>
+enum class ECPAssetDependencyType : uint8
+{
+	None,
+	MapAssets,
+	WhitelistAssets,
+};
+
+class SCPAssetDependencyRow : public SMultiColumnTableRow<FAssetDataPtr>
 {
 public:
-	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem);
+	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem, ECPAssetDependencyType InAssetDependencyType);
 
 private:
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
+	FSlateColor GetTextColor() const;
 
 private:
 	FAssetDataPtr Item;
+	ECPAssetDependencyType AssetDependencyType;
 };
 
-void SVSVariableRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem)
+void SCPAssetDependencyRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem, ECPAssetDependencyType InAssetDependencyType)
 {
 	// Setting the list item since it will be used by the super constructor.
 	Item = InListItem;
+	AssetDependencyType = InAssetDependencyType;
 
 	FSuperRowType::Construct(InArgs, InOwnerTable);
 }
 
-TSharedRef<SWidget> SVSVariableRow::GenerateWidgetForColumn(const FName& ColumnName)
+TSharedRef<SWidget> SCPAssetDependencyRow::GenerateWidgetForColumn(const FName& ColumnName)
 {
 	if (ColumnName == ColumnVariableName)
 	{
 		return SNew(STextBlock)
-			.Text(FText::FromName(*Item));
+			.Text(FText::FromName(*Item))
+			.ColorAndOpacity(this, &SCPAssetDependencyRow::GetTextColor);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Could not identify column based on name."));
 		return SNew(STextBlock).Text(LOCTEXT("WatchUnkownColumn", "Unknown Column"));
 	}
+}
+
+FSlateColor SCPAssetDependencyRow::GetTextColor() const
+{
+	const UCPProjectSettings* ProjectSettings = GetDefault<UCPProjectSettings>();
+	bool bIsEnabled = false;
+
+	switch (AssetDependencyType)
+	{
+	case ECPAssetDependencyType::None:
+		break;
+	case ECPAssetDependencyType::MapAssets:
+		bIsEnabled = ProjectSettings->bCheckAllMapsRefernece;
+		break;
+	case ECPAssetDependencyType::WhitelistAssets:
+		bIsEnabled = ProjectSettings->bCheckWhitelistReferences;
+		break;
+	}
+
+	FLinearColor TextColor = bIsEnabled ? EnabledDepedencyColor : DisabledDepedencyColor;
+	return FSlateColor(TextColor);
 }
 
 SCPMenuWidget::~SCPMenuWidget()
@@ -60,6 +95,8 @@ SCPMenuWidget::~SCPMenuWidget()
 
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
+	const UCPProjectSettings* ProjectSettings = GetDefault<UCPProjectSettings>();
+
     ChildSlot
     [
 		SNew(SVerticalBox)
@@ -97,7 +134,10 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		[
 			SAssignNew(MapAssetsListView, SListView<FAssetDataPtr>)
 			.ListItemsSource(&MapAssets)
-			.OnGenerateRow(this, &SCPMenuWidget::MakeVariableTableRow)
+			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
+				{
+					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo, ECPAssetDependencyType::MapAssets);
+				})
 			.HeaderRow(
 				SNew(SHeaderRow)
 				+SHeaderRow::Column(ColumnVariableName).DefaultLabel(LOCTEXT("MapAssetsColumn", "Map Assets"))
@@ -108,7 +148,10 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		[
 			SAssignNew(WhitelistAssetsListView, SListView<FAssetDataPtr>)
 			.ListItemsSource(&WhitelistAssets)
-			.OnGenerateRow(this, &SCPMenuWidget::MakeVariableTableRow)
+			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
+				{
+					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo, ECPAssetDependencyType::WhitelistAssets);
+				})
 			.HeaderRow(
 				SNew(SHeaderRow)
 				+SHeaderRow::Column(ColumnVariableName).DefaultLabel(LOCTEXT("WhitelistAssetsColumn", "Whitelist Assets"))
@@ -182,11 +225,6 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FTex
 				.Justification(ETextJustify::Center)
 			]
 		];
-}
-
-TSharedRef<ITableRow> SCPMenuWidget::MakeVariableTableRow(FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
-{
-	return SNew(SVSVariableRow, OwnerTable, InInfo);
 }
 
 bool SCPMenuWidget::InsertUniqueAsset(TArray<FAssetDataPtr>& ListToAdd, FName NameToAdd)

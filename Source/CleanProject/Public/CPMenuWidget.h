@@ -23,7 +23,6 @@ public:
 
 private:
 	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute);
-	TSharedRef<ITableRow> MakeVariableTableRow(FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable);
 
 // Resizing
 private:
