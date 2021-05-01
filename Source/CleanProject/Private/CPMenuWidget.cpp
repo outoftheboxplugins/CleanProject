@@ -20,14 +20,27 @@ namespace
 	
 	const FMargin LeftRowPadding = FMargin(0.0f, 2.5f, 2.0f, 2.5f);
 	const FMargin RightRowPadding = FMargin(3.0f, 2.5f, 2.0f, 2.5f);
-}
 
-enum class ECPAssetDependencyType : uint8
-{
-	None,
-	MapAssets,
-	WhitelistAssets,
-};
+	bool GetEnabledByDepedencyType(ECPAssetDependencyType AssetDependencyType)
+	{
+		const UCPProjectSettings* ProjectSettings = GetDefault<UCPProjectSettings>();
+		bool bIsEnabled = false;
+
+		switch (AssetDependencyType)
+		{
+		case ECPAssetDependencyType::None:
+			break;
+		case ECPAssetDependencyType::MapAssets:
+			bIsEnabled = ProjectSettings->bCheckAllMapsRefernece;
+			break;
+		case ECPAssetDependencyType::WhitelistAssets:
+			bIsEnabled = ProjectSettings->bCheckWhitelistReferences;
+			break;
+		}
+
+		return bIsEnabled;
+	}
+}
 
 class SCPAssetDependencyRow : public SMultiColumnTableRow<FAssetDataPtr>
 {
@@ -69,21 +82,7 @@ TSharedRef<SWidget> SCPAssetDependencyRow::GenerateWidgetForColumn(const FName& 
 
 FSlateColor SCPAssetDependencyRow::GetTextColor() const
 {
-	const UCPProjectSettings* ProjectSettings = GetDefault<UCPProjectSettings>();
-	bool bIsEnabled = false;
-
-	switch (AssetDependencyType)
-	{
-	case ECPAssetDependencyType::None:
-		break;
-	case ECPAssetDependencyType::MapAssets:
-		bIsEnabled = ProjectSettings->bCheckAllMapsRefernece;
-		break;
-	case ECPAssetDependencyType::WhitelistAssets:
-		bIsEnabled = ProjectSettings->bCheckWhitelistReferences;
-		break;
-	}
-
+	const bool bIsEnabled = GetEnabledByDepedencyType(AssetDependencyType);
 	FLinearColor TextColor = bIsEnabled ? EnabledDepedencyColor : DisabledDepedencyColor;
 	return FSlateColor(TextColor);
 }
@@ -140,7 +139,8 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 				})
 			.HeaderRow(
 				SNew(SHeaderRow)
-				+SHeaderRow::Column(ColumnVariableName).DefaultLabel(LOCTEXT("MapAssetsColumn", "Map Assets"))
+				+ SHeaderRow::Column(ColumnVariableName)
+				.DefaultLabel(this, &SCPMenuWidget::GetMapAssetsColumnName)
 			)
 		]
 
@@ -154,7 +154,8 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 				})
 			.HeaderRow(
 				SNew(SHeaderRow)
-				+SHeaderRow::Column(ColumnVariableName).DefaultLabel(LOCTEXT("WhitelistAssetsColumn", "Whitelist Assets"))
+				+SHeaderRow::Column(ColumnVariableName)
+				.DefaultLabel(this, &SCPMenuWidget::GetWhitelistAssetsColumnName)
 			)
 		]
 
@@ -180,7 +181,14 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			+SHorizontalBox::Slot()
 			[
 				SNew(SButton)
-				.Text(LOCTEXT("GoToDocs", "Open Documentation"))
+				.Text(LOCTEXT("OpenSettings", "Open Settings"))
+				.ToolTipText(LOCTEXT("OpenSettingsTip", "Open plugin settings to configure the Cleanup parameters."))
+				.OnClicked(this, &SCPMenuWidget::OnOpenSettings)
+			]
+			+SHorizontalBox::Slot()
+			[
+				SNew(SButton)
+				.Text(LOCTEXT("GoToDocs", "Documentation"))
 				.ToolTipText(LOCTEXT("GoToDocsTip", "Open our documentation to get a better understand of the plugin."))
 				.OnClicked(this, &SCPMenuWidget::OnGoToDocumentation)
 			]
@@ -243,6 +251,26 @@ bool SCPMenuWidget::InsertUniqueAsset(TArray<FAssetDataPtr>& ListToAdd, FName Na
 	return false;
 }
 
+FText SCPMenuWidget::GetColumnNameByType(ECPAssetDependencyType AssetDependencyType) const
+{
+	const bool bIsEnabled = GetEnabledByDepedencyType(AssetDependencyType);
+
+	FText EnabledText = bIsEnabled ? LOCTEXT("EnabledAsset", "Enabled") : LOCTEXT("DisabledAsset", "Disabled");
+
+	FText AssetType;
+	switch (AssetDependencyType)
+	{
+	case ECPAssetDependencyType::MapAssets:
+		AssetType = LOCTEXT("MapAssets", "Map Assets");
+		break;
+	case ECPAssetDependencyType::WhitelistAssets:
+		AssetType = LOCTEXT("WhitelistAssets", "Whitelist Assets");
+		break;
+	}
+
+	return FText::Format(INVTEXT("{0} - {1}"), AssetType, EnabledText);
+}
+
 int64 SCPMenuWidget::GetUnusedAssetsCount() const
 {
 	return UnusedAssetsCount;
@@ -292,5 +320,14 @@ FReply SCPMenuWidget::OnGoToDocumentation()
 
 	return FReply::Handled();
 }
+
+
+FReply SCPMenuWidget::OnOpenSettings()
+{
+	FCleanProjectModule::OpenCleanProjectSettings();
+
+	return FReply::Handled();
+}
+
 
 #undef LOCTEXT_NAMESPACE

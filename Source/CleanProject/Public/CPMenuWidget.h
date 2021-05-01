@@ -12,6 +12,13 @@
 
 using FAssetDataPtr = TSharedPtr<FName>;
 
+enum class ECPAssetDependencyType : uint8
+{
+	None,
+	MapAssets,
+	WhitelistAssets,
+};
+
 class SCPMenuWidget : public SCompoundWidget
 {
 public:
@@ -24,14 +31,20 @@ public:
 private:
 	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute);
 
+	bool InsertUniqueAsset(TArray<FAssetDataPtr>& ListToAdd, FName NameToAdd);
+
+	FText GetColumnNameByType(ECPAssetDependencyType AssetDependencyType) const;
+	FText GetMapAssetsColumnName() const { return GetColumnNameByType(ECPAssetDependencyType::MapAssets); }
+	FText GetWhitelistAssetsColumnName() const { return GetColumnNameByType(ECPAssetDependencyType::WhitelistAssets); }
+
 // Resizing
 private:
 	void OnInfoSlotResized(float newSize) { UniformInfoSlotSize = newSize; }
 	float GetInfoSlotSizeLeft() const { return UniformInfoSlotSize; }
 	float GetInfoSlotSizeRight() const { return 1.0f - UniformInfoSlotSize; }
 
-	bool InsertUniqueAsset(TArray<FAssetDataPtr>& ListToAdd, FName NameToAdd);
-
+// Refrshing
+private:
 	FTimerHandle RefreshTimerHandle;
 	int64 GetUnusedAssetsCount() const;
 	void RefreshUnusedAssets();
@@ -41,7 +54,9 @@ private:
 	FReply OnRunCleanupNow();
 	FReply OnRefreshUnushed();
 	FReply OnGoToDocumentation();
+	FReply OnOpenSettings();
 
+private:
 	TSharedPtr<SListView<FAssetDataPtr>> MapAssetsListView;
 	TArray<FAssetDataPtr> MapAssets;
 

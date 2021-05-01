@@ -24,6 +24,11 @@ namespace
 	const FName MenuTabName					= FName("CleanProjectMenuTab");
 }
 
+/* STATIC */ void FCleanProjectModule::OpenCleanProjectSettings()
+{
+	FModuleManager::LoadModuleChecked<ISettingsModule>("Settings").ShowViewer(SettingsProjectContainer, SettingsCategory, SettingsSection);
+}
+
 void FCleanProjectModule::StartupModule()
 {
 	LOG_TRACE();

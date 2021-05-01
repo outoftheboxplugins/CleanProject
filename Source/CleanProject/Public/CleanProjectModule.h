@@ -8,12 +8,15 @@
  */
 class FCleanProjectModule : public IModuleInterface
 {
-	// IModuleInterface interface
 public:
+	static void OpenCleanProjectSettings();
+
+// IModuleInterface interface
+private:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-	// Register & Unregister
+// Register & Unregister
 private:
 	void RegisterMenus();
 	void UnregisterMenus();
