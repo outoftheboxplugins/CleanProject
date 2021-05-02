@@ -80,3 +80,35 @@ UCPEditorSettings::UCPEditorSettings()
     };
 }
 
+void UCPEditorSettings::WhitelistAsset(const FAssetData& Asset)
+{
+	WhitelistAsset(Asset.ObjectPath);
+}
+
+void UCPEditorSettings::WhitelistAsset(const FName& AssetPath)
+{
+	WhitelistAssetsPaths.Add(AssetPath);
+	SaveConfig();
+}
+
+void UCPEditorSettings::WhitelistAssets(const TArray<FAssetData> Assets)
+{
+	for (const FAssetData& Asset : Assets)
+	{
+		WhitelistAsset(Asset);
+	}
+}
+
+void UCPEditorSettings::WhitelistAssets(const TArray<FName> AssetPaths)
+{
+	for (const FName& AssetPath : AssetPaths)
+	{
+		WhitelistAsset(AssetPath);
+	}
+}
+
+void UCPEditorSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)
+{
+	SpaceGained += ExtraSpaceGained;
+	SaveConfig();
+}
