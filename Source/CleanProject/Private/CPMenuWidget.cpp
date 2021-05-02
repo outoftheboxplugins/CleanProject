@@ -94,7 +94,7 @@ namespace
 
 		for (const auto& AssetElement : AssetArray)
 		{
-			ResultArray.Add(MakeShareable(new FName(AssetElement.ObjectPath)));
+			ResultArray.Add(MakeShareable(new FName(AssetElement.PackageName)));
 		}
 
 		return ResultArray;
@@ -228,7 +228,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		+SVerticalBox::Slot()
 		[
 			SAssignNew(DependenciesTreeView, STreeView<FAssetDataPtr>)
-			.TreeItemsSource(&TopLevelDependencies)
+			.TreeItemsSource(&AssetsDependencies.TopLevelAssetsPtr)
 			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
 				{
 					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo, ECPAssetDependencyType::AnyAssets);
@@ -339,10 +339,8 @@ FText SCPMenuWidget::GetColumnNameByType(ECPAssetDependencyType AssetDependencyT
 
 void SCPMenuWidget::OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& OutChildren)
 {
-	if (TopLevelDependencies.Contains(InItem))
-	{
-		OutChildren.Add(FAssetDataPtr(MakeShareable(new FName("da"))));
-	}
+	CPOperations::FChildDepedency& OwnerItem = AssetsDependencies[*InItem];
+	OutChildren = OwnerItem.GetChildrenAssetPtrs();
 }
 
 int64 SCPMenuWidget::GetUnusedAssetsCount() const
@@ -377,11 +375,11 @@ void SCPMenuWidget::RefreshUnusedAssets()
 	TArray<FName> NewWhitelistAssets = GetDefault<UCPProjectSettings>()->WhitelistAssetsPaths;
 	UpdateListView(WhitelistAssetsListView, WhitelistAssets, NewWhitelistAssets);
 
-	
-	TopLevelDependencies.Empty();
-	TopLevelDependencies.Append(MapAssets);
-	TopLevelDependencies.Append(WhitelistAssets);
+	TArray<FAssetDataPtr> AllDependencyAssets;
+	AllDependencyAssets.Append(MapAssets);
+	AllDependencyAssets.Append(WhitelistAssets);
 
+	AssetsDependencies = CPOperations::GetAssetDependenciesTree(AllDependencyAssets);
 	DependenciesTreeView->RebuildList();
 }
 

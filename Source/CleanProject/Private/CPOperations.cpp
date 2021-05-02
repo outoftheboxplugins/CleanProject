@@ -226,7 +226,7 @@ namespace CPOperations
 		return GetUnusuedAssetsDiskSize(AllAssets);
 	}
 
-	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<TSharedPtr<FName>>& AssetsNameList)
+	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<FAssetDataPtr>& AssetsNameList)
 	{
 		TArray<FName> AssetsNames;
 		for (const auto& AssetNamePtr : AssetsNameList)
@@ -254,7 +254,7 @@ namespace CPOperations
 		TSet<FName> PackageNamesChecked;
 		for (const FChildDepedency& TopDependency : Result.TopLevelDependencies)
 		{
-			const FName DependencyName = TopDependency.AssetName;
+			const FName DependencyName = TopDependency.GetAssetName();
 
 			const FText CurrentAssetName = FText::FromName(DependencyName);
 			const FText CurrentAssetText = FText::Format(LOCTEXT("CurrentAsset", "Current Asset: {0}"), CurrentAssetName);
@@ -384,14 +384,14 @@ namespace CPOperations
 
 	bool FChildDepedency::operator!=(const FChildDepedency& Other)
 	{
-		return !AssetName.IsEqual(Other.AssetName);
+		return !GetAssetName().IsEqual(Other.GetAssetName());
 	}
 
 	FChildDepedency INVALID_CHILD(FName("INVALID_CHILD"));
 
-	FChildDepedency::FChildDepedency(const FName& InAssetName) : AssetName(InAssetName)
+	FChildDepedency::FChildDepedency(const FName& InAssetName) 
 	{
-
+		AssetName = MakeShared<FName>(InAssetName);
 	}
 
 	void FChildDepedency::AddDependency(const FName& ChildDependency)
@@ -399,16 +399,28 @@ namespace CPOperations
 		ChildDependencies.Emplace(ChildDependency);
 	}
 
+	TArray<FAssetDataPtr> FChildDepedency::GetChildrenAssetPtrs()
+	{
+		TArray<FAssetDataPtr> Children;
+		for (FChildDepedency& Dependency : ChildDependencies)
+		{
+			Children.Emplace(Dependency.AssetName);
+		}
+
+		return Children;
+	}
+
 	void FTreeAssetDepedency::AddTopLevelDependency(const FName& AssetName)
 	{
-		TopLevelDependencies.Emplace(AssetName);
+		FChildDepedency& NewChild = TopLevelDependencies.Emplace_GetRef(AssetName);
+		TopLevelAssetsPtr.Emplace(NewChild.AssetName);
 	}
 
 	FChildDepedency& FTreeAssetDepedency::GetDependencyRecursive(const FName& OwnerName, TArray<FChildDepedency>& ChildrenToCheck)
 	{
 		for (FChildDepedency& ChildToCheck : ChildrenToCheck)
 		{
-			if (ChildToCheck.AssetName == OwnerName)
+			if (ChildToCheck.GetAssetName() == OwnerName)
 			{
 				return ChildToCheck;
 			}
@@ -430,7 +442,7 @@ namespace CPOperations
 	{
 		for (const FChildDepedency& ChildToCheck : ChildrenToCheck)
 		{
-			OutResult.Add(ChildToCheck.AssetName);
+			OutResult.Add(ChildToCheck.GetAssetName());
 			GatherDependencyRecursive(OutResult, ChildToCheck.ChildDependencies);
 		}
 	}

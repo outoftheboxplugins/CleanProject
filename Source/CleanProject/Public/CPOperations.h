@@ -3,6 +3,8 @@
 
 #include "CoreMinimal.h"
 
+using FAssetDataPtr = TSharedPtr<FName>;
+
 namespace CPOperations
 {
 	/*
@@ -32,7 +34,10 @@ namespace CPOperations
 		void AddDependency(const FName& ChildDependency);
 		bool HasChildren() const { return ChildDependencies.Num() != 0; }
 
-		FName AssetName;
+		FName GetAssetName() const { return *AssetName; }
+		TArray<FAssetDataPtr> GetChildrenAssetPtrs();
+
+		FAssetDataPtr AssetName;
 		TArray<FChildDepedency> ChildDependencies;
 	};
 
@@ -50,9 +55,10 @@ namespace CPOperations
 		void GatherDependencyRecursive(TArray<FName>& OutResult, const TArray<FChildDepedency>& ChildrenToCheck) const;
 
 		TArray<FChildDepedency> TopLevelDependencies;
+		TArray<FAssetDataPtr> TopLevelAssetsPtr;
 	};
 
-	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<TSharedPtr<FName>>& AssetsNameList);
+	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<FAssetDataPtr>& AssetsNameList);
 	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<FName>& AssetsNameList);
 
 	// Recursively get all the dependencies of a certain package.

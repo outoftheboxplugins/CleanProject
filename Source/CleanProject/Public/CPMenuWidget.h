@@ -6,11 +6,11 @@
 
 #include "Widgets/SCompoundWidget.h"
 
+#include "CPOperations.h"
+
 /**
  * Menu Widget containing a UI interface for the developer to interact with the Clean Project.
  */
-
-using FAssetDataPtr = TSharedPtr<FName>;
 
 enum class ECPAssetDependencyType : uint8
 {
@@ -59,7 +59,7 @@ private:
 
 private:
 	TSharedPtr<STreeView<FAssetDataPtr>> DependenciesTreeView;
-	TArray<FAssetDataPtr> TopLevelDependencies;
+	CPOperations::FTreeAssetDepedency AssetsDependencies;
 
 	TSharedPtr<SListView<FAssetDataPtr>> MapAssetsListView;
 	TArray<FAssetDataPtr> MapAssets;
