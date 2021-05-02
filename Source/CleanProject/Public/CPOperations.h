@@ -23,8 +23,40 @@ namespace CPOperations
 	int64 GetUnusuedAssetsDiskSize();
 	int64 GetUnusuedAssetsDiskSize(TArray<FAssetData> AssetsToTest);
 
+	struct FChildDepedency
+	{
+		FChildDepedency(const FName& InAssetName);
+
+		bool operator != (const FChildDepedency& Other);
+
+		void AddDependency(const FName& ChildDependency);
+		bool HasChildren() const { return ChildDependencies.Num() != 0; }
+
+		FName AssetName;
+		TArray<FChildDepedency> ChildDependencies;
+	};
+
+	struct FTreeAssetDepedency
+	{
+		operator TArray<FName>() const { return GetDependenciesAsList(); }
+		FChildDepedency& operator [](const FName& OwnerName) { return GetDependencyRecursive(OwnerName, TopLevelDependencies); }
+
+		void AddTopLevelDependency(const FName& AssetName);
+		void AddDepedency(const FName& OwnerName, const FName& DependencyName);
+
+		TArray<FName> GetDependenciesAsList() const;
+
+		FChildDepedency& GetDependencyRecursive(const FName& OwnerName, TArray<FChildDepedency>& ChildrenToCheck);
+		void GatherDependencyRecursive(TArray<FName>& OutResult, const TArray<FChildDepedency>& ChildrenToCheck) const;
+
+		TArray<FChildDepedency> TopLevelDependencies;
+	};
+
+	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<TSharedPtr<FName>>& AssetsNameList);
+	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<FName>& AssetsNameList);
+
 	// Recursively get all the dependencies of a certain package.
-	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies);
+	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDepedency& ResultTreeDependency);
 
 	// Generate the blacklist for a specific platform or configuration.
 	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform = "", const FString& Configuration = "");

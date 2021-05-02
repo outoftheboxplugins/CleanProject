@@ -151,30 +151,10 @@ namespace CPOperations
 		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, PackageNameToCheck);
 
 		// Check the dependencies of the collected packages with a progressbar.
-		TSet<FName> PackageNamesChecked;
-		{
-			FScopedSlowTask SlowTask(PackageNameToCheck.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
-			bool bShowCancelButton = true;
-			bool bAllowPIE = false;
-			SlowTask.MakeDialog(bShowCancelButton, bAllowPIE);
-
-			for (const FName& CurrentPackageName : PackageNameToCheck)
-			{
-				const FText CurrentAssetName = FText::FromName(CurrentPackageName);
-				const FText CurrentAssetText = FText::Format(LOCTEXT("CurrentAsset", "Current Asset: {0}"), CurrentAssetName);
-				SlowTask.EnterProgressFrame(1.f, CurrentAssetText);
-
-				// Check if we already found the dependencies for this asset, if not, get them now.
-				if (!PackageNamesChecked.Contains(CurrentPackageName))
-				{
-					PackageNamesChecked.Add(CurrentPackageName);
-					RecursiveGetDependencies(CurrentPackageName, PackageNamesChecked);
-				}
-			}
-		}
+		FTreeAssetDepedency AssetsDependencies = GetAssetDependenciesTree(PackageNameToCheck.Array());
 
 		// Removed the dependenices found from the ones tested.
-		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, PackageNamesChecked);
+		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, AssetsDependencies);
 
 		return AssetsToTest;
 	}
@@ -246,23 +226,70 @@ namespace CPOperations
 		return GetUnusuedAssetsDiskSize(AllAssets);
 	}
 
-	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies)
+	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<TSharedPtr<FName>>& AssetsNameList)
+	{
+		TArray<FName> AssetsNames;
+		for (const auto& AssetNamePtr : AssetsNameList)
+		{
+			AssetsNames.Add(*AssetNamePtr);
+		}
+
+		return GetAssetDependenciesTree(AssetsNames);
+	}
+
+	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<FName>& AssetsNameList)
+	{
+		FTreeAssetDepedency Result;
+
+		for (const auto& AssetName : AssetsNameList)
+		{
+			Result.AddTopLevelDependency(AssetName);
+		}
+
+		FScopedSlowTask SlowTask(AssetsNameList.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
+		bool bShowCancelButton = true;
+		bool bAllowPIE = false;
+		SlowTask.MakeDialog(bShowCancelButton, bAllowPIE);
+
+		TSet<FName> PackageNamesChecked;
+		for (const FChildDepedency& TopDependency : Result.TopLevelDependencies)
+		{
+			const FName DependencyName = TopDependency.AssetName;
+
+			const FText CurrentAssetName = FText::FromName(DependencyName);
+			const FText CurrentAssetText = FText::Format(LOCTEXT("CurrentAsset", "Current Asset: {0}"), CurrentAssetName);
+			SlowTask.EnterProgressFrame(1.f, CurrentAssetText);
+
+			if (!PackageNamesChecked.Contains(DependencyName))
+			{
+				PackageNamesChecked.Add(DependencyName);
+				RecursiveGetDependencies(DependencyName, PackageNamesChecked, Result);
+			}
+		}
+
+		return Result;
+	}
+
+	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDepedency& ResultTreeDependency)
 	{
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-		TArray<FName> Dependencies;
 
+		TArray<FName> Dependencies;
 		AssetRegistryModule.GetDependencies(PackageName, Dependencies);
 
 		for (auto DependsIt = Dependencies.CreateConstIterator(); DependsIt; ++DependsIt)
 		{
-			//TODO: Make the skippable folders configurable.
-			const bool bIsEnginePackage = (*DependsIt).ToString().StartsWith(TEXT("/Engine"));
-			const bool bIsScriptPackage = (*DependsIt).ToString().StartsWith(TEXT("/Script"));
+			const FName DependencyName = *DependsIt;
 
-			if (!AllDependencies.Contains(*DependsIt) && !bIsEnginePackage && !bIsScriptPackage)
+			//TODO: Make the skippable folders configurable.
+			const bool bIsEnginePackage = (DependencyName).ToString().StartsWith(TEXT("/Engine"));
+			const bool bIsScriptPackage = (DependencyName).ToString().StartsWith(TEXT("/Script"));
+
+			if (!AllDependencies.Contains(DependencyName) && !bIsEnginePackage && !bIsScriptPackage)
 			{
-				AllDependencies.Add(*DependsIt);
-				RecursiveGetDependencies(*DependsIt, AllDependencies);
+				ResultTreeDependency.AddDepedency(PackageName, DependencyName);
+				AllDependencies.Add(DependencyName);
+				RecursiveGetDependencies(DependencyName, AllDependencies, ResultTreeDependency);
 			}
 		}
 	}
@@ -353,6 +380,72 @@ namespace CPOperations
 		AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
 
 		return AllAssetData;
+	}
+
+	bool FChildDepedency::operator!=(const FChildDepedency& Other)
+	{
+		return !AssetName.IsEqual(Other.AssetName);
+	}
+
+	FChildDepedency INVALID_CHILD(FName("INVALID_CHILD"));
+
+	FChildDepedency::FChildDepedency(const FName& InAssetName) : AssetName(InAssetName)
+	{
+
+	}
+
+	void FChildDepedency::AddDependency(const FName& ChildDependency)
+	{
+		ChildDependencies.Emplace(ChildDependency);
+	}
+
+	void FTreeAssetDepedency::AddTopLevelDependency(const FName& AssetName)
+	{
+		TopLevelDependencies.Emplace(AssetName);
+	}
+
+	FChildDepedency& FTreeAssetDepedency::GetDependencyRecursive(const FName& OwnerName, TArray<FChildDepedency>& ChildrenToCheck)
+	{
+		for (FChildDepedency& ChildToCheck : ChildrenToCheck)
+		{
+			if (ChildToCheck.AssetName == OwnerName)
+			{
+				return ChildToCheck;
+			}
+			else
+			{
+				FChildDepedency& ChildFound = GetDependencyRecursive(OwnerName, ChildToCheck.ChildDependencies);
+
+				if (ChildFound != INVALID_CHILD)
+				{
+					return ChildFound;
+				}
+			}
+		}
+
+		return INVALID_CHILD;
+	}
+
+	void FTreeAssetDepedency::GatherDependencyRecursive(TArray<FName>& OutResult, const TArray<FChildDepedency>& ChildrenToCheck) const
+	{
+		for (const FChildDepedency& ChildToCheck : ChildrenToCheck)
+		{
+			OutResult.Add(ChildToCheck.AssetName);
+			GatherDependencyRecursive(OutResult, ChildToCheck.ChildDependencies);
+		}
+	}
+
+	void FTreeAssetDepedency::AddDepedency(const FName& OwnerName, const FName& DependencyName)
+	{
+		FChildDepedency& OwnerDependency = (*this)[OwnerName];
+		OwnerDependency.AddDependency(DependencyName);
+	}
+
+	TArray<FName> FTreeAssetDepedency::GetDependenciesAsList() const
+	{
+		TArray<FName> AllDependencies;
+		GatherDependencyRecursive(AllDependencies, TopLevelDependencies);
+		return AllDependencies;
 	}
 }
 

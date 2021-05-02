@@ -17,6 +17,7 @@ enum class ECPAssetDependencyType : uint8
 	None,
 	MapAssets,
 	WhitelistAssets,
+	AnyAssets,
 };
 
 class SCPMenuWidget : public SCompoundWidget
@@ -31,11 +32,11 @@ public:
 private:
 	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute);
 
-	bool InsertUniqueAsset(TArray<FAssetDataPtr>& ListToAdd, FName NameToAdd);
-
 	FText GetColumnNameByType(ECPAssetDependencyType AssetDependencyType) const;
 	FText GetMapAssetsColumnName() const { return GetColumnNameByType(ECPAssetDependencyType::MapAssets); }
 	FText GetWhitelistAssetsColumnName() const { return GetColumnNameByType(ECPAssetDependencyType::WhitelistAssets); }
+
+	void OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& OutChildren);
 
 // Resizing
 private:
@@ -57,6 +58,9 @@ private:
 	FReply OnOpenSettings();
 
 private:
+	TSharedPtr<STreeView<FAssetDataPtr>> DependenciesTreeView;
+	TArray<FAssetDataPtr> TopLevelDependencies;
+
 	TSharedPtr<SListView<FAssetDataPtr>> MapAssetsListView;
 	TArray<FAssetDataPtr> MapAssets;
 

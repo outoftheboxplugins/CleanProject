@@ -29,6 +29,7 @@ namespace
 		switch (AssetDependencyType)
 		{
 		case ECPAssetDependencyType::None:
+			bIsEnabled = false;
 			break;
 		case ECPAssetDependencyType::MapAssets:
 			bIsEnabled = ProjectSettings->bCheckAllMapsRefernece;
@@ -36,9 +37,67 @@ namespace
 		case ECPAssetDependencyType::WhitelistAssets:
 			bIsEnabled = ProjectSettings->bCheckWhitelistReferences;
 			break;
+		case ECPAssetDependencyType::AnyAssets:
+			bIsEnabled = true;
+			break;
 		}
 
 		return bIsEnabled;
+	}
+
+	bool CompareAssetDataArrys(TArray<FAssetDataPtr> LhsArray, TArray<FAssetDataPtr> RhsArray)
+	{
+		if (LhsArray.Num() != RhsArray.Num())
+		{
+			// The arrays have at least 1 different element.
+			return true;
+		}
+
+		auto AlphabeticalSort = [](const FAssetDataPtr& A, const FAssetDataPtr& B)
+		{
+			const FName AName = *A;
+			const FName BName = *B;
+
+			return AName.Compare(BName) < 0;
+		};
+
+		LhsArray.Sort(AlphabeticalSort);
+		RhsArray.Sort(AlphabeticalSort);
+
+		const uint64 ArrayLength = LhsArray.Num();
+		for (uint64 i = 0; i < ArrayLength; i++)
+		{
+			if (LhsArray[i] != RhsArray[i])
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	TArray<FAssetDataPtr> TransformAssetDataArray(const TArray<FName>& AssetArray)
+	{
+		TArray<FAssetDataPtr> ResultArray;
+
+		for (const auto& AssetElement : AssetArray)
+		{
+			ResultArray.Add(MakeShareable(new FName(AssetElement)));
+		}
+
+		return ResultArray;
+	}
+
+	TArray<FAssetDataPtr> TransformAssetDataArray(const TArray<FAssetData>& AssetArray)
+	{
+		TArray<FAssetDataPtr> ResultArray;
+
+		for (const auto& AssetElement : AssetArray)
+		{
+			ResultArray.Add(MakeShareable(new FName(AssetElement.ObjectPath)));
+		}
+
+		return ResultArray;
 	}
 }
 
@@ -167,6 +226,29 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		]
 
 		+SVerticalBox::Slot()
+		[
+			SAssignNew(DependenciesTreeView, STreeView<FAssetDataPtr>)
+			.TreeItemsSource(&TopLevelDependencies)
+			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
+				{
+					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo, ECPAssetDependencyType::AnyAssets);
+				})
+			.OnGetChildren(this, &SCPMenuWidget::OnGetChildren)
+			.HeaderRow(
+				SNew(SHeaderRow)
+				+SHeaderRow::Column(ColumnVariableName)
+				.DefaultLabel(LOCTEXT("DepedenciesTreeView", "Depedencies Tree View"))
+			)
+		]
+		
+		+SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(0, 5, 0, 5)
+		[
+			SNew(SSeparator)
+		]
+
+		+SVerticalBox::Slot()
 		.AutoHeight()
 		[
 			SNew(SHorizontalBox)
@@ -235,22 +317,6 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FTex
 		];
 }
 
-bool SCPMenuWidget::InsertUniqueAsset(TArray<FAssetDataPtr>& ListToAdd, FName NameToAdd)
-{
-	FAssetDataPtr* FoundAssetPtr = ListToAdd.FindByPredicate([&NameToAdd](const FAssetDataPtr& CurrentElement)
-		{
-			return (*CurrentElement == NameToAdd);
-		});
-
-	if (!FoundAssetPtr)
-	{
-		ListToAdd.Add(MakeShareable(new FName(NameToAdd)));
-		return true;
-	}
-
-	return false;
-}
-
 FText SCPMenuWidget::GetColumnNameByType(ECPAssetDependencyType AssetDependencyType) const
 {
 	const bool bIsEnabled = GetEnabledByDepedencyType(AssetDependencyType);
@@ -271,9 +337,33 @@ FText SCPMenuWidget::GetColumnNameByType(ECPAssetDependencyType AssetDependencyT
 	return FText::Format(INVTEXT("{0} - {1}"), AssetType, EnabledText);
 }
 
+void SCPMenuWidget::OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& OutChildren)
+{
+	if (TopLevelDependencies.Contains(InItem))
+	{
+		OutChildren.Add(FAssetDataPtr(MakeShareable(new FName("da"))));
+	}
+}
+
 int64 SCPMenuWidget::GetUnusedAssetsCount() const
 {
 	return UnusedAssetsCount;
+}
+
+namespace
+{
+	template<typename T>
+	void UpdateListView(TSharedPtr<SListView<FAssetDataPtr>> ListView, TArray<FAssetDataPtr>& CurrentAssets, TArray<T> NewAssetsInfo)
+	{
+		TArray<FAssetDataPtr> NewAssetsArray = TransformAssetDataArray(NewAssetsInfo);
+		TArray<FAssetDataPtr> OldAssetsArray = CurrentAssets;
+
+		CurrentAssets = NewAssetsArray;
+		if (CompareAssetDataArrys(NewAssetsArray, OldAssetsArray))
+		{
+			ListView->RebuildList();
+		}
+	}
 }
 
 void SCPMenuWidget::RefreshUnusedAssets()
@@ -281,23 +371,18 @@ void SCPMenuWidget::RefreshUnusedAssets()
 	TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusuedAssets();
 	UnusedAssetsCount = UnusedAssets.Num();
 
-	for (const FAssetData& WorldMapAsset : CPOperations::GetAllGameAssets<UWorld>())
-	{
-		const bool bNeedsRefresh = InsertUniqueAsset(MapAssets, WorldMapAsset.ObjectPath);
-		if (bNeedsRefresh)
-		{
-			MapAssetsListView->RebuildList();
-		}
-	}
+	TArray<FAssetData> NewMapAssets = CPOperations::GetAllGameAssets<UWorld>();
+	UpdateListView(MapAssetsListView, MapAssets, NewMapAssets);
+	
+	TArray<FName> NewWhitelistAssets = GetDefault<UCPProjectSettings>()->WhitelistAssetsPaths;
+	UpdateListView(WhitelistAssetsListView, WhitelistAssets, NewWhitelistAssets);
 
-	for (const FName& WhiteListAsset : GetDefault<UCPProjectSettings>()->WhitelistAssetsPaths)
-	{
-		const bool bNeedsRefresh = InsertUniqueAsset(WhitelistAssets, WhiteListAsset);
-		if (bNeedsRefresh)
-		{
-			WhitelistAssetsListView->RebuildList();
-		}
-	}
+	
+	TopLevelDependencies.Empty();
+	TopLevelDependencies.Append(MapAssets);
+	TopLevelDependencies.Append(WhitelistAssets);
+
+	DependenciesTreeView->RebuildList();
 }
 
 FReply SCPMenuWidget::OnRunCleanupNow()
