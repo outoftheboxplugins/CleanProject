@@ -128,9 +128,21 @@ TSharedRef<SWidget> SCPAssetDependencyRow::GenerateWidgetForColumn(const FName& 
 {
 	if (ColumnName == ColumnVariableName)
 	{
-		return SNew(STextBlock)
-			.Text(FText::FromName(*Item))
-			.ColorAndOpacity(this, &SCPAssetDependencyRow::GetTextColor);
+		return SNew(SHorizontalBox)
+			+SHorizontalBox::Slot()
+			.AutoWidth()
+			.Padding(6, 0, 0, 0)
+			[
+				SNew(SExpanderArrow, SharedThis(this)).IndentAmount(12)
+			]
+			
+			+SHorizontalBox::Slot()
+			.FillWidth(1.0f)
+			[
+				SNew(STextBlock)
+				.Text(FText::FromName(*Item))
+				.ColorAndOpacity(this, &SCPAssetDependencyRow::GetTextColor)
+			];
 	}
 	else
 	{
