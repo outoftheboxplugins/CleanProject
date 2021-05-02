@@ -74,7 +74,7 @@ void FCleanProjectModule::RegisterSettings()
 	{
 		SettingsModule->RegisterSettings(SettingsProjectContainer, SettingsCategory, SettingsSection,
 			LOCTEXT("EditorSettingsName", "Clean Project"),
-			LOCTEXT("EditorSettingsDescription", "Cleanup and project management improvements within this editor."),
+			LOCTEXT("EditorSettingsDescription", "Cleanup and project management improvements."),
 			GetMutableDefault<UCPSettings>());
 	}
 }
@@ -115,9 +115,9 @@ void FCleanProjectModule::UnregisterAssetActions()
 
 void FCleanProjectModule::RegisterMenuSpawner()
 {
-	FTabSpawnerEntry& WatchTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateStatic(CPMenuExtensions::SpawnMenuTab));
+	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateStatic(CPMenuExtensions::SpawnMenuTab));
 
-	WatchTab
+	CPMenuTab
 		.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Clean Project Menu"))
 		.SetTooltipText(LOCTEXT("MenuTabTooltip", "Organize your project and visualize the data behind the process."))
 		.SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory());

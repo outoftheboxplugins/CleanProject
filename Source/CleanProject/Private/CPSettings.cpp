@@ -81,31 +81,14 @@ UCPSettings::UCPSettings()
     };
 }
 
-void UCPSettings::WhitelistAsset(const FAssetData& Asset)
-{
-	WhitelistAsset(Asset.ObjectPath);
-}
-
-void UCPSettings::WhitelistAsset(const FName& AssetPath)
-{
-	WhitelistAssetsPaths.Add(AssetPath);
-	SaveConfig();
-}
-
 void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
 	{
-		WhitelistAsset(Asset);
+		WhitelistAssetsPaths.Add(Asset.ObjectPath);
 	}
-}
 
-void UCPSettings::WhitelistAssets(const TArray<FName> AssetPaths)
-{
-	for (const FName& AssetPath : AssetPaths)
-	{
-		WhitelistAsset(AssetPath);
-	}
+	SaveConfig();
 }
 
 void UCPSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)

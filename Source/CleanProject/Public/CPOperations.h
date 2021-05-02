@@ -7,6 +7,8 @@ using FAssetDataPtr = TSharedPtr<FName>;
 
 namespace CPOperations
 {
+	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths);
+
 	/*
 	* Shows all all the selected assets which are not used by any other asset in the content browser.
 	* Assets to test: selected assets

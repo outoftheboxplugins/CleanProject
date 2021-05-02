@@ -22,15 +22,7 @@ public:
 
 public:
 	void WhitelistAssets(const TArray<FAssetData> Assets);
-	void WhitelistAsset(const FAssetData& Asset);
-
-
-
-
-	void WhitelistAsset(const FName& AssetPath);
-
-	void WhitelistAssets(const TArray<FName> AssetPaths);
-
+	
 	void IncreaseSpaceGained(int64 ExtraSpaceGained);
 	int64 GetSpaceGained() const { return SpaceGained; }
 
