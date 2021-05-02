@@ -5,7 +5,6 @@
 #include "CPEditorSettings.h"
 #include "CPLog.h"
 #include "CPMenuExtensions.h"
-#include "CPProjectSettings.h"
 
 #include "ContentBrowserModule.h"
 #include "ISettingsModule.h"
@@ -17,8 +16,7 @@
 
 namespace
 {
-	const FName SettingsEditorContainer		= FName("Editor");
-	const FName SettingsProjectContainer	= FName("Project");	
+	const FName SettingsProjectContainer	= FName("Project");
 	const FName SettingsCategory			= FName("Plugins");
 	const FName SettingsSection				= FName("Clean Project");
 
@@ -74,15 +72,10 @@ void FCleanProjectModule::RegisterSettings()
 {
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
-		SettingsModule->RegisterSettings(SettingsEditorContainer, SettingsCategory, SettingsSection,
+		SettingsModule->RegisterSettings(SettingsProjectContainer, SettingsCategory, SettingsSection,
 			LOCTEXT("EditorSettingsName", "Clean Project"),
 			LOCTEXT("EditorSettingsDescription", "Cleanup and project management improvements within this editor."),
-			GetMutableDefault<UCPEditorSettings>());
-
-		SettingsModule->RegisterSettings(SettingsProjectContainer, SettingsCategory, SettingsSection,
-			LOCTEXT("ProjectSettingsName", "Clean Project"),
-			LOCTEXT("ProjectSettingsDescription", "Cleanup and project management improvements within this project."),
-			GetMutableDefault<UCPProjectSettings>());
+			GetMutableDefault<UCPSettings>());
 	}
 }
 
@@ -90,7 +83,6 @@ void FCleanProjectModule::UnregisterSettings()
 {
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
-		SettingsModule->UnregisterSettings(SettingsEditorContainer, SettingsCategory, SettingsSection);
 		SettingsModule->UnregisterSettings(SettingsProjectContainer, SettingsCategory, SettingsSection);
 	}
 }

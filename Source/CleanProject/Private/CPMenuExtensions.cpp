@@ -135,7 +135,7 @@ void CPMenuExtensions::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Whitelist Assets* from selected assets."));
 
-				auto Settings = GetMutableDefault<UCPProjectSettings>();
+				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 				Settings->WhitelistAssets(SelectedAssets);
 			})
 		));
@@ -149,8 +149,7 @@ void CPMenuExtensions::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Blacklist Assets* from selected assets."));
 
-				auto Settings = GetMutableDefault<UCPProjectSettings>();
-				Settings->WhitelistAssets(SelectedAssets);
+				__debugbreak();
 			})
 		));
 
@@ -197,7 +196,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 
 				TArray<FAssetData> AssetsInSelectedFolders = Helpers::GetAssetsInPaths(SelectedFolders);
 
-				auto Settings = GetMutableDefault<UCPProjectSettings>();
+				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 				Settings->WhitelistAssets(AssetsInSelectedFolders);
 			})
 		));
@@ -209,12 +208,11 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([SelectedFolders]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Whitelist Assets* from selected folders."));
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Blacklist Assets* from selected folders."));
 
 				TArray<FAssetData> AssetsInSelectedFolders = Helpers::GetAssetsInPaths(SelectedFolders);
 
-				auto Settings = GetMutableDefault<UCPProjectSettings>();
-				Settings->WhitelistAssets(AssetsInSelectedFolders);
+				__debugbreak();
 			})
 		));
 

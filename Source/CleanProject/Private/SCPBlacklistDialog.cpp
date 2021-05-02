@@ -8,7 +8,7 @@ void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAsset
 	AssetsToBlacklist = AssetsToReport;
 
 	// Get info from settings.
-	auto Settings = GetDefault<UCPEditorSettings>();
+	const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 
 	PrepareComboTexts(ConfigurationsDisplayTexts, FString("All Configurations"), Settings->BlacklistFiles);
 	PrepareComboTexts(PlatformsDisplayTexts, FString("All Platforms"), Settings->PlatformsPaths);
@@ -167,7 +167,7 @@ FText SCPBlacklistDialog::GetPlatformText() const
 
 ECheckBoxState SCPBlacklistDialog::IsAppendCheckboxChcked() const
 {
-    auto Settings = GetDefault<UCPEditorSettings>();
+	const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
     
 	if (Settings->bShouldAppendDefault)
 	{
@@ -181,7 +181,7 @@ ECheckBoxState SCPBlacklistDialog::IsAppendCheckboxChcked() const
 
 ECheckBoxState SCPBlacklistDialog::IsSkipCheckboxChcked() const
 {
-	auto Settings = GetDefault<UCPEditorSettings>();
+	const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 
 	if (Settings->bShouldSkipBlacklistDialog)
 	{
@@ -197,7 +197,7 @@ FReply SCPBlacklistDialog::OnBlacklistOk()
 {
 	bDidDeleteAssets = true;
 
-    auto Settings = GetDefault<UCPEditorSettings>();
+	const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 	const FString SelectedPlatform = GetPlatformText().ToString();
 	const FString SelectedConfiguration = GetConfigurationText().ToString();
 
@@ -219,13 +219,13 @@ FReply SCPBlacklistDialog::OnBlacklistCancel()
 
 void SCPBlacklistDialog::OnSkipDialogChanged(ECheckBoxState newState)
 {
-	auto Settings = GetMutableDefault<UCPEditorSettings>();
+	UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 	Settings->bShouldSkipBlacklistDialog = (newState == ECheckBoxState::Checked);
 }
 
 void SCPBlacklistDialog::OnAppendCheckboxChecked(ECheckBoxState newState)
 {
-    auto Settings = GetMutableDefault<UCPEditorSettings>();
+    UCPSettings* Settings = GetMutableDefault<UCPSettings>();
     Settings->bShouldAppendDefault = (newState == ECheckBoxState::Checked);
 }
 

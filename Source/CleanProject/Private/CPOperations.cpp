@@ -123,7 +123,7 @@ namespace CPOperations
 
 	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest)
 	{
-		auto Settings = GetDefault<UCPProjectSettings>();
+		const UCPSettings* Settings = GetDefault<UCPSettings>();
 
 		// Collect all the names we want to check dependencies for.
 		TSet<FName> PackageNameToCheck;
@@ -296,7 +296,7 @@ namespace CPOperations
 
 	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform /*= ""*/, const FString& Configuration /*= ""*/)
 	{
-		auto Settings = GetDefault<UCPEditorSettings>();
+		const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 		
 		const EFileWrite WriteFlags = bAppend ? EFileWrite::FILEWRITE_Append : EFileWrite::FILEWRITE_None;
 		const TArray<FString> SelectedConfigurations = OperationsHelpers::GetListFromSelection(Settings->BlacklistFiles, Configuration);

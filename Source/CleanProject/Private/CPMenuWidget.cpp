@@ -23,7 +23,7 @@ namespace
 
 	bool GetEnabledByDepedencyType(ECPAssetDependencyType AssetDependencyType)
 	{
-		const UCPProjectSettings* ProjectSettings = GetDefault<UCPProjectSettings>();
+		const UCPSettings* ProjectSettings = GetDefault<UCPSettings>();
 		bool bIsEnabled = false;
 
 		switch (AssetDependencyType)
@@ -165,7 +165,7 @@ SCPMenuWidget::~SCPMenuWidget()
 
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
-	const UCPProjectSettings* ProjectSettings = GetDefault<UCPProjectSettings>();
+	const UCPSettings* ProjectSettings = GetDefault<UCPSettings>();
 
     ChildSlot
     [
@@ -177,7 +177,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			CreateInfoWidget(LOCTEXT("ProjectSpaceGained", "Space gained in project"), 
 			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([=]()
 					{
-						int64 SizeGained = GetDefault<UCPProjectSettings>()->GetSpaceGained();
+						int64 SizeGained = GetDefault<UCPSettings>()->GetSpaceGained();
 						return (SizeGained > 0) ? FText::AsMemory(SizeGained) : LOCTEXT("UnkownSize", "UnkownSize");
 					})))
 		]
@@ -384,7 +384,7 @@ void SCPMenuWidget::RefreshUnusedAssets()
 	TArray<FAssetData> NewMapAssets = CPOperations::GetAllGameAssets<UWorld>();
 	UpdateListView(MapAssetsListView, MapAssets, NewMapAssets);
 	
-	TArray<FName> NewWhitelistAssets = GetDefault<UCPProjectSettings>()->WhitelistAssetsPaths;
+	TArray<FName> NewWhitelistAssets = GetDefault<UCPSettings>()->WhitelistAssetsPaths;
 	UpdateListView(WhitelistAssetsListView, WhitelistAssets, NewWhitelistAssets);
 
 	TArray<FAssetDataPtr> AllDependencyAssets;

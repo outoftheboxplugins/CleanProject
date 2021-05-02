@@ -1,7 +1,8 @@
 // Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
-#include "CPEditorSettings.h"
 
-UCPEditorSettings::UCPEditorSettings()
+#include "CPSettings.h"
+
+UCPSettings::UCPSettings()
 {
     PlatformsPaths = 
     { 
@@ -80,18 +81,18 @@ UCPEditorSettings::UCPEditorSettings()
     };
 }
 
-void UCPEditorSettings::WhitelistAsset(const FAssetData& Asset)
+void UCPSettings::WhitelistAsset(const FAssetData& Asset)
 {
 	WhitelistAsset(Asset.ObjectPath);
 }
 
-void UCPEditorSettings::WhitelistAsset(const FName& AssetPath)
+void UCPSettings::WhitelistAsset(const FName& AssetPath)
 {
 	WhitelistAssetsPaths.Add(AssetPath);
 	SaveConfig();
 }
 
-void UCPEditorSettings::WhitelistAssets(const TArray<FAssetData> Assets)
+void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
 	{
@@ -99,7 +100,7 @@ void UCPEditorSettings::WhitelistAssets(const TArray<FAssetData> Assets)
 	}
 }
 
-void UCPEditorSettings::WhitelistAssets(const TArray<FName> AssetPaths)
+void UCPSettings::WhitelistAssets(const TArray<FName> AssetPaths)
 {
 	for (const FName& AssetPath : AssetPaths)
 	{
@@ -107,7 +108,7 @@ void UCPEditorSettings::WhitelistAssets(const TArray<FName> AssetPaths)
 	}
 }
 
-void UCPEditorSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)
+void UCPSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)
 {
 	SpaceGained += ExtraSpaceGained;
 	SaveConfig();

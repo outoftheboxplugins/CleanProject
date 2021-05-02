@@ -234,7 +234,7 @@ void SCPAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
 	}
 
 	const int64 SizeGained = CPOperations::GetAssetsDiskSize(AssetsToDelete);
-	GetMutableDefault<UCPProjectSettings>()->IncreaseSpaceGained(SizeGained);
+	GetMutableDefault<UCPSettings>()->IncreaseSpaceGained(SizeGained);
 	
 	ObjectTools::DeleteObjects(ObjectsToDelete);
 	RemoveFromList(AssetsToDelete);
@@ -263,7 +263,7 @@ void SCPAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 	LOG_TRACE();
 
 	bool bRemoveAssets = true;
-	auto Settings = GetDefault<UCPEditorSettings>();
+	const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 	if (Settings->bShouldSkipBlacklistDialog)
 	{
 		CPOperations::GenerateBlacklist(AssetsToBlacklist, Settings->bShouldAppendDefault);
@@ -283,7 +283,7 @@ void SCPAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)
 {
 	LOG_TRACE();
 
-	auto Settings = GetMutableDefault<UCPProjectSettings>();
+	UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 	Settings->WhitelistAssets(AssetsToWhitelist);
 
 	RemoveFromList(AssetsToWhitelist);
@@ -354,7 +354,7 @@ TSharedRef<SWidget> SCPAssetDialog::CreateAssetPickerWidget()
 		Config.bPreloadAssetsForContextMenu = false;
 
 		// Hide path and type by default
-		auto Settings = GetDefault<UCPEditorSettings>();
+		const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 		Config.HiddenColumnNames.Append(Settings->ReportHiddenColumns);
 
 		// Add custom columns

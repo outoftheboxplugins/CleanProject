@@ -6,25 +6,29 @@
 
 #include "UObject/ObjectMacros.h"
 
-#include "CPEditorSettings.generated.h"
+#include "CPSettings.generated.h"
 
 /**
  * Holds the configurable settings for the Clean Project
  */
 
 UCLASS(config = Editor)
-class UCPEditorSettings : public UObject
+class UCPSettings : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	UCPEditorSettings();
+	UCPSettings();
 
 public:
+	void WhitelistAssets(const TArray<FAssetData> Assets);
 	void WhitelistAsset(const FAssetData& Asset);
+
+
+
+
 	void WhitelistAsset(const FName& AssetPath);
 
-	void WhitelistAssets(const TArray<FAssetData> Assets);
 	void WhitelistAssets(const TArray<FName> AssetPaths);
 
 	void IncreaseSpaceGained(int64 ExtraSpaceGained);
