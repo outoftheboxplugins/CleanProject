@@ -2,7 +2,7 @@
 
 #include "CleanProjectModule.h"
 
-#include "CPEditorSettings.h"
+#include "CPSettings.h"
 #include "CPLog.h"
 #include "CPMenuExtensions.h"
 
