@@ -7,6 +7,7 @@
 
 #include "Framework/MultiBox/MultiBoxExtender.h" // for FExtender
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "../Public/SCPBlacklistDialog.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -123,7 +124,7 @@ void CPMenuExtensions::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder
 		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Blacklist Assets* from selected assets."));
-				__debugbreak();
+				SCPBlacklistDialog::OpenBlacklistDialog(SelectedAssets);
 			})
 		));
 

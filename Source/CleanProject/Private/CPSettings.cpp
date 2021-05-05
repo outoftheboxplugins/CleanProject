@@ -85,7 +85,7 @@ void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
 	{
-		WhitelistAssetsPaths.Add(Asset.ObjectPath);
+		WhitelistAssetsPaths.Add(Asset.PackageName);
 	}
 
 	SaveConfig();

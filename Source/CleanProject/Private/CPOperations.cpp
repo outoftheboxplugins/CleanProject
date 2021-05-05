@@ -1,4 +1,5 @@
 // Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
+
 #include "CPOperations.h"
 
 #include "SCPAssetDialog.h"
@@ -188,13 +189,13 @@ namespace CPOperations
 		TArray<FAssetData> UnusuedAssets = CheckForUnusuedAssets(AssetsToTest);
 		
 		// Open dialogs based on the results.
-		if (AssetsToTest.Num() == 0)
+		if (UnusuedAssets.Num() == 0)
 		{
 			FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("NoFilesToDelete", "No unused assets found."));
 		}
 		else
 		{
-			SCPAssetDialog::OpenAssetDialog(AssetsToTest);
+			SCPAssetDialog::OpenAssetDialog(UnusuedAssets);
 		}
 	}
 

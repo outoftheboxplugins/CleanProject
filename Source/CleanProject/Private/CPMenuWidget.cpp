@@ -2,7 +2,7 @@
 
 #include "CPMenuWidget.h"
 #include "Widgets/Layout/SSeparator.h"
-#include "../Private/PluginManager.h"
+#include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
@@ -409,7 +409,7 @@ FReply SCPMenuWidget::OnRefreshUnushed()
 
 FReply SCPMenuWidget::OnGoToDocumentation()
 {
-	TSharedPtr<IPlugin> CleanProjectPlugin = FPluginManager::Get().FindPlugin("CleanProject");
+	TSharedPtr<IPlugin> CleanProjectPlugin = IPluginManager::Get().FindPlugin("CleanProject");
 	FString DocsURL = CleanProjectPlugin->GetDescriptor().DocsURL;
 	FPlatformProcess::LaunchURL(*DocsURL, nullptr, nullptr);
 

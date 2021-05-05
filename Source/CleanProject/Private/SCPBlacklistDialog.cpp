@@ -1,4 +1,5 @@
 // Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
+
 #define LOCTEXT_NAMESPACE "CleanProject"
 
 void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
