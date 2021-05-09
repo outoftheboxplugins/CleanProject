@@ -3,8 +3,11 @@
 #include "SCPAssetDialog.h"
 
 #include "SCPBlacklistDialog.h"
-
 #include "AssetManagerEditorModule.h"
+#include "ContentBrowserModule.h"
+#include "CPLog.h"
+#include "CPOperations.h"
+#include "CPSettings.h"
 #include "IContentBrowserSingleton.h"
 #include "Interfaces/IMainFrameModule.h"
 #include "ObjectTools.h"
@@ -105,7 +108,7 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 
 void SCPAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsToReport)
 {
-	TSharedRef<SWindow> ReportWindow = SNew(SWindow)
+	const TSharedRef<SWindow> ReportWindow = SNew(SWindow)
 		.Title(LOCTEXT("AssetDialogTitle", "Clean Project Analyzer"))
 		.ClientSize(FVector2D(600, 500))
 		.SupportsMaximize(false)
@@ -132,7 +135,7 @@ void SCPAssetDialog::CloseAssetDialog()
 
 TSharedPtr<SWidget> SCPAssetDialog::OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets)
 {
-	FMenuBuilder MenuBuilder(/*bInShouldCloseWindowAfterMenuSelection=*/ true, NULL);
+	FMenuBuilder MenuBuilder(/*bInShouldCloseWindowAfterMenuSelection=*/ true, nullptr);
 	
 	MenuBuilder.BeginSection(TEXT("ReportContextMenu"),
 		LOCTEXT("ReportConextMenuCategory", "Cleanup actions"));
@@ -171,7 +174,7 @@ TSharedPtr<SWidget> SCPAssetDialog::OnGetAssetContextMenu(const TArray<FAssetDat
 	return MenuBuilder.MakeWidget();
 }
 
-void SCPAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData) const
+void SCPAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData)
 {
 	TArray<FName> AssetNames;
 	AssetNames.Add(AssetData.PackageName);
@@ -346,7 +349,7 @@ TSharedRef<SWidget> SCPAssetDialog::CreateAssetPickerWidget()
 		Config.bSortByPathInColumnView = true;
 
 		// Configure response to double-click and context-menu
-		Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateSP(this, &SCPAssetDialog::OnRequestOpenAsset);
+		Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateStatic(OnRequestOpenAsset);
 		Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SCPAssetDialog::OnGetAssetContextMenu);
 		Config.SetFilterDelegates.Add(&SetFilterDelegate);
 		Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);

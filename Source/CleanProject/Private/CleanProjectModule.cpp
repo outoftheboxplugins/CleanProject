@@ -68,7 +68,7 @@ void FCleanProjectModule::UnregisterMenus()
 	MenuExtender = nullptr;
 }
 
-void FCleanProjectModule::RegisterSettings()
+void FCleanProjectModule::RegisterSettings() const
 {
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
@@ -79,7 +79,7 @@ void FCleanProjectModule::RegisterSettings()
 	}
 }
 
-void FCleanProjectModule::UnregisterSettings()
+void FCleanProjectModule::UnregisterSettings() const
 {
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{

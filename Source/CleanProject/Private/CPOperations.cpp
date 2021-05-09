@@ -3,9 +3,11 @@
 #include "CPOperations.h"
 
 #include "SCPAssetDialog.h"
+#include "CPLog.h"
 
 #include "AssetRegistryModule.h"
 #include "AssetToolsModule.h"
+#include "CPSettings.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -50,7 +52,7 @@ namespace OperationsHelpers
 			{
 				if (bIsDirectory)
 				{
-					FString DirectoryName(FilenameOrDirectory);
+					const FString DirectoryName(FilenameOrDirectory);
 					EmptyFolders.Add(DirectoryName);
 
 					GetEmptyFolderInPath(DirectoryName, EmptyFolders);
@@ -69,20 +71,20 @@ namespace OperationsHelpers
 		IFileManager::Get().IterateDirectoryRecursively(*BaseDirectory, EmptyFolderVisitor);
 	}
 
-	bool LoadRedirectAssetsInProject(const TArray<FAssetData>& RedirectorsList, TArray<UObjectRedirector*>& Objects)
+	bool LoadRedirectAssetsInProject(const TArray<FAssetData>& RedirectsList, TArray<UObjectRedirector*>& Objects)
 	{
 		bool bAllAreLoaded = true;
-		for (const auto& RedirectorAsset : RedirectorsList)
+		for (const auto& RedirectAsset : RedirectsList)
 		{
-			const FString ObjectPath = RedirectorAsset.ObjectPath.ToString();
-			UObjectRedirector* FoundObject = FindObject<UObjectRedirector>(NULL, *ObjectPath);
+			const FString ObjectPath = RedirectAsset.ObjectPath.ToString();
+			UObjectRedirector* FoundObject = FindObject<UObjectRedirector>(nullptr, *ObjectPath);
 			if (FoundObject)
 			{
 				Objects.Add(FoundObject);
 			}
 			else
 			{
-				UObjectRedirector* LoadedObject = LoadObject<UObjectRedirector>(NULL, *ObjectPath, NULL, LOAD_None, NULL);
+				UObjectRedirector* LoadedObject = LoadObject<UObjectRedirector>(nullptr, *ObjectPath, nullptr, LOAD_None, nullptr);
 				if (LoadedObject)
 				{
 					Objects.Add(LoadedObject);
@@ -134,13 +136,13 @@ namespace CPOperations
 		return AllAssetData;
 	}
 
-	TArray<FAssetData> CheckForUnusuedAssets()
+	TArray<FAssetData> CheckForUnusedAssets()
 	{
-		TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
-		return CheckForUnusuedAssets(AllAssets);
+		const TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
+		return CheckForUnusedAssets(AllAssets);
 	}
 
-	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest)
+	TArray<FAssetData> CheckForUnusedAssets(TArray<FAssetData> AssetsToTest)
 	{
 		const UCPSettings* Settings = GetDefault<UCPSettings>();
 
@@ -154,7 +156,7 @@ namespace CPOperations
 					PackageNameToCheck.Add(WhitelistAssetPath);
 				}
 			}
-			if (Settings->bCheckAllMapsRefernece)
+			if (Settings->bCheckAllMapsReferences)
 			{
 				for (const FAssetData& WorldAsset : GetAllGameAssets<UWorld>())
 				{
@@ -163,16 +165,16 @@ namespace CPOperations
 			}
 		}
 
-		// Remove the whitelisted assets regardless if they are used selected for depedencies or not.
+		// Remove the whitelisted assets regardless if they are used selected for dependencies or not.
 		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, Settings->WhitelistAssetsPaths);
 
 		// Remove the packages we are going to check dependencies for from the assets to test, because they depend on themselves.
 		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, PackageNameToCheck);
 
 		// Check the dependencies of the collected packages with a progressbar.
-		FTreeAssetDepedency AssetsDependencies = GetAssetDependenciesTree(PackageNameToCheck.Array());
+		const FTreeAssetDependency AssetsDependencies = GetAssetDependenciesTree(PackageNameToCheck.Array());
 
-		// Removed the dependenices found from the ones tested.
+		// Removed the dependencies found from the ones tested.
 		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, AssetsDependencies);
 
 		return AssetsToTest;
@@ -180,22 +182,22 @@ namespace CPOperations
 
 	void CheckAllDependencies()
 	{
-		TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
+		const TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
 		CheckDependenciesOf(AllAssets);
 	}
 
-	void CheckDependenciesOf(TArray<FAssetData> AssetsToTest)
+	void CheckDependenciesOf(const TArray<FAssetData> SelectedAssets)
 	{
-		TArray<FAssetData> UnusuedAssets = CheckForUnusuedAssets(AssetsToTest);
+		const TArray<FAssetData> UnusedAssets = CheckForUnusedAssets(SelectedAssets);
 		
 		// Open dialogs based on the results.
-		if (UnusuedAssets.Num() == 0)
+		if (UnusedAssets.Num() == 0)
 		{
 			FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("NoFilesToDelete", "No unused assets found."));
 		}
 		else
 		{
-			SCPAssetDialog::OpenAssetDialog(UnusuedAssets);
+			SCPAssetDialog::OpenAssetDialog(UnusedAssets);
 		}
 	}
 
@@ -216,9 +218,9 @@ namespace CPOperations
 		int64 TotalDiskSize = 0;
 		{
 			FScopedSlowTask SlowTask(AssetsList.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
-			bool bShowCancelButton = true;
-			bool bAllowPIE = false;
-			SlowTask.MakeDialog(bShowCancelButton, bAllowPIE);
+			const bool bShowCancelButton = true;
+			const bool bAllowPie = false;
+			SlowTask.MakeDialog(bShowCancelButton, bAllowPie);
 
 			for (const FAssetData& AssetDataReported : AssetsList)
 			{
@@ -233,19 +235,19 @@ namespace CPOperations
 		return TotalDiskSize;
 	}
 
-	int64 GetUnusuedAssetsDiskSize(TArray<FAssetData> AssetsToTest)
+	int64 GetUnusedAssetsDiskSize(TArray<FAssetData> AssetsToTest)
 	{
-		TArray<FAssetData> UnusuedAssets = CheckForUnusuedAssets(AssetsToTest);
-		return GetAssetsDiskSize(UnusuedAssets);
+		const TArray<FAssetData> UnusedAssets = CheckForUnusedAssets(AssetsToTest);
+		return GetAssetsDiskSize(UnusedAssets);
 	}
 
-	int64 GetUnusuedAssetsDiskSize()
+	int64 GetUnusedAssetsDiskSize()
 	{
-		TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
-		return GetUnusuedAssetsDiskSize(AllAssets);
+		const TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
+		return GetUnusedAssetsDiskSize(AllAssets);
 	}
 
-	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<FAssetDataPtr>& AssetsNameList)
+	FTreeAssetDependency GetAssetDependenciesTree(const TArray<FAssetDataPtr>& AssetsNameList)
 	{
 		TArray<FName> AssetsNames;
 		for (const auto& AssetNamePtr : AssetsNameList)
@@ -256,9 +258,9 @@ namespace CPOperations
 		return GetAssetDependenciesTree(AssetsNames);
 	}
 
-	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<FName>& AssetsNameList)
+	FTreeAssetDependency GetAssetDependenciesTree(const TArray<FName>& AssetsNameList)
 	{
-		FTreeAssetDepedency Result;
+		FTreeAssetDependency Result;
 
 		for (const auto& AssetName : AssetsNameList)
 		{
@@ -266,12 +268,12 @@ namespace CPOperations
 		}
 
 		FScopedSlowTask SlowTask(AssetsNameList.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
-		bool bShowCancelButton = true;
-		bool bAllowPIE = false;
-		SlowTask.MakeDialog(bShowCancelButton, bAllowPIE);
+		const bool bShowCancelButton = true;
+		const bool bAllowPie = false;
+		SlowTask.MakeDialog(bShowCancelButton, bAllowPie);
 
 		TSet<FName> PackageNamesChecked;
-		for (const FChildDepedency& TopDependency : Result.TopLevelDependencies)
+		for (const FChildDependency& TopDependency : Result.TopLevelDependencies)
 		{
 			const FName DependencyName = TopDependency.GetAssetName();
 
@@ -289,7 +291,7 @@ namespace CPOperations
 		return Result;
 	}
 
-	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDepedency& ResultTreeDependency)
+	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency)
 	{
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 
@@ -306,7 +308,7 @@ namespace CPOperations
 
 			if (!AllDependencies.Contains(DependencyName) && !bIsEnginePackage && !bIsScriptPackage)
 			{
-				ResultTreeDependency.AddDepedency(PackageName, DependencyName);
+				ResultTreeDependency.AddDependency(PackageName, DependencyName);
 				AllDependencies.Add(DependencyName);
 				RecursiveGetDependencies(DependencyName, AllDependencies, ResultTreeDependency);
 			}
@@ -330,14 +332,14 @@ namespace CPOperations
 		
 		if (Settings->bUseSmartBlackList)
 		{
-			FString projectBuildRoot = FPaths::ProjectDir() + "Build";
+			const FString ProjectBuildRoot = FPaths::ProjectDir() + "Build";
 		
 			for (const FString& platformFolder : SelectedPlatforms)
 			{
 				for (const FString& listFile : SelectedConfigurations)
 				{
 					FString slash = FGenericPlatformMisc::GetDefaultPathSeparator();
-					FString platformPath = projectBuildRoot + slash + platformFolder + slash + listFile;
+					FString platformPath = ProjectBuildRoot + slash + platformFolder + slash + listFile;
 					FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect, 
 						&IFileManager::Get(), WriteFlags);
 				}
@@ -345,19 +347,19 @@ namespace CPOperations
 		}
 		else
 		{
-			FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
+			const FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
 		
 			FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect,
 				&IFileManager::Get(), WriteFlags);
-			FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), NULL, NULL);
+			FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), nullptr, nullptr);
 		}
 	}
 
-    void FixUpRedirectorsInProject()
+    void FixUpRedirectsInProject()
     {
-		TArray<FAssetData> RedirectorAssetList = GetAllGameAssets<UObjectRedirector>();
+	    const TArray<FAssetData> RedirectAssetList = GetAllGameAssets<UObjectRedirector>();
 		TArray<UObjectRedirector*> AssetsToRedirect;
-		bool bLoadSuccess = OperationsHelpers::LoadRedirectAssetsInProject(RedirectorAssetList, AssetsToRedirect);
+		const bool bLoadSuccess = OperationsHelpers::LoadRedirectAssetsInProject(RedirectAssetList, AssetsToRedirect);
 
         if (bLoadSuccess)
         {
@@ -372,7 +374,7 @@ namespace CPOperations
 
     void DeleteEmptyProjectFolders()
     {
-		FixUpRedirectorsInProject();
+		FixUpRedirectsInProject();
 
 		TArray<FString> EmptyFoldersFound;
 		OperationsHelpers::GetEmptyFolderInPath(FPaths::ProjectContentDir(), EmptyFoldersFound);
@@ -403,27 +405,27 @@ namespace CPOperations
 		return AllAssetData;
 	}
 
-	bool FChildDepedency::operator!=(const FChildDepedency& Other)
+	bool FChildDependency::operator!=(const FChildDependency& Other) const
 	{
 		return !GetAssetName().IsEqual(Other.GetAssetName());
 	}
 
-	FChildDepedency INVALID_CHILD(FName("INVALID_CHILD"));
+	FChildDependency INVALID_CHILD(FName("INVALID_CHILD"));
 
-	FChildDepedency::FChildDepedency(const FName& InAssetName) 
+	FChildDependency::FChildDependency(const FName& InAssetName) 
 	{
 		AssetName = MakeShared<FName>(InAssetName);
 	}
 
-	void FChildDepedency::AddDependency(const FName& ChildDependency)
+	void FChildDependency::AddDependency(const FName& ChildDependency)
 	{
 		ChildDependencies.Emplace(ChildDependency);
 	}
 
-	TArray<FAssetDataPtr> FChildDepedency::GetChildrenAssetPtrs()
+	TArray<FAssetDataPtr> FChildDependency::GetChildrenAssetPtrs()
 	{
 		TArray<FAssetDataPtr> Children;
-		for (FChildDepedency& Dependency : ChildDependencies)
+		for (FChildDependency& Dependency : ChildDependencies)
 		{
 			Children.Emplace(Dependency.AssetName);
 		}
@@ -431,15 +433,15 @@ namespace CPOperations
 		return Children;
 	}
 
-	void FTreeAssetDepedency::AddTopLevelDependency(const FName& AssetName)
+	void FTreeAssetDependency::AddTopLevelDependency(const FName& AssetName)
 	{
-		FChildDepedency& NewChild = TopLevelDependencies.Emplace_GetRef(AssetName);
+		FChildDependency& NewChild = TopLevelDependencies.Emplace_GetRef(AssetName);
 		TopLevelAssetsPtr.Emplace(NewChild.AssetName);
 	}
 
-	FChildDepedency& FTreeAssetDepedency::GetDependencyRecursive(const FName& OwnerName, TArray<FChildDepedency>& ChildrenToCheck)
+	FChildDependency& FTreeAssetDependency::GetDependencyRecursive(const FName& OwnerName, TArray<FChildDependency>& ChildrenToCheck)
 	{
-		for (FChildDepedency& ChildToCheck : ChildrenToCheck)
+		for (FChildDependency& ChildToCheck : ChildrenToCheck)
 		{
 			if (ChildToCheck.GetAssetName() == OwnerName)
 			{
@@ -447,7 +449,7 @@ namespace CPOperations
 			}
 			else
 			{
-				FChildDepedency& ChildFound = GetDependencyRecursive(OwnerName, ChildToCheck.ChildDependencies);
+				FChildDependency& ChildFound = GetDependencyRecursive(OwnerName, ChildToCheck.ChildDependencies);
 
 				if (ChildFound != INVALID_CHILD)
 				{
@@ -459,22 +461,22 @@ namespace CPOperations
 		return INVALID_CHILD;
 	}
 
-	void FTreeAssetDepedency::GatherDependencyRecursive(TArray<FName>& OutResult, const TArray<FChildDepedency>& ChildrenToCheck) const
+	void FTreeAssetDependency::GatherDependencyRecursive(TArray<FName>& OutResult, const TArray<FChildDependency>& ChildrenToCheck) const
 	{
-		for (const FChildDepedency& ChildToCheck : ChildrenToCheck)
+		for (const FChildDependency& ChildToCheck : ChildrenToCheck)
 		{
 			OutResult.Add(ChildToCheck.GetAssetName());
 			GatherDependencyRecursive(OutResult, ChildToCheck.ChildDependencies);
 		}
 	}
 
-	void FTreeAssetDepedency::AddDepedency(const FName& OwnerName, const FName& DependencyName)
+	void FTreeAssetDependency::AddDependency(const FName& OwnerName, const FName& DependencyName)
 	{
-		FChildDepedency& OwnerDependency = (*this)[OwnerName];
+		FChildDependency& OwnerDependency = (*this)[OwnerName];
 		OwnerDependency.AddDependency(DependencyName);
 	}
 
-	TArray<FName> FTreeAssetDepedency::GetDependenciesAsList() const
+	TArray<FName> FTreeAssetDependency::GetDependenciesAsList() const
 	{
 		TArray<FName> AllDependencies;
 		GatherDependencyRecursive(AllDependencies, TopLevelDependencies);

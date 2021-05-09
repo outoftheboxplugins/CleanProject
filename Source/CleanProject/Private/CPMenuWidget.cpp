@@ -1,6 +1,9 @@
 // Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
 
 #include "CPMenuWidget.h"
+
+#include "CleanProjectModule.h"
+#include "CPSettings.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
@@ -15,13 +18,10 @@ namespace
 
 	const FName ColumnVariableName = FName("AssetName");
 
-	const FLinearColor EnabledDepedencyColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	const FLinearColor DisabledDepedencyColor = FLinearColor(0.25f, 0.25f, 0.25f, 1.0f);
-	
-	const FMargin LeftRowPadding = FMargin(0.0f, 2.5f, 2.0f, 2.5f);
-	const FMargin RightRowPadding = FMargin(3.0f, 2.5f, 2.0f, 2.5f);
+	const FLinearColor EnabledDependencyColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	const FLinearColor DisabledDependencyColor = FLinearColor(0.25f, 0.25f, 0.25f, 1.0f);
 
-	bool GetEnabledByDepedencyType(ECPAssetDependencyType AssetDependencyType)
+	bool GetEnabledByDependencyType(const ECPAssetDependencyType AssetDependencyType)
 	{
 		const UCPSettings* ProjectSettings = GetDefault<UCPSettings>();
 		bool bIsEnabled = false;
@@ -32,7 +32,7 @@ namespace
 			bIsEnabled = false;
 			break;
 		case ECPAssetDependencyType::MapAssets:
-			bIsEnabled = ProjectSettings->bCheckAllMapsRefernece;
+			bIsEnabled = ProjectSettings->bCheckAllMapsReferences;
 			break;
 		case ECPAssetDependencyType::WhitelistAssets:
 			bIsEnabled = ProjectSettings->bCheckWhitelistReferences;
@@ -45,7 +45,7 @@ namespace
 		return bIsEnabled;
 	}
 
-	bool CompareAssetDataArrys(TArray<FAssetDataPtr> LhsArray, TArray<FAssetDataPtr> RhsArray)
+	bool CompareAssetDataArrays(TArray<FAssetDataPtr> LhsArray, TArray<FAssetDataPtr> RhsArray)
 	{
 		if (LhsArray.Num() != RhsArray.Num())
 		{
@@ -101,7 +101,7 @@ namespace
 	}
 }
 
-class SCPAssetDependencyRow : public SMultiColumnTableRow<FAssetDataPtr>
+class SCPAssetDependencyRow final : public SMultiColumnTableRow<FAssetDataPtr>
 {
 public:
 	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem, ECPAssetDependencyType InAssetDependencyType);
@@ -112,7 +112,7 @@ private:
 
 private:
 	FAssetDataPtr Item;
-	ECPAssetDependencyType AssetDependencyType;
+	ECPAssetDependencyType AssetDependencyType = ECPAssetDependencyType::None;
 };
 
 void SCPAssetDependencyRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem, ECPAssetDependencyType InAssetDependencyType)
@@ -153,8 +153,8 @@ TSharedRef<SWidget> SCPAssetDependencyRow::GenerateWidgetForColumn(const FName& 
 
 FSlateColor SCPAssetDependencyRow::GetTextColor() const
 {
-	const bool bIsEnabled = GetEnabledByDepedencyType(AssetDependencyType);
-	FLinearColor TextColor = bIsEnabled ? EnabledDepedencyColor : DisabledDepedencyColor;
+	const bool bIsEnabled = GetEnabledByDependencyType(AssetDependencyType);
+	const FLinearColor TextColor = bIsEnabled ? EnabledDependencyColor : DisabledDependencyColor;
 	return FSlateColor(TextColor);
 }
 
@@ -177,7 +177,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			CreateInfoWidget(LOCTEXT("ProjectSpaceGained", "Space gained in project"), 
 			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([=]()
 					{
-						int64 SizeGained = GetDefault<UCPSettings>()->GetSpaceGained();
+						const int64 SizeGained = ProjectSettings->GetSpaceGained();
 						return (SizeGained > 0) ? FText::AsMemory(SizeGained) : LOCTEXT("UnkownSize", "UnkownSize");
 					})))
 		]
@@ -188,7 +188,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			CreateInfoWidget(LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets"), 
 			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([=]()
 				{
-					int64 UsedAssets = GetUnusedAssetsCount();
+					const int64 UsedAssets = GetUnusedAssetsCount();
 					return FText::AsNumber(UsedAssets);
 				})))
 		]
@@ -291,12 +291,12 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 				SNew(SButton)
 				.Text(LOCTEXT("Refresh", "Refresh"))
 				.ToolTipText(LOCTEXT("RefreshTip", "Refresh the stats right now."))
-				.OnClicked(this, &SCPMenuWidget::OnRefreshUnushed)
+				.OnClicked(this, &SCPMenuWidget::OnRefreshUnused)
 			]
 		]
     ];
 
-	//GEditor->GetTimerManager()->SetTimer(RefreshTimerHandle, [=]() { RefreshUnusedAssets(); }, UnusedRefreshInterval, true, UnusedRefreshDelay);
+	GEditor->GetTimerManager()->SetTimer(RefreshTimerHandle, [=]() { RefreshUnusedAssets(); }, UnusedRefreshInterval, true, UnusedRefreshDelay);
 }
 
 TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute)
@@ -331,9 +331,9 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FTex
 
 FText SCPMenuWidget::GetColumnNameByType(ECPAssetDependencyType AssetDependencyType) const
 {
-	const bool bIsEnabled = GetEnabledByDepedencyType(AssetDependencyType);
+	const bool bIsEnabled = GetEnabledByDependencyType(AssetDependencyType);
 
-	FText EnabledText = bIsEnabled ? LOCTEXT("EnabledAsset", "Enabled") : LOCTEXT("DisabledAsset", "Disabled");
+	const FText EnabledText = bIsEnabled ? LOCTEXT("EnabledAsset", "Enabled") : LOCTEXT("DisabledAsset", "Disabled");
 
 	FText AssetType;
 	switch (AssetDependencyType)
@@ -344,6 +344,8 @@ FText SCPMenuWidget::GetColumnNameByType(ECPAssetDependencyType AssetDependencyT
 	case ECPAssetDependencyType::WhitelistAssets:
 		AssetType = LOCTEXT("WhitelistAssets", "Whitelist Assets");
 		break;
+	default:
+		AssetType = LOCTEXT("AnyAssets", "Any Assets");
 	}
 
 	return FText::Format(INVTEXT("{0} - {1}"), AssetType, EnabledText);
@@ -351,7 +353,7 @@ FText SCPMenuWidget::GetColumnNameByType(ECPAssetDependencyType AssetDependencyT
 
 void SCPMenuWidget::OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& OutChildren)
 {
-	CPOperations::FChildDepedency& OwnerItem = AssetsDependencies[*InItem];
+	CPOperations::FChildDependency& OwnerItem = AssetsDependencies[*InItem];
 	OutChildren = OwnerItem.GetChildrenAssetPtrs();
 }
 
@@ -365,11 +367,11 @@ namespace
 	template<typename T>
 	void UpdateListView(TSharedPtr<SListView<FAssetDataPtr>> ListView, TArray<FAssetDataPtr>& CurrentAssets, TArray<T> NewAssetsInfo)
 	{
-		TArray<FAssetDataPtr> NewAssetsArray = TransformAssetDataArray(NewAssetsInfo);
-		TArray<FAssetDataPtr> OldAssetsArray = CurrentAssets;
+		const TArray<FAssetDataPtr> NewAssetsArray = TransformAssetDataArray(NewAssetsInfo);
+		const TArray<FAssetDataPtr> OldAssetsArray = CurrentAssets;
 
 		CurrentAssets = NewAssetsArray;
-		if (CompareAssetDataArrys(NewAssetsArray, OldAssetsArray))
+		if (CompareAssetDataArrays(NewAssetsArray, OldAssetsArray))
 		{
 			ListView->RebuildList();
 		}
@@ -378,13 +380,13 @@ namespace
 
 void SCPMenuWidget::RefreshUnusedAssets()
 {
-	TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusuedAssets();
+	const TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusedAssets();
 	UnusedAssetsCount = UnusedAssets.Num();
 
-	TArray<FAssetData> NewMapAssets = CPOperations::GetAllGameAssets<UWorld>();
+	const TArray<FAssetData> NewMapAssets = CPOperations::GetAllGameAssets<UWorld>();
 	UpdateListView(MapAssetsListView, MapAssets, NewMapAssets);
-	
-	TArray<FName> NewWhitelistAssets = GetDefault<UCPSettings>()->WhitelistAssetsPaths;
+
+	const TArray<FName> NewWhitelistAssets = GetDefault<UCPSettings>()->WhitelistAssetsPaths;
 	UpdateListView(WhitelistAssetsListView, WhitelistAssets, NewWhitelistAssets);
 
 	TArray<FAssetDataPtr> AllDependencyAssets;
@@ -401,7 +403,7 @@ FReply SCPMenuWidget::OnRunCleanupNow()
 	return FReply::Handled();
 }
 
-FReply SCPMenuWidget::OnRefreshUnushed()
+FReply SCPMenuWidget::OnRefreshUnused()
 {
 	RefreshUnusedAssets();
 	return FReply::Handled();
@@ -409,8 +411,8 @@ FReply SCPMenuWidget::OnRefreshUnushed()
 
 FReply SCPMenuWidget::OnGoToDocumentation()
 {
-	TSharedPtr<IPlugin> CleanProjectPlugin = IPluginManager::Get().FindPlugin("CleanProject");
-	FString DocsURL = CleanProjectPlugin->GetDescriptor().DocsURL;
+	const TSharedPtr<IPlugin> CleanProjectPlugin = IPluginManager::Get().FindPlugin("CleanProject");
+	const FString DocsURL = CleanProjectPlugin->GetDescriptor().DocsURL;
 	FPlatformProcess::LaunchURL(*DocsURL, nullptr, nullptr);
 
 	return FReply::Handled();

@@ -6,6 +6,8 @@
 
 #include "Widgets/SCompoundWidget.h"
 
+#include "ContentBrowserDelegates.h"
+
 class SCPAssetDialog : public SCompoundWidget
 {
 // Slate interface
@@ -23,7 +25,7 @@ public:
 // Slate Delegates
 private:
 	TSharedPtr<SWidget> OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets);
-	void OnRequestOpenAsset(const FAssetData& AssetData) const;
+	static void OnRequestOpenAsset(const FAssetData& AssetData);
 
 // Custom Report column
 private:

@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 
-#include "UObject/ObjectMacros.h"
-
 #include "CPSettings.generated.h"
 
 /**
@@ -57,7 +55,7 @@ public:
 
 	// When performing a project-wide clean, should all the maps be included in the reference check?
 	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
-	bool bCheckAllMapsRefernece = true;
+	bool bCheckAllMapsReferences = true;
 
 	// Columns to be hidden in the final report
 	UPROPERTY(EditAnywhere, config, Category = "Report")

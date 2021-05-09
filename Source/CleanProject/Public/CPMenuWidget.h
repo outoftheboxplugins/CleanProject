@@ -27,7 +27,7 @@ public:
 	SLATE_END_ARGS()
 
     void Construct(const FArguments& InArgs);
-	~SCPMenuWidget();
+    virtual ~SCPMenuWidget() override;
 
 private:
 	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute);
@@ -44,7 +44,7 @@ private:
 	float GetInfoSlotSizeLeft() const { return UniformInfoSlotSize; }
 	float GetInfoSlotSizeRight() const { return 1.0f - UniformInfoSlotSize; }
 
-// Refrshing
+// Refreshing
 private:
 	FTimerHandle RefreshTimerHandle;
 	int64 GetUnusedAssetsCount() const;
@@ -53,13 +53,13 @@ private:
 // Buttons
 private:
 	FReply OnRunCleanupNow();
-	FReply OnRefreshUnushed();
+	FReply OnRefreshUnused();
 	FReply OnGoToDocumentation();
 	FReply OnOpenSettings();
 
 private:
 	TSharedPtr<STreeView<FAssetDataPtr>> DependenciesTreeView;
-	CPOperations::FTreeAssetDepedency AssetsDependencies;
+	CPOperations::FTreeAssetDependency AssetsDependencies;
 
 	TSharedPtr<SListView<FAssetDataPtr>> MapAssetsListView;
 	TArray<FAssetDataPtr> MapAssets;

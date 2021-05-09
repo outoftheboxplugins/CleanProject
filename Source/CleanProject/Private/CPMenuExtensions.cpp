@@ -4,10 +4,12 @@
 
 #include "CPMenuWidget.h"
 #include "CPOperations.h"
+#include "CPLog.h"
+#include "CPSettings.h"
 
 #include "Framework/MultiBox/MultiBoxExtender.h" // for FExtender
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "../Public/SCPBlacklistDialog.h"
+#include "SCPBlacklistDialog.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -57,7 +59,7 @@ void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
 		FUIAction(FExecuteAction::CreateLambda([]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects* from menu."));
-				CPOperations::FixUpRedirectorsInProject();
+				CPOperations::FixUpRedirectsInProject();
 			})
 		));
 

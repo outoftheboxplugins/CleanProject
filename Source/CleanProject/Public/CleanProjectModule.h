@@ -23,8 +23,8 @@ private:
 	void RegisterMenus();
 	void UnregisterMenus();
 
-	void RegisterSettings();
-	void UnregisterSettings();
+	void RegisterSettings() const;
+	void UnregisterSettings() const;
 
 	void RegisterAssetActions();
 	void UnregisterAssetActions();

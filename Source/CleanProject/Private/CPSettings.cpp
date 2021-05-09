@@ -70,7 +70,7 @@ UCPSettings::UCPSettings()
 		"FrameRate",
 		"NumFrames",
 		"Interpolation",
-		"RegargetSource",
+		"RetargetSource",
 		"AdditiveAnimType",
 		"ImportFileFramerate",
 		"ImportResampleFramerate",

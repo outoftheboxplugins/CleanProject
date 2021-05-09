@@ -18,21 +18,21 @@ namespace CPOperations
 	void CheckAllDependencies();
 	void CheckDependenciesOf(TArray<FAssetData> SelectedAssets);
 
-	// Return which of the assets are unusued based on the selected one.
-	TArray<FAssetData> CheckForUnusuedAssets();
-	TArray<FAssetData> CheckForUnusuedAssets(TArray<FAssetData> AssetsToTest);
+	// Return which of the assets are unused based on the selected one.
+	TArray<FAssetData> CheckForUnusedAssets();
+	TArray<FAssetData> CheckForUnusedAssets(TArray<FAssetData> AssetsToTest);
 
 	int64 GetAssetDiskSize(const FAssetData& Asset);
 	int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList);
 
-	int64 GetUnusuedAssetsDiskSize();
-	int64 GetUnusuedAssetsDiskSize(TArray<FAssetData> AssetsToTest);
+	int64 GetUnusedAssetsDiskSize();
+	int64 GetUnusedAssetsDiskSize(TArray<FAssetData> AssetsToTest);
 
-	struct FChildDepedency
+	struct FChildDependency
 	{
-		FChildDepedency(const FName& InAssetName);
+		explicit FChildDependency(const FName& InAssetName);
 
-		bool operator != (const FChildDepedency& Other);
+		bool operator != (const FChildDependency& Other) const;
 
 		void AddDependency(const FName& ChildDependency);
 		bool HasChildren() const { return ChildDependencies.Num() != 0; }
@@ -41,37 +41,37 @@ namespace CPOperations
 		TArray<FAssetDataPtr> GetChildrenAssetPtrs();
 
 		FAssetDataPtr AssetName;
-		TArray<FChildDepedency> ChildDependencies;
+		TArray<FChildDependency> ChildDependencies;
 	};
 
-	struct FTreeAssetDepedency
+	struct FTreeAssetDependency
 	{
 		operator TArray<FName>() const { return GetDependenciesAsList(); }
-		FChildDepedency& operator [](const FName& OwnerName) { return GetDependencyRecursive(OwnerName, TopLevelDependencies); }
+		FChildDependency& operator [](const FName& OwnerName) { return GetDependencyRecursive(OwnerName, TopLevelDependencies); }
 
 		void AddTopLevelDependency(const FName& AssetName);
-		void AddDepedency(const FName& OwnerName, const FName& DependencyName);
+		void AddDependency(const FName& OwnerName, const FName& DependencyName);
 
 		TArray<FName> GetDependenciesAsList() const;
 
-		FChildDepedency& GetDependencyRecursive(const FName& OwnerName, TArray<FChildDepedency>& ChildrenToCheck);
-		void GatherDependencyRecursive(TArray<FName>& OutResult, const TArray<FChildDepedency>& ChildrenToCheck) const;
+		FChildDependency& GetDependencyRecursive(const FName& OwnerName, TArray<FChildDependency>& ChildrenToCheck);
+		void GatherDependencyRecursive(TArray<FName>& OutResult, const TArray<FChildDependency>& ChildrenToCheck) const;
 
-		TArray<FChildDepedency> TopLevelDependencies;
+		TArray<FChildDependency> TopLevelDependencies;
 		TArray<FAssetDataPtr> TopLevelAssetsPtr;
 	};
 
-	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<FAssetDataPtr>& AssetsNameList);
-	FTreeAssetDepedency GetAssetDependenciesTree(const TArray<FName>& AssetsNameList);
+	FTreeAssetDependency GetAssetDependenciesTree(const TArray<FAssetDataPtr>& AssetsNameList);
+	FTreeAssetDependency GetAssetDependenciesTree(const TArray<FName>& AssetsNameList);
 
 	// Recursively get all the dependencies of a certain package.
-	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDepedency& ResultTreeDependency);
+	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency);
 
 	// Generate the blacklist for a specific platform or configuration.
 	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform = "", const FString& Configuration = "");
 
-	// Fix up the redirectors in the whole project.
-	void FixUpRedirectorsInProject();
+	// Fix up the redirects in the whole project.
+	void FixUpRedirectsInProject();
 
 	// Delete all the empty folders of the project.
 	void DeleteEmptyProjectFolders();
