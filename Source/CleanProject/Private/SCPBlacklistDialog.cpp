@@ -1,5 +1,11 @@
 // Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
 
+#include "SCPBlacklistDialog.h"
+
+#include "CPOperations.h"
+#include "CPSettings.h"
+#include "Widgets/Layout/SUniformGridPanel.h"
+
 #define LOCTEXT_NAMESPACE "CleanProject"
 
 void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
@@ -66,7 +72,7 @@ void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAsset
 			+SUniformGridPanel::Slot(2, 0)
 			[
 				SAssignNew(ToggleAppendCheckbox, SCheckBox)
-				.IsChecked(this, &SCPBlacklistDialog::IsAppendCheckboxChcked)
+				.IsChecked(this, &SCPBlacklistDialog::IsAppendCheckboxChecked)
 				.OnCheckStateChanged(this, &SCPBlacklistDialog::OnAppendCheckboxChecked)
 				.ToolTipText(LOCTEXT("BlacklistAppendTip", "Ticking this checkbox will append the generated blacklist to the existing one instead of overridding it completly."))
 				[
@@ -88,7 +94,7 @@ void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAsset
             .Padding(FEditorStyle::GetMargin("StandardDialog.SlotPadding"))
 			[
                 SAssignNew(ToggleSkipCheckbox, SCheckBox)
-                .IsChecked(this, &SCPBlacklistDialog::IsSkipCheckboxChcked)
+                .IsChecked(this, &SCPBlacklistDialog::IsSkipCheckboxChecked)
 				.OnCheckStateChanged(this, &SCPBlacklistDialog::OnSkipDialogChanged)
 				.ToolTipText(LOCTEXT("BlacklistSkipTip", "Skip this step next time and automatically generate for all configurations."))
 				[
@@ -129,24 +135,25 @@ bool SCPBlacklistDialog::OpenBlacklistDialog(const TArray<FAssetData>& AssetsToB
 {
 	TSharedPtr<SCPBlacklistDialog> DeleteDialog;
 
-	TSharedRef<SWindow> DeleteAssetsWindow = SNew(SWindow)
+	TSharedPtr<SWindow> DeleteAssetsWindow = SNew(SWindow)
 		.Title(LOCTEXT("BlacklistDialogTitle", "Clean Project Blacklist"))
 		.ClientSize(FVector2D(400, 100))
 		.SupportsMaximize(false)
-		.SupportsMinimize(false)
-		[
+		.SupportsMinimize(false);
+
+	DeleteAssetsWindow->SetContent(
 			SAssignNew(DeleteDialog, SCPBlacklistDialog, AssetsToBlacklist)
 			.ParentWindow(DeleteAssetsWindow)
-		];
+	);
 
-	GEditor->EditorAddModalWindow(DeleteAssetsWindow);
+	GEditor->EditorAddModalWindow(DeleteAssetsWindow.ToSharedRef());
 	
 	return DeleteDialog->DidDeleteAssets();
 }
 
 FText SCPBlacklistDialog::GetConfigurationText() const
 {
-	FStringPtr SelectedText = ConfigurationCombobox->GetSelectedItem();
+	const FStringPtr SelectedText = ConfigurationCombobox->GetSelectedItem();
 	if (SelectedText.IsValid())
 	{
 		return FText::FromString(*SelectedText);
@@ -157,7 +164,7 @@ FText SCPBlacklistDialog::GetConfigurationText() const
 
 FText SCPBlacklistDialog::GetPlatformText() const
 {
-	FStringPtr SelectedText = PlatformCombobox->GetSelectedItem();
+	const FStringPtr SelectedText = PlatformCombobox->GetSelectedItem();
 	if (SelectedText.IsValid())
 	{
 		return FText::FromString(*SelectedText);
@@ -166,7 +173,7 @@ FText SCPBlacklistDialog::GetPlatformText() const
 	return LOCTEXT("BlacklistDialogComoboboxDefault", "Select option.");
 }
 
-ECheckBoxState SCPBlacklistDialog::IsAppendCheckboxChcked() const
+ECheckBoxState SCPBlacklistDialog::IsAppendCheckboxChecked() const
 {
 	const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
     
@@ -180,7 +187,7 @@ ECheckBoxState SCPBlacklistDialog::IsAppendCheckboxChcked() const
 	}
 }
 
-ECheckBoxState SCPBlacklistDialog::IsSkipCheckboxChcked() const
+ECheckBoxState SCPBlacklistDialog::IsSkipCheckboxChecked() const
 {
 	const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 
@@ -218,27 +225,27 @@ FReply SCPBlacklistDialog::OnBlacklistCancel()
 	return FReply::Handled();
 }
 
-void SCPBlacklistDialog::OnSkipDialogChanged(ECheckBoxState newState)
+void SCPBlacklistDialog::OnSkipDialogChanged(ECheckBoxState NewState) const
 {
 	UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-	Settings->bShouldSkipBlacklistDialog = (newState == ECheckBoxState::Checked);
+	Settings->bShouldSkipBlacklistDialog = (NewState == ECheckBoxState::Checked);
 }
 
-void SCPBlacklistDialog::OnAppendCheckboxChecked(ECheckBoxState newState)
+void SCPBlacklistDialog::OnAppendCheckboxChecked(ECheckBoxState newState) const
 {
     UCPSettings* Settings = GetMutableDefault<UCPSettings>();
     Settings->bShouldAppendDefault = (newState == ECheckBoxState::Checked);
 }
 
-void SCPBlacklistDialog::PrepareComboTexts(TArray<FStringPtr>& OptionsArray, const FString& DefaultOption, const TArray<FString>& OtherOptions)
+void SCPBlacklistDialog::PrepareComboTexts(TArray<FStringPtr>& OptionsArray, const FString& DefaultOption, const TArray<FString>& OtherOptions) const
 {
-	FStringPtr DefaultOptionPtr = FStringPtr(new FString(DefaultOption));
+	const FStringPtr DefaultOptionPtr = MakeShared<FString>(DefaultOption);
 
 	OptionsArray.Add(DefaultOptionPtr);
 
 	for (const FString& Configuration : OtherOptions)
 	{
-		FStringPtr OptionStr = FStringPtr(new FString(Configuration));
+		FStringPtr OptionStr = MakeShared<FString>(Configuration);
 		OptionsArray.Emplace(OptionStr);
 	}
 }

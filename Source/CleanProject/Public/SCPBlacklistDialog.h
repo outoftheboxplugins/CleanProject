@@ -32,16 +32,16 @@ private:
 	FText GetConfigurationText() const;
 	FText GetPlatformText() const;
 	
-	ECheckBoxState IsAppendCheckboxChcked() const;
-	ECheckBoxState IsSkipCheckboxChcked() const;
+	ECheckBoxState IsAppendCheckboxChecked() const;
+	ECheckBoxState IsSkipCheckboxChecked() const;
 
 	FReply OnBlacklistOk();
 	FReply OnBlacklistCancel();
 
-	void OnSkipDialogChanged(ECheckBoxState newState);
-	void OnAppendCheckboxChecked(ECheckBoxState newState);
+	void OnSkipDialogChanged(ECheckBoxState NewState) const;
+	void OnAppendCheckboxChecked(ECheckBoxState NewState) const;
 
-	void PrepareComboTexts(TArray<FStringPtr>& OptionsArray, const FString& DefaultOption, const TArray<FString>& OtherOptions);
+	void PrepareComboTexts(TArray<FStringPtr>& OptionsArray, const FString& DefaultOption, const TArray<FString>& OtherOptions) const;
 
 private:
 	TAttribute<TSharedPtr<SWindow>> ParentWindow;
