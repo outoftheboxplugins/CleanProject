@@ -202,14 +202,13 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 		));
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("Fp;dersCleanupEmptyFolders", "Cleanup empty folders"),
-		LOCTEXT("Fp;dersCleanupEmptyFoldersTooltip", "Delete all the empty folders from the selected folders."),
+		LOCTEXT("FoldersCleanupEmptyFolders", "Cleanup empty folders"),
+		LOCTEXT("FoldersCleanupEmptyFoldersTooltip", "Delete all the empty folders from the selected folders."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda([SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from selected folders."));
-				__debugbreak();
-				//CPOperations::DeleteEmptyProjectFolders();
+				CPOperations::DeleteEmptyProjectFolders(SelectedFolders);
 			})
 		));
 

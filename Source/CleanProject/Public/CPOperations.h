@@ -75,6 +75,9 @@ namespace CPOperations
 
 	// Delete all the empty folders of the project.
 	void DeleteEmptyProjectFolders();
+	void DeleteEmptyProjectFolders(TArray<FString> SelectedFolders);
+
+	void DeleteFolderByPath(const FString& FolderPath);
 
 	// Returns all the assets from the project (Game folder).
 	template<typename T>

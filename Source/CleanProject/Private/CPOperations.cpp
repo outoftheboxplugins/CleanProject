@@ -374,18 +374,37 @@ namespace CPOperations
 
     void DeleteEmptyProjectFolders()
     {
+		const FString& ContentDirectory = FPaths::ProjectContentDir();
+		DeleteFolderByPath(ContentDirectory);
+    }
+
+	void DeleteEmptyProjectFolders(TArray<FString> SelectedFolders)
+	{
+		for (const FString SelectedFolder : SelectedFolders)
+		{
+			FString ConvertedName;
+			if (FPackageName::TryConvertLongPackageNameToFilename(SelectedFolder, ConvertedName))
+			{
+				const FString FolderName = ConvertedName + TEXT("/");
+				DeleteFolderByPath(FolderName);
+			}
+		}
+	}
+
+	void DeleteFolderByPath(const FString& FolderPath)
+	{
 		FixUpRedirectsInProject();
 
 		TArray<FString> EmptyFoldersFound;
-		OperationsHelpers::GetEmptyFolderInPath(FPaths::ProjectContentDir(), EmptyFoldersFound);
+		OperationsHelpers::GetEmptyFolderInPath(FolderPath, EmptyFoldersFound);
 
-		for (const FString& Folder : EmptyFoldersFound)
+		for (const FString& FolderToDelete : EmptyFoldersFound)
 		{
-			IFileManager::Get().DeleteDirectory(*Folder, false, true);
+			IFileManager::Get().DeleteDirectory(*FolderToDelete, false, true);
 		}
-    }
+	}
 
-    TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes /* = TArray<FName>()*/)
+	TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes /* = TArray<FName>()*/)
 	{
 		TArray<FAssetData> AllAssetData;
 
