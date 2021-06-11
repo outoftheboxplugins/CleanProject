@@ -12,8 +12,6 @@
 
 namespace
 {
-	const float UnusedRefreshDelay = 1.5f;
-	const float UnusedRefreshInterval = 7.5f;
 	const float ScrollbarPaddingSize = 16.0f;
 
 	const FName ColumnVariableName = FName("AssetName");
@@ -45,37 +43,6 @@ namespace
 		return bIsEnabled;
 	}
 
-	bool CompareAssetDataArrays(TArray<FAssetDataPtr> LhsArray, TArray<FAssetDataPtr> RhsArray)
-	{
-		if (LhsArray.Num() != RhsArray.Num())
-		{
-			// The arrays have at least 1 different element.
-			return true;
-		}
-
-		auto AlphabeticalSort = [](const FAssetDataPtr& A, const FAssetDataPtr& B)
-		{
-			const FName AName = *A;
-			const FName BName = *B;
-
-			return AName.Compare(BName) < 0;
-		};
-
-		LhsArray.Sort(AlphabeticalSort);
-		RhsArray.Sort(AlphabeticalSort);
-
-		const uint64 ArrayLength = LhsArray.Num();
-		for (uint64 i = 0; i < ArrayLength; i++)
-		{
-			if (LhsArray[i] != RhsArray[i])
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	TArray<FAssetDataPtr> TransformAssetDataArray(const TArray<FName>& AssetArray)
 	{
 		TArray<FAssetDataPtr> ResultArray;
@@ -87,7 +54,6 @@ namespace
 
 		return ResultArray;
 	}
-
 	TArray<FAssetDataPtr> TransformAssetDataArray(const TArray<FAssetData>& AssetArray)
 	{
 		TArray<FAssetDataPtr> ResultArray;
@@ -101,21 +67,13 @@ namespace
 	}
 }
 
-class SCPAssetDependencyRow final : public SMultiColumnTableRow<FAssetDataPtr>
-{
-public:
-	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem, ECPAssetDependencyType InAssetDependencyType);
-
-private:
-	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
-	FSlateColor GetTextColor() const;
-
-private:
-	FAssetDataPtr Item;
-	ECPAssetDependencyType AssetDependencyType = ECPAssetDependencyType::None;
-};
-
-void SCPAssetDependencyRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem, ECPAssetDependencyType InAssetDependencyType)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SCPAssetDependencyRow
+void SCPAssetDependencyRow::Construct(
+	const FArguments& InArgs,
+	const TSharedRef<STableViewBase>& InOwnerTable,
+	FAssetDataPtr InListItem,
+	ECPAssetDependencyType InAssetDependencyType)
 {
 	// Setting the list item since it will be used by the super constructor.
 	Item = InListItem;
@@ -144,11 +102,9 @@ TSharedRef<SWidget> SCPAssetDependencyRow::GenerateWidgetForColumn(const FName& 
 				.ColorAndOpacity(this, &SCPAssetDependencyRow::GetTextColor)
 			];
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Could not identify column based on name."));
-		return SNew(STextBlock).Text(LOCTEXT("WatchUnkownColumn", "Unknown Column"));
-	}
+
+	UE_LOG(LogTemp, Error, TEXT("Could not identify column based on name."));
+	return SNew(STextBlock).Text(LOCTEXT("WatchUnkownColumn", "Unknown Column"));
 }
 
 FSlateColor SCPAssetDependencyRow::GetTextColor() const
@@ -158,14 +114,15 @@ FSlateColor SCPAssetDependencyRow::GetTextColor() const
 	return FSlateColor(TextColor);
 }
 
-SCPMenuWidget::~SCPMenuWidget()
-{
-	GEditor->GetTimerManager()->ClearTimer(RefreshTimerHandle);
-}
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SCPMenuWidget
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
-	const UCPSettings* ProjectSettings = GetDefault<UCPSettings>();
+	UPackage::PackageSavedEvent.AddSP(this, &SCPMenuWidget::OnPackageSaved);
+	FCoreUObjectDelegates::OnAssetLoaded.AddSP(this, &SCPMenuWidget::OnAssetLoaded);
+	
+	UCPSettings* ProjectSettings = GetMutableDefault<UCPSettings>();
+	ProjectSettings->OnAnyPropertyChanged.AddSP(this, &SCPMenuWidget::RefreshUnusedAssets);
 
     ChildSlot
     [
@@ -296,7 +253,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		]
     ];
 
-	GEditor->GetTimerManager()->SetTimer(RefreshTimerHandle, [=]() { RefreshUnusedAssets(); }, UnusedRefreshInterval, true, UnusedRefreshDelay);
+	RefreshUnusedAssets();
 }
 
 TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute)
@@ -357,44 +314,52 @@ void SCPMenuWidget::OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& O
 	OutChildren = OwnerItem.GetChildrenAssetPtrs();
 }
 
+void SCPMenuWidget::OnPackageSaved(const FString& PackageFileName, UObject* PackageObj)
+{
+	RefreshUnusedAssets();
+}
+
+void SCPMenuWidget::OnAssetLoaded(UObject* InObject)
+{
+	RefreshUnusedAssets();
+}
+
 int64 SCPMenuWidget::GetUnusedAssetsCount() const
 {
 	return UnusedAssetsCount;
 }
 
-namespace
-{
-	template<typename T>
-	void UpdateListView(TSharedPtr<SListView<FAssetDataPtr>> ListView, TArray<FAssetDataPtr>& CurrentAssets, TArray<T> NewAssetsInfo)
-	{
-		const TArray<FAssetDataPtr> NewAssetsArray = TransformAssetDataArray(NewAssetsInfo);
-		const TArray<FAssetDataPtr> OldAssetsArray = CurrentAssets;
-
-		CurrentAssets = NewAssetsArray;
-		if (CompareAssetDataArrays(NewAssetsArray, OldAssetsArray))
-		{
-			ListView->RebuildList();
-		}
-	}
-}
-
 void SCPMenuWidget::RefreshUnusedAssets()
 {
-	const TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusedAssets();
-	UnusedAssetsCount = UnusedAssets.Num();
+	{
+		const TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusedAssets();
+		UnusedAssetsCount = UnusedAssets.Num();
+	}
+	{
+		const TArray<FAssetData> NewMapAssets = CPOperations::GetAllGameAssets<UWorld>();
+		MapAssets = TransformAssetDataArray(NewMapAssets);
+		MapAssetsListView->RequestListRefresh();
+	}
+	{
+		const TArray<FName> NewWhitelistAssets = GetDefault<UCPSettings>()->WhitelistAssetsPaths;
+		WhitelistAssets = TransformAssetDataArray(NewWhitelistAssets);
+		WhitelistAssetsListView->RequestListRefresh();
+	}
+	{
+		TArray<FAssetDataPtr> AllDependencyAssets;
+		const UCPSettings* ProjectSettings = GetDefault<UCPSettings>();
+		if(ProjectSettings->bCheckAllMapsReferences)
+		{
+			AllDependencyAssets.Append(MapAssets);
+		}
+		if (ProjectSettings->bCheckWhitelistReferences)
+		{
+			AllDependencyAssets.Append(WhitelistAssets);
+		}
 
-	const TArray<FAssetData> NewMapAssets = CPOperations::GetAllGameAssets<UWorld>();
-	UpdateListView(MapAssetsListView, MapAssets, NewMapAssets);
-
-	const TArray<FName> NewWhitelistAssets = GetDefault<UCPSettings>()->WhitelistAssetsPaths;
-	UpdateListView(WhitelistAssetsListView, WhitelistAssets, NewWhitelistAssets);
-
-	TArray<FAssetDataPtr> AllDependencyAssets;
-	AllDependencyAssets.Append(MapAssets);
-	AllDependencyAssets.Append(WhitelistAssets);
-
-	AssetsDependencies = CPOperations::GetAssetDependenciesTree(AllDependencyAssets);
-	DependenciesTreeView->RebuildList();
+		AssetsDependencies = CPOperations::GetAssetDependenciesTree(AllDependencyAssets);
+		DependenciesTreeView->RebuildList();
+	}
 }
 
 FReply SCPMenuWidget::OnRunCleanupNow()
@@ -418,13 +383,11 @@ FReply SCPMenuWidget::OnGoToDocumentation()
 	return FReply::Handled();
 }
 
-
 FReply SCPMenuWidget::OnOpenSettings()
 {
 	FCleanProjectModule::OpenCleanProjectSettings();
 
 	return FReply::Handled();
 }
-
 
 #undef LOCTEXT_NAMESPACE

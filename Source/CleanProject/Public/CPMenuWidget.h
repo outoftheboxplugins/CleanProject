@@ -20,6 +20,20 @@ enum class ECPAssetDependencyType : uint8
 	AnyAssets,
 };
 
+class SCPAssetDependencyRow final : public SMultiColumnTableRow<FAssetDataPtr>
+{
+public:
+	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem, ECPAssetDependencyType InAssetDependencyType);
+
+private:
+	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
+	FSlateColor GetTextColor() const;
+
+private:
+	FAssetDataPtr Item;
+	ECPAssetDependencyType AssetDependencyType = ECPAssetDependencyType::None;
+};
+
 class SCPMenuWidget : public SCompoundWidget
 {
 public:
@@ -27,8 +41,7 @@ public:
 	SLATE_END_ARGS()
 
     void Construct(const FArguments& InArgs);
-    virtual ~SCPMenuWidget() override;
-
+	
 private:
 	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute);
 
@@ -46,7 +59,9 @@ private:
 
 // Refreshing
 private:
-	FTimerHandle RefreshTimerHandle;
+	void OnPackageSaved(const FString& PackageFileName, UObject* PackageObj);
+	void OnAssetLoaded(UObject* InObject);
+	
 	int64 GetUnusedAssetsCount() const;
 	void RefreshUnusedAssets();
 

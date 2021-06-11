@@ -156,7 +156,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 		FUIAction(FExecuteAction::CreateLambda([SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets* from selected folders."));
-				TArray<FAssetData> AssetsInSelectedFolders = CPOperations::GetAssetsInPaths(SelectedFolders);
+				const TArray<FAssetData> AssetsInSelectedFolders = CPOperations::GetAssetsInPaths(SelectedFolders);
 				CPOperations::CheckDependenciesOf(AssetsInSelectedFolders);
 			})
 		));
@@ -169,7 +169,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 		FUIAction(FExecuteAction::CreateLambda([SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Whitelist Assets* from selected folders."));
-				TArray<FAssetData> AssetsInSelectedFolders = CPOperations::GetAssetsInPaths(SelectedFolders);
+				const TArray<FAssetData> AssetsInSelectedFolders = CPOperations::GetAssetsInPaths(SelectedFolders);
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 				Settings->WhitelistAssets(AssetsInSelectedFolders);
 			})

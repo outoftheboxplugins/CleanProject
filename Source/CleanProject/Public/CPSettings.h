@@ -19,10 +19,15 @@ public:
 	UCPSettings();
 
 public:
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	
 	void WhitelistAssets(const TArray<FAssetData> Assets);
 	
 	void IncreaseSpaceGained(int64 ExtraSpaceGained);
 	int64 GetSpaceGained() const { return SpaceGained; }
+
+public:
+	FSimpleMulticastDelegate OnAnyPropertyChanged;
 
 public:
 	// Outputs the blacklist result to a intermediate file instead of creating them directly

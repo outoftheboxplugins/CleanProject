@@ -96,3 +96,10 @@ void UCPSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)
 	SpaceGained += ExtraSpaceGained;
 	SaveConfig();
 }
+
+void UCPSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	OnAnyPropertyChanged.Broadcast();
+}
