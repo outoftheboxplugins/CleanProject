@@ -24,9 +24,19 @@ UCPSettings::UCPSettings()
         "PakBlacklist-Shipping.txt",
     };
 
+	// TOSOLVE: cleanup or expose those.
     ReportHiddenColumns =
     {
 		"Class",
+    	"CookRule",
+    	"Chunks",
+    	"Format",
+    	"sRGB",
+    	"TextureGroup",
+    	"Dimensions",
+    	"HasAlphaChannel",
+    	"AddressY",
+    	"AddressX",
 		"Type",
 		"ParentClass",
 		"ModuleName",
@@ -38,10 +48,13 @@ UCPSettings::UCPSettings()
 		"AddressY",
 		"LODBias",
 		"SRGB",
+    	"NeverStream",
 		"CompressionSettings",
+    	"MipLoadOptions",
 		"Filter",
 		"MipLoadOptions",
 		"LODGroup",
+    	"VirtualTexture",
 		"VirtualTextureStreaming",
 		"NeverStream",
 		"PrimaryAssetType",

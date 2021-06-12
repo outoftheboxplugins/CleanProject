@@ -59,11 +59,16 @@ private:
 
 // Refreshing
 private:
-	void OnPackageSaved(const FString& PackageFileName, UObject* PackageObj);
-	void OnAssetLoaded(UObject* InObject);
+	void OnFilesLoaded();
+	void OnAssetAdded(const FAssetData& AssetData);
+	void OnAssetRemoved(const FAssetData& AssetData);
+	void OnAssetRenamed(const FAssetData& AssetData, const FString& Name);
+	void OnAssetUpdated(const FAssetData& AssetData);
 	
 	int64 GetUnusedAssetsCount() const;
 	void RefreshUnusedAssets();
+
+	bool IsGameAsset(const FAssetData& AssetData) const;
 
 // Buttons
 private:

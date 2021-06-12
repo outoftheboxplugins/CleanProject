@@ -119,11 +119,15 @@ FSlateColor SCPAssetDependencyRow::GetTextColor() const
 // SCPMenuWidget
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
-	UPackage::PackageSavedEvent.AddSP(this, &SCPMenuWidget::OnPackageSaved);
-	FCoreUObjectDelegates::OnAssetLoaded.AddSP(this, &SCPMenuWidget::OnAssetLoaded);
-
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SCPMenuWidget::RefreshUnusedAssets);
+	if(AssetRegistryModule.Get().IsLoadingAssets())
+	{
+		AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SCPMenuWidget::OnFilesLoaded);
+	}
+	else
+	{
+		OnFilesLoaded();
+	}
 	
 	UCPSettings* ProjectSettings = GetMutableDefault<UCPSettings>();
 	ProjectSettings->OnAnyPropertyChanged.AddSP(this, &SCPMenuWidget::RefreshUnusedAssets);
@@ -318,14 +322,47 @@ void SCPMenuWidget::OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& O
 	OutChildren = OwnerItem.GetChildrenAssetPtrs();
 }
 
-void SCPMenuWidget::OnPackageSaved(const FString& PackageFileName, UObject* PackageObj)
+void SCPMenuWidget::OnFilesLoaded()
 {
 	RefreshUnusedAssets();
+
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	AssetRegistryModule.Get().OnAssetAdded().AddSP(this, &SCPMenuWidget::OnAssetAdded);
+	AssetRegistryModule.Get().OnAssetRemoved().AddSP(this, &SCPMenuWidget::OnAssetRemoved);
+	AssetRegistryModule.Get().OnAssetRenamed().AddSP(this, &SCPMenuWidget::OnAssetRenamed);
+	AssetRegistryModule.Get().OnAssetUpdated().AddSP(this, &SCPMenuWidget::OnAssetUpdated);
 }
 
-void SCPMenuWidget::OnAssetLoaded(UObject* InObject)
+void SCPMenuWidget::OnAssetAdded(const FAssetData& AssetData)
 {
-	RefreshUnusedAssets();
+	if(IsGameAsset(AssetData))
+	{
+		RefreshUnusedAssets();
+	}
+}
+
+void SCPMenuWidget::OnAssetRemoved(const FAssetData& AssetData)
+{
+	if(IsGameAsset(AssetData))
+	{
+		RefreshUnusedAssets();
+	}
+}
+
+void SCPMenuWidget::OnAssetRenamed(const FAssetData& AssetData, const FString& Name)
+{
+	if(IsGameAsset(AssetData))
+	{
+		RefreshUnusedAssets();
+	}
+}
+
+void SCPMenuWidget::OnAssetUpdated(const FAssetData& AssetData)
+{
+	if(IsGameAsset(AssetData))
+	{
+		RefreshUnusedAssets();
+	}
 }
 
 int64 SCPMenuWidget::GetUnusedAssetsCount() const
@@ -364,6 +401,12 @@ void SCPMenuWidget::RefreshUnusedAssets()
 		AssetsDependencies = CPOperations::GetAssetDependenciesTree(AllDependencyAssets);
 		DependenciesTreeView->RebuildList();
 	}
+}
+
+bool SCPMenuWidget::IsGameAsset(const FAssetData& AssetData) const
+{
+	const TArray<FAssetData>& GameAssets = CPOperations::GetAllGameAssets();
+	return GameAssets.Contains(AssetData);
 }
 
 FReply SCPMenuWidget::OnRunCleanupNow()
