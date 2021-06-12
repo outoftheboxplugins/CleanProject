@@ -69,6 +69,11 @@ namespace OperationsHelpers
 
 		FEmptyFolderVisitor EmptyFolderVisitor(OutEmptyFolders, BaseDirectory);
 		IFileManager::Get().IterateDirectoryRecursively(*BaseDirectory, EmptyFolderVisitor);
+
+		if(EmptyFolderVisitor.bIsEmpty)
+		{
+			OutEmptyFolders.Add(BaseDirectory);
+		}
 	}
 
 	bool LoadRedirectAssetsInProject(const TArray<FAssetData>& RedirectsList, TArray<UObjectRedirector*>& Objects)
