@@ -4,6 +4,7 @@
 
 #include "CleanProjectModule.h"
 #include "CPSettings.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
@@ -120,6 +121,9 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
 	UPackage::PackageSavedEvent.AddSP(this, &SCPMenuWidget::OnPackageSaved);
 	FCoreUObjectDelegates::OnAssetLoaded.AddSP(this, &SCPMenuWidget::OnAssetLoaded);
+
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SCPMenuWidget::RefreshUnusedAssets);
 	
 	UCPSettings* ProjectSettings = GetMutableDefault<UCPSettings>();
 	ProjectSettings->OnAnyPropertyChanged.AddSP(this, &SCPMenuWidget::RefreshUnusedAssets);
@@ -341,7 +345,7 @@ void SCPMenuWidget::RefreshUnusedAssets()
 		MapAssetsListView->RequestListRefresh();
 	}
 	{
-		const TArray<FName> NewWhitelistAssets = GetDefault<UCPSettings>()->WhitelistAssetsPaths;
+		const TArray<FName> NewWhitelistAssets = GetDefault<UCPSettings>()->GetWhitelistAssetsPaths();
 		WhitelistAssets = TransformAssetDataArray(NewWhitelistAssets);
 		WhitelistAssetsListView->RequestListRefresh();
 	}

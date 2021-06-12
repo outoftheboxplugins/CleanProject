@@ -4,6 +4,9 @@
 
 UCPSettings::UCPSettings()
 {
+	// TOSOLVE: check if the whitelisted asset path exists when loading the variable.
+	// TOSOLVE: auto update paths when assets are moved.
+	
     PlatformsPaths = 
     { 
         "WindowsNoEditor",
@@ -85,18 +88,29 @@ void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
 	{
-		WhitelistAssetsPaths.Add(Asset.PackageName);
+		WhitelistAssetsPaths.Add(Asset.PackageName.ToString());
 	}
 
-	SaveConfig();
-
+	SaveToDefaultConfig();
 	OnAnyPropertyChanged.Broadcast();
+}
+
+TArray<FName> UCPSettings::GetWhitelistAssetsPaths() const
+{
+	TArray<FName> WhitelistPaths;
+	for (const FString& Path : WhitelistAssetsPaths)
+	{
+		WhitelistPaths.Add(FName(Path));
+	}
+
+	return WhitelistPaths;
 }
 
 void UCPSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)
 {
 	SpaceGained += ExtraSpaceGained;
-	SaveConfig();
+
+	SaveToDefaultConfig();
 
 	OnAnyPropertyChanged.Broadcast();
 }
@@ -105,5 +119,15 @@ void UCPSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
+	SaveToDefaultConfig();
+	
 	OnAnyPropertyChanged.Broadcast();
+}
+
+void UCPSettings::SaveToDefaultConfig()
+{
+	SaveConfig();
+
+	GConfig->SetArray(TEXT("/Script/CleanProject.CPSettings"), TEXT("WhitelistAssetsPaths"), WhitelistAssetsPaths, GetDefaultConfigFilename());
+	GConfig->SetInt(TEXT("/Script/CleanProject.CPSettings"), TEXT("SpaceGained"), SpaceGained, GetDefaultConfigFilename());
 }

@@ -19,12 +19,15 @@ public:
 	UCPSettings();
 
 public:
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-	
 	void WhitelistAssets(const TArray<FAssetData> Assets);
-	
+	TArray<FName> GetWhitelistAssetsPaths() const;
+
 	void IncreaseSpaceGained(int64 ExtraSpaceGained);
 	int64 GetSpaceGained() const { return SpaceGained; }
+
+private:
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	void SaveToDefaultConfig();
 
 public:
 	FSimpleMulticastDelegate OnAnyPropertyChanged;
@@ -50,10 +53,6 @@ public:
 	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
 	bool bShouldSkipBlacklistDialog = false;
 
-	// Assets inside the whitelist are always considered referenced.
-	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
-	TArray<FName> WhitelistAssetsPaths;
-
 	// Should we always check the dependencies of the whitelisted assets when scanning for references?
 	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
 	bool bCheckWhitelistReferences = true;
@@ -62,11 +61,17 @@ public:
 	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
 	bool bCheckAllMapsReferences = true;
 
+private:
+	// Assets inside the whitelist are always considered referenced.
+	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
+	TArray<FString> WhitelistAssetsPaths;
+
+public:
 	// Columns to be hidden in the final report
 	UPROPERTY(EditAnywhere, config, Category = "Report")
 	TArray<FString> ReportHiddenColumns;
 
 private:
 	UPROPERTY(VisibleAnywhere, config, Category = "Report")
-	int64 SpaceGained;
+	int64 SpaceGained = 0;
 };

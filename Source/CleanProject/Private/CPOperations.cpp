@@ -151,7 +151,7 @@ namespace CPOperations
 		{
 			if (Settings->bCheckWhitelistReferences)
 			{
-				for (const FName& WhitelistAssetPath : Settings->WhitelistAssetsPaths)
+				for (const FName& WhitelistAssetPath : Settings->GetWhitelistAssetsPaths())
 				{
 					PackageNameToCheck.Add(WhitelistAssetPath);
 				}
@@ -166,7 +166,7 @@ namespace CPOperations
 		}
 
 		// Remove the whitelisted assets regardless if they are used selected for dependencies or not.
-		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, Settings->WhitelistAssetsPaths);
+		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, Settings->GetWhitelistAssetsPaths());
 
 		// Remove the packages we are going to check dependencies for from the assets to test, because they depend on themselves.
 		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, PackageNameToCheck);
@@ -329,8 +329,7 @@ namespace CPOperations
 			FString assetPath = AssetData.PackageName.ToString();
 			FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
 		}
-
-		//TOSOLVE: When using bSaveToTempFile skip the blacklist platform/configuration dialog. 
+ 
 		if (Settings->bSaveToTempFile)
 		{
 			const FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
