@@ -32,7 +32,7 @@ public:
 public:
 	// Outputs the blacklist result to a intermediate file instead of creating them directly
 	UPROPERTY(EditAnywhere, config, Category = "Blacklist")
-	bool bUseSmartBlackList = true;
+	bool bSaveToTempFile = true;
 
 	// Possible platforms for the blacklist
 	UPROPERTY(EditAnywhere, config, Category = "Blacklist")

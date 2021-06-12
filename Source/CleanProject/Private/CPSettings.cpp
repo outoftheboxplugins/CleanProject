@@ -89,12 +89,16 @@ void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
 	}
 
 	SaveConfig();
+
+	OnAnyPropertyChanged.Broadcast();
 }
 
 void UCPSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)
 {
 	SpaceGained += ExtraSpaceGained;
 	SaveConfig();
+
+	OnAnyPropertyChanged.Broadcast();
 }
 
 void UCPSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)

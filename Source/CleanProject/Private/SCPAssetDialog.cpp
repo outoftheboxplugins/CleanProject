@@ -268,7 +268,7 @@ void SCPAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 
 	bool bRemoveAssets = true;
 	const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-	if (Settings->bShouldSkipBlacklistDialog)
+	if (Settings->bShouldSkipBlacklistDialog || Settings->bSaveToTempFile)
 	{
 		CPOperations::GenerateBlacklist(AssetsToBlacklist, Settings->bShouldAppendDefault);
 	}

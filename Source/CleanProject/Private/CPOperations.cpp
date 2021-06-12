@@ -329,8 +329,17 @@ namespace CPOperations
 			FString assetPath = AssetData.PackageName.ToString();
 			FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
 		}
+
+		//TOSOLVE: When using bSaveToTempFile skip the blacklist platform/configuration dialog. 
+		if (Settings->bSaveToTempFile)
+		{
+			const FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
 		
-		if (Settings->bUseSmartBlackList)
+			FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect,
+				&IFileManager::Get(), WriteFlags);
+			FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), nullptr, nullptr);
+		}
+		else
 		{
 			const FString ProjectBuildRoot = FPaths::ProjectDir() + "Build";
 		
@@ -344,14 +353,6 @@ namespace CPOperations
 						&IFileManager::Get(), WriteFlags);
 				}
 			}
-		}
-		else
-		{
-			const FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
-		
-			FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect,
-				&IFileManager::Get(), WriteFlags);
-			FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), nullptr, nullptr);
 		}
 	}
 

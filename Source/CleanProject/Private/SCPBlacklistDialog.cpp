@@ -99,7 +99,7 @@ void SCPBlacklistDialog::Construct(const FArguments& InArgs, const TArray<FAsset
 				.ToolTipText(LOCTEXT("BlacklistSkipTip", "Skip this step next time and automatically generate for all configurations."))
 				[
 				    SNew(STextBlock)
-				    .Text(LOCTEXT("BlacklistSkipStep", "Skip next time."))
+				    .Text(LOCTEXT("BlacklistSkipStep", "Skip next time"))
 				]
 			]
 			+SHorizontalBox::Slot()
