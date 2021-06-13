@@ -119,16 +119,6 @@ FSlateColor SCPAssetDependencyRow::GetTextColor() const
 // SCPMenuWidget
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	if(AssetRegistryModule.Get().IsLoadingAssets())
-	{
-		AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SCPMenuWidget::OnFilesLoaded);
-	}
-	else
-	{
-		OnFilesLoaded();
-	}
-	
 	UCPSettings* ProjectSettings = GetMutableDefault<UCPSettings>();
 	ProjectSettings->OnAnyPropertyChanged.AddSP(this, &SCPMenuWidget::RefreshUnusedAssets);
 
@@ -159,13 +149,6 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		]
 
 		+SVerticalBox::Slot()
-		.AutoHeight()
-		.Padding(0, 5, 0, 5)
-		[
-			SNew(SSeparator)
-		]
-
-		+SVerticalBox::Slot()
 		[
 			SAssignNew(MapAssetsListView, SListView<FAssetDataPtr>)
 			.ListItemsSource(&MapAssets)
@@ -193,13 +176,6 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 				+SHeaderRow::Column(ColumnVariableName)
 				.DefaultLabel(this, &SCPMenuWidget::GetWhitelistAssetsColumnName)
 			)
-		]
-
-		+SVerticalBox::Slot()
-		.AutoHeight()
-		.Padding(0, 5, 0, 5)
-		[
-			SNew(SSeparator)
 		]
 
 		+SVerticalBox::Slot()
@@ -261,7 +237,15 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		]
     ];
 
-	RefreshUnusedAssets();
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	if(AssetRegistryModule.Get().IsLoadingAssets())
+	{
+		AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SCPMenuWidget::OnFilesLoaded);
+	}
+	else
+	{
+		OnFilesLoaded();
+	}
 }
 
 TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute)

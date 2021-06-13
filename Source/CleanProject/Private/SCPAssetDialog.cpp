@@ -80,10 +80,18 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCPAssetDialog::OnAuditClicked)
-				.Text(LOCTEXT("AuditButton", "More Info"))
+				.OnClicked(this, &SCPAssetDialog::OnMoreInfoClicked)
+				.Text(LOCTEXT("MoreInfoButton", "More Info"))
 			]
 			+SUniformGridPanel::Slot(2, 0)
+			[
+				SNew(SButton)
+				.HAlign(HAlign_Center)
+				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+				.OnClicked(this, &SCPAssetDialog::OnWhitelistClicked)
+				.Text(LOCTEXT("WhitelistButton", "Whitelist"))
+			]
+			+SUniformGridPanel::Slot(3, 0)
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
@@ -91,7 +99,7 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 				.OnClicked(this, &SCPAssetDialog::OnBlacklistClicked)
 				.Text(LOCTEXT("BlacklistButton", "Blacklist"))
 			]
-			+SUniformGridPanel::Slot(3, 0)
+			+SUniformGridPanel::Slot(4, 0)
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
@@ -147,23 +155,23 @@ TSharedPtr<SWidget> SCPAssetDialog::OnGetAssetContextMenu(const TArray<FAssetDat
 		FUIAction( FExecuteAction::CreateSP(this, &SCPAssetDialog::RemoveFromList, SelectedAssets) ));
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("AuditAction", "Audit"),
-		LOCTEXT("AuditActionTooltip", "Get more information about the selected assets."),
+		LOCTEXT("MoreInfoAction", "More Info"),
+		LOCTEXT("MoreInfoTooltip", "Get more information about the selected assets."),
 		FSlateIcon(),
-		FUIAction( FExecuteAction::CreateSP(this, &SCPAssetDialog::AuditAssets, SelectedAssets) ));
+		FUIAction( FExecuteAction::CreateSP(this, &SCPAssetDialog::MoreInfoAsset, SelectedAssets) ));
 
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("WhitelistAction", "Whitelist"),
+		LOCTEXT("WhitelistActionTooltip", "Whitelist only selected assets and remove from report."),
+		FSlateIcon(),
+		FUIAction( FExecuteAction::CreateSP(this, &SCPAssetDialog::WhiteListAssets, SelectedAssets) ));
+	
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("BlacklistAction", "Blacklist"),
 		LOCTEXT("BlacklistActionTooltip", "Blacklist only selected assets and remove from report."),
 		FSlateIcon(),
 		FUIAction( FExecuteAction::CreateSP(this, &SCPAssetDialog::BlackListAssets, SelectedAssets) ));
 	
-	MenuBuilder.AddMenuEntry(
-		LOCTEXT("WhitelistAction", "Whitelist"),
-		LOCTEXT("WhitelistActionTooltip", "Whitelist only selected assets and remove from report."),
-		FSlateIcon(),
-		FUIAction( FExecuteAction::CreateSP(this, &SCPAssetDialog::WhiteListAssets, SelectedAssets) ));
-
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("DeleteAction", "Delete"),
 		LOCTEXT("DeleteActionTooltip", "Delete only selected assets."),
@@ -206,9 +214,16 @@ FReply SCPAssetDialog::OnDeleteClicked()
 	return FReply::Handled();
 }
 
-FReply SCPAssetDialog::OnAuditClicked()
+FReply SCPAssetDialog::OnMoreInfoClicked()
 {
-	AuditAssets(GetAssetsForAction());
+	MoreInfoAsset(GetAssetsForAction());
+	return FReply::Handled();
+}
+
+FReply SCPAssetDialog::OnWhitelistClicked()
+{
+	UCPSettings* Settings = GetMutableDefault<UCPSettings>();
+	Settings->WhitelistAssets(GetAssetsForAction());
 	return FReply::Handled();
 }
 
@@ -244,7 +259,7 @@ void SCPAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
 	RemoveFromList(AssetsToDelete);
 }
 
-void SCPAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudit)
+void SCPAssetDialog::MoreInfoAsset(const TArray<FAssetData> AssetsToGetInfo)
 {
 	LOG_TRACE();
 
@@ -252,7 +267,7 @@ void SCPAssetDialog::AuditAssets(const TArray<FAssetData> AssetsToAudit)
 	{
 		TArray<FName> AssetNames;
 
-		for(const FAssetData& AssetData: AssetsToAudit)
+		for(const FAssetData& AssetData: AssetsToGetInfo)
 		{
 			AssetNames.Add(AssetData.PackageName);
 		}
