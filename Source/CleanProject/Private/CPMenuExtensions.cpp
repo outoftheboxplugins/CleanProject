@@ -183,21 +183,8 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 		FUIAction(FExecuteAction::CreateLambda([SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Blacklist Assets* from selected folders."));
-				TArray<FAssetData> AssetsInSelectedFolders = CPOperations::GetAssetsInPaths(SelectedFolders);
-				__debugbreak();
-			})
-		));
-
-	MenuBuilder.AddMenuEntry(
-		LOCTEXT("FoldersCleanupRedirects", "Cleanup redirects"),
-		LOCTEXT("FoldersCleanupRedirectstip", "Fix redirects in the selected folders."),
-		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateLambda([SelectedFolders]()
-			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects* from selected folders."));
-				TArray<FAssetData> AssetsInSelectedFolders = CPOperations::GetAssetsInPaths(SelectedFolders);
-				__debugbreak();
-				//CPOperations::FixUpRedirectorsInProject();
+				const TArray<FAssetData> AssetsInSelectedFolders = CPOperations::GetAssetsInPaths(SelectedFolders);
+				SCPBlacklistDialog::OpenBlacklistDialog(AssetsInSelectedFolders);
 			})
 		));
 
