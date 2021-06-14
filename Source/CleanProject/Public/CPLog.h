@@ -2,6 +2,6 @@
 
 #pragma once
 
-CLEANPROJECT_API DECLARE_LOG_CATEGORY_EXTERN(LogCleanProject, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogCleanProject, Log, All);
 
 #define LOG_TRACE() UE_LOG(LogCleanProject, Log, TEXT("Trace"))

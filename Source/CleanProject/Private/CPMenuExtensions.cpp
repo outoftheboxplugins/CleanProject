@@ -8,7 +8,7 @@
 #include "CPSettings.h"
 
 #include "Framework/MultiBox/MultiBoxExtender.h" // for FExtender
-#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistryModule.h"
 #include "SCPBlacklistDialog.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
