@@ -1,4 +1,12 @@
+stages:
+  - prepare
+  - build
+  - package
+  - upload
+  
 include:
-  - project: 'unreal-marketplace/pluginsdevops'
-    ref: Live
-    file: 'plugin-ci.yml'
+    - project: 'unreal-marketplace/pluginsdevops'
+      ref: Live
+      file: 
+        - 'plugin-ci.yml'
+        - 'plugin-cd.yml'
