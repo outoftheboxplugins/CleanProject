@@ -1,8 +1,10 @@
 stages:
-  - prepare
-  - build
-  - package
-  - upload
+  - prepare-engine
+  - build-plugin-for-engine
+  - test-plugin-for-engine
+  - update-plugin-for-engine
+  - package-plugin-for-engine
+  - upload-plugin-for-engine
   
 include:
     - project: 'unreal-marketplace/pluginsdevops'
