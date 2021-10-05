@@ -7,9 +7,9 @@
 	"Category": "Editor",
 	"CreatedBy": "Out-of-the-Box Plugins",
 	"CreatedByURL": "https://outofthebox-plugins.com",
-	"DocsURL": "https://bitbucket.org/pasotee-marketplace/cleanproject/wiki/Home",
+	"DocsURL": "https://gitlab.com/unreal-marketplace/CleanProject/-/wikis/home",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/13d45e838b954d67b9d5d01fa82635d9",
-	"SupportURL": "https://outofthebox-plugins.com/pages/about",
+	"SupportURL": "https://gitlab.com/unreal-marketplace/CleanProject/-/wikis/home",,
 	"EnabledByDefault": true,
 	"Modules": [
 		{
