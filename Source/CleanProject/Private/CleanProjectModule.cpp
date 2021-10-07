@@ -25,7 +25,8 @@ namespace
 
 /* STATIC */ void FCleanProjectModule::OpenCleanProjectSettings()
 {
-	FModuleManager::LoadModuleChecked<ISettingsModule>("Settings").ShowViewer(SettingsProjectContainer, SettingsCategory, SettingsSection);
+	ISettingsModule& SettingsModule = FModuleManager::LoadModuleChecked<ISettingsModule>("Settings");
+	SettingsModule.ShowViewer(SettingsProjectContainer, SettingsCategory, SettingsSection);
 }
 
 void FCleanProjectModule::StartupModule()
@@ -54,7 +55,7 @@ void FCleanProjectModule::RegisterMenus()
 
 	if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>("LevelEditor"))
 	{
-	    LevelEditorModule->GetMenuExtensibilityManager()->AddExtender(MenuExtender);
+		LevelEditorModule->GetMenuExtensibilityManager()->AddExtender(MenuExtender);
 	}
 }
 

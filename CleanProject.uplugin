@@ -9,7 +9,7 @@
 	"CreatedByURL": "https://outofthebox-plugins.com",
 	"DocsURL": "https://gitlab.com/unreal-marketplace/CleanProject/-/wikis/home",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/13d45e838b954d67b9d5d01fa82635d9",
-	"SupportURL": "https://gitlab.com/unreal-marketplace/CleanProject/-/wikis/home",,
+	"SupportURL": "https://gitlab.com/unreal-marketplace/CleanProject/-/wikis/home",
 	"EnabledByDefault": true,
 	"Modules": [
 		{
