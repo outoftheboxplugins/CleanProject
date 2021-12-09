@@ -301,7 +301,7 @@ namespace CPOperations
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 
 		TArray<FName> Dependencies;
-		AssetRegistryModule.GetDependencies(PackageName, Dependencies);
+		AssetRegistryModule.GetDependencies(PackageName, Dependencies,EAssetRegistryDependencyType::All);
 
 		for (auto DependsIt = Dependencies.CreateConstIterator(); DependsIt; ++DependsIt)
 		{
