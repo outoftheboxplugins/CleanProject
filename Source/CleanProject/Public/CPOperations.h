@@ -65,7 +65,7 @@ namespace CPOperations
 	FTreeAssetDependency GetAssetDependenciesTree(const TArray<FName>& AssetsNameList);
 
 	// Recursively get all the dependencies of a certain package.
-	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency);
+	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency, TSet<FString>& ExternalActorsPaths);
 
 	// Generate the blacklist for a specific platform or configuration.
 	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform = "", const FString& Configuration = "");
@@ -93,4 +93,3 @@ TArray<FAssetData> CPOperations::GetAllGameAssets()
 
 	return CPOperations::GetAllGameAssets(MapsClassFilter);
 }
-
