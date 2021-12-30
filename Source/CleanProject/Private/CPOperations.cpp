@@ -1,10 +1,8 @@
 // Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
 
 #include "CPOperations.h"
-
 #include "SCPAssetDialog.h"
 #include "CPLog.h"
-
 #include "AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "CPSettings.h"
@@ -66,11 +64,9 @@ namespace OperationsHelpers
 				return true;
 			}
 		};
-
 		FEmptyFolderVisitor EmptyFolderVisitor(OutEmptyFolders, BaseDirectory);
 		IFileManager::Get().IterateDirectoryRecursively(*BaseDirectory, EmptyFolderVisitor);
-
-		if(EmptyFolderVisitor.bIsEmpty)
+		if (EmptyFolderVisitor.bIsEmpty)
 		{
 			OutEmptyFolders.Add(BaseDirectory);
 		}
@@ -127,14 +123,11 @@ namespace CPOperations
 	{
 		FARFilter Filter;
 		Filter.bRecursivePaths = true;
-
 		for (const FString& FolderPath : FolderPaths)
 		{
 			Filter.PackagePaths.Add(FName(FolderPath));
 		}
-
 		TArray<FAssetData> AllAssetData;
-
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 		AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
 
@@ -150,7 +143,6 @@ namespace CPOperations
 	TArray<FAssetData> CheckForUnusedAssets(TArray<FAssetData> AssetsToTest)
 	{
 		const UCPSettings* Settings = GetDefault<UCPSettings>();
-
 		// Collect all the names we want to check dependencies for.
 		TSet<FName> PackageNameToCheck;
 		{
@@ -194,7 +186,6 @@ namespace CPOperations
 	void CheckDependenciesOf(const TArray<FAssetData> SelectedAssets)
 	{
 		const TArray<FAssetData> UnusedAssets = CheckForUnusedAssets(SelectedAssets);
-		
 		// Open dialogs based on the results.
 		if (UnusedAssets.Num() == 0)
 		{
@@ -209,7 +200,6 @@ namespace CPOperations
 	int64 GetAssetDiskSize(const FAssetData& Asset)
 	{
 		const FName PackageName = FName(*Asset.GetPackage()->GetName());
-
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 		if (const FAssetPackageData* PackageData = AssetRegistryModule.Get().GetAssetPackageData(PackageName))
 		{
@@ -232,11 +222,10 @@ namespace CPOperations
 				const FText CurrentAssetName = FText::FromName(AssetDataReported.PackageName);
 				const FText CurrentAssetText = FText::Format(LOCTEXT("CurrentAsset", "Current Asset: {0}"), CurrentAssetName);
 				SlowTask.EnterProgressFrame(1.f, CurrentAssetText);
-
 				TotalDiskSize += GetAssetDiskSize(AssetDataReported);
 			}
 		}
-		
+
 		return TotalDiskSize;
 	}
 
@@ -266,7 +255,6 @@ namespace CPOperations
 	FTreeAssetDependency GetAssetDependenciesTree(const TArray<FName>& AssetsNameList)
 	{
 		FTreeAssetDependency Result;
-
 		for (const auto& AssetName : AssetsNameList)
 		{
 			Result.AddTopLevelDependency(AssetName);
@@ -276,38 +264,58 @@ namespace CPOperations
 		const bool bShowCancelButton = true;
 		const bool bAllowPie = false;
 		SlowTask.MakeDialog(bShowCancelButton, bAllowPie);
-
+		TSet<FString> ExternalActorsPaths;
 		TSet<FName> PackageNamesChecked;
 		for (const FChildDependency& TopDependency : Result.TopLevelDependencies)
 		{
 			const FName DependencyName = TopDependency.GetAssetName();
-
 			const FText CurrentAssetName = FText::FromName(DependencyName);
 			const FText CurrentAssetText = FText::Format(LOCTEXT("CurrentAsset", "Current Asset: {0}"), CurrentAssetName);
 			SlowTask.EnterProgressFrame(1.f, CurrentAssetText);
-
 			if (!PackageNamesChecked.Contains(DependencyName))
 			{
 				PackageNamesChecked.Add(DependencyName);
-				RecursiveGetDependencies(DependencyName, PackageNamesChecked, Result);
+				RecursiveGetDependencies(DependencyName, PackageNamesChecked, Result, ExternalActorsPaths);
 			}
 		}
 
 		return Result;
 	}
 
-	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency)
+	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency, TSet<FString>& ExternalActorsPaths)
 	{
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-
 		TArray<FName> Dependencies;
-		AssetRegistryModule.GetDependencies(PackageName, Dependencies,EAssetRegistryDependencyType::All);
+		AssetRegistryModule.GetDependencies(PackageName, Dependencies, UE::AssetRegistry::EDependencyCategory::All);
+		TArray<FAssetData> Assets;
+		if (AssetRegistryModule.Get().GetAssetsByPackageName(PackageName, Assets))
+		{
+			for (const FAssetData& AssetData : Assets)
+			{
+				if (AssetData.GetClass() && AssetData.GetClass()->IsChildOf<UWorld>())
+				{
+					FString ExternalActorsPath = ULevel::GetExternalActorsPath(PackageName.ToString());
+					if (!ExternalActorsPath.IsEmpty() && !ExternalActorsPaths.Contains(ExternalActorsPath))
+					{
+						ExternalActorsPaths.Add(ExternalActorsPath);
+						AssetRegistryModule.Get().ScanPathsSynchronous({ ExternalActorsPath }, true);
+						TArray<FAssetData> ExternalActorAssets;
+						AssetRegistryModule.Get().GetAssetsByPath(FName(*ExternalActorsPath), ExternalActorAssets, true);
+
+						for (const FAssetData& ExternalActorAsset : ExternalActorAssets)
+						{
+							ResultTreeDependency.AddDependency(PackageName, ExternalActorAsset.PackageName);
+							AllDependencies.Add(ExternalActorAsset.PackageName);
+							RecursiveGetDependencies(ExternalActorAsset.PackageName, AllDependencies, ResultTreeDependency, ExternalActorsPaths);
+						}
+					}
+				}
+			}
+		}
 
 		for (auto DependsIt = Dependencies.CreateConstIterator(); DependsIt; ++DependsIt)
 		{
 			const FName DependencyName = *DependsIt;
-
-			//TODO: Make the skippable folders configurable.
 			const bool bIsEnginePackage = (DependencyName).ToString().StartsWith(TEXT("/Engine"));
 			const bool bIsScriptPackage = (DependencyName).ToString().StartsWith(TEXT("/Script"));
 
@@ -315,7 +323,7 @@ namespace CPOperations
 			{
 				ResultTreeDependency.AddDependency(PackageName, DependencyName);
 				AllDependencies.Add(DependencyName);
-				RecursiveGetDependencies(DependencyName, AllDependencies, ResultTreeDependency);
+				RecursiveGetDependencies(DependencyName, AllDependencies, ResultTreeDependency, ExternalActorsPaths);
 			}
 		}
 	}
@@ -323,22 +331,20 @@ namespace CPOperations
 	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform /*= ""*/, const FString& Configuration /*= ""*/)
 	{
 		const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-		
 		const EFileWrite WriteFlags = bAppend ? EFileWrite::FILEWRITE_Append : EFileWrite::FILEWRITE_None;
 		const TArray<FString> SelectedConfigurations = OperationsHelpers::GetListFromSelection(Settings->BlacklistFiles, Configuration);
 		const TArray<FString> SelectedPlatforms = OperationsHelpers::GetListFromSelection(Settings->PlatformsPaths, Platform);
-		
 		FString FileContent;
 		for (const FAssetData& AssetData : AssetsToBlacklist)
 		{
 			FString assetPath = AssetData.PackageName.ToString();
 			FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
 		}
- 
+
 		if (Settings->bSaveToTempFile)
 		{
 			const FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
-		
+
 			FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect,
 				&IFileManager::Get(), WriteFlags);
 			FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), nullptr, nullptr);
@@ -346,42 +352,40 @@ namespace CPOperations
 		else
 		{
 			const FString ProjectBuildRoot = FPaths::ProjectDir() + "Build";
-		
 			for (const FString& platformFolder : SelectedPlatforms)
 			{
 				for (const FString& listFile : SelectedConfigurations)
 				{
 					FString slash = FGenericPlatformMisc::GetDefaultPathSeparator();
 					FString platformPath = ProjectBuildRoot + slash + platformFolder + slash + listFile;
-					FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect, 
+					FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect,
 						&IFileManager::Get(), WriteFlags);
 				}
 			}
 		}
 	}
 
-    void FixUpRedirectsInProject()
-    {
-	    const TArray<FAssetData> RedirectAssetList = GetAllGameAssets<UObjectRedirector>();
+	void FixUpRedirectsInProject()
+	{
+		const TArray<FAssetData> RedirectAssetList = GetAllGameAssets<UObjectRedirector>();
 		TArray<UObjectRedirector*> AssetsToRedirect;
 		const bool bLoadSuccess = OperationsHelpers::LoadRedirectAssetsInProject(RedirectAssetList, AssetsToRedirect);
-
-        if (bLoadSuccess)
-        {
-            FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>(TEXT("AssetTools"));
-            AssetToolsModule.Get().FixupReferencers(AssetsToRedirect);
-        }
+		if (bLoadSuccess)
+		{
+			FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>(TEXT("AssetTools"));
+			AssetToolsModule.Get().FixupReferencers(AssetsToRedirect);
+		}
 		else
 		{
 			UE_LOG(LogCleanProject, Warning, TEXT("Fixup redirects will not be attempted, at least one failed."));
 		}
-    }
+	}
 
-    void DeleteEmptyProjectFolders()
-    {
+	void DeleteEmptyProjectFolders()
+	{
 		const FString& ContentDirectory = FPaths::ProjectContentDir();
 		DeleteFolderByPath(ContentDirectory);
-    }
+	}
 
 	void DeleteEmptyProjectFolders(TArray<FString> SelectedFolders)
 	{
@@ -399,10 +403,8 @@ namespace CPOperations
 	void DeleteFolderByPath(const FString& FolderPath)
 	{
 		FixUpRedirectsInProject();
-
 		TArray<FString> EmptyFoldersFound;
 		OperationsHelpers::GetEmptyFolderInPath(FolderPath, EmptyFoldersFound);
-
 		for (const FString& FolderToDelete : EmptyFoldersFound)
 		{
 			IFileManager::Get().DeleteDirectory(*FolderToDelete, false, true);
@@ -416,13 +418,12 @@ namespace CPOperations
 		FARFilter Filter;
 		Filter.PackagePaths.Add(TEXT("/Game"));
 		Filter.bRecursivePaths = true;
-
 		Filter.ClassNames.Reserve(ClassTypes.Num());
 		for (const auto& classType : ClassTypes)
 		{
 			Filter.ClassNames.Add(classType);
 		}
-		
+
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 		AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
 
@@ -436,7 +437,7 @@ namespace CPOperations
 
 	FChildDependency INVALID_CHILD(FName("INVALID_CHILD"));
 
-	FChildDependency::FChildDependency(const FName& InAssetName) 
+	FChildDependency::FChildDependency(const FName& InAssetName)
 	{
 		AssetName = MakeShared<FName>(InAssetName);
 	}
