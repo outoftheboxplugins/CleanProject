@@ -1,6 +1,9 @@
 // Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
 
 #include "CPSettings.h"
+#include "AssetData.h"
+
+#include "Misc/ConfigCacheIni.h"
 
 UCPSettings::UCPSettings()
 {

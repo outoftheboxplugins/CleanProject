@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 
 #include "Widgets/SCompoundWidget.h"
+#include "Widgets/SWindow.h"
+#include "Editor/EditorEngine.h"
 
 class SCheckBox;
 

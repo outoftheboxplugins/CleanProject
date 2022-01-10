@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 
 #include "CPSettings.generated.h"
-
 /**
  * Holds the configurable settings for the Clean Project
  */

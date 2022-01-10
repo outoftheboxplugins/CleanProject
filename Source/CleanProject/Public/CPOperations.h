@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 
+#include "AssetRegistry\AssetData.h"
+#include "Engine\Classes\Engine\World.h"
+
 using FAssetDataPtr = TSharedPtr<FName>;
 
 namespace CPOperations

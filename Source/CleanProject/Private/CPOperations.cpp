@@ -10,6 +10,8 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Misc/ScopedSlowTask.h"
+#include <Runtime/Core/Public/Misc/MessageDialog.h>
+#include "Engine\Level.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 

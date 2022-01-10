@@ -7,7 +7,10 @@
 #include "Widgets/SCompoundWidget.h"
 
 #include "CPOperations.h"
-
+#include "Widgets/SWindow.h"
+#include "Editor/EditorEngine.h"
+#include "Templates/SharedPointer.h"
+#include "Widgets\Views\STreeView.h"
 /**
  * Menu Widget containing a UI interface for the developer to interact with the Clean Project.
  */
