@@ -9,7 +9,7 @@
 #include "Widgets\Input\SCheckBox.h"
 #include "Widgets\Input\SButton.h"
 #include "Widgets\Layout\SSpacer.h"
-#include "UnrealEd\Public\Editor.h"
+#include "Editor.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
