@@ -10,7 +10,7 @@
 #include "Misc/ScopedSlowTask.h"
 
 #include "Framework/MultiBox/MultiBoxBuilder.h"
-#include <Runtime/Slate/Public/Widgets/Docking/SDockTab.h>
+#include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Input/SButton.h"
 #include "CleanProjectModule.h"
 
