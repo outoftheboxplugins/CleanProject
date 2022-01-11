@@ -4,11 +4,11 @@
 
 #include "CPOperations.h"
 #include "CPSettings.h"
-#include "Widgets/Layout/SUniformGridPanel.h"
 
-#include "Widgets\Input\SCheckBox.h"
-#include "Widgets\Input\SButton.h"
-#include "Widgets\Layout\SSpacer.h"
+#include "Widgets/Layout/SUniformGridPanel.h"
+#include "Widgets/Input/SCheckBox.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Layout/SSpacer.h"
 #include "Editor.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
