@@ -11,8 +11,7 @@
 #include "AssetRegistryModule.h"
 #include "SCPBlacklistDialog.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
-
-#include <Runtime/Slate/Public/Widgets/Docking/SDockTab.h>
+#include "Widgets/Docking/SDockTab.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
