@@ -11,7 +11,7 @@
 
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include <Runtime/Slate/Public/Widgets/Docking/SDockTab.h>
-#include "Widgets\Input\SButton.h"
+#include "Widgets/Input/SButton.h"
 #include "CleanProjectModule.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
