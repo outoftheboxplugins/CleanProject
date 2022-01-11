@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 
-#include "AssetRegistry\AssetData.h"
-#include "Engine\Classes\Engine\World.h"
+#include "AssetRegistry/AssetData.h"
+#include "Engine/World.h"
 
 using FAssetDataPtr = TSharedPtr<FName>;
 
