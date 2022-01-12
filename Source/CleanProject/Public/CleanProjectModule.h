@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Modules/ModuleManager.h"
+#include "CPMenuExtensions.h"
 
 /**
  * Implements the CleanProject editor module.
@@ -39,4 +40,5 @@ private:
 	FDelegateHandle CBFoldersExtenderDelegateHandle;
 };
 
-IMPLEMENT_MODULE(FCleanProjectModule, CleanProject);
+
+

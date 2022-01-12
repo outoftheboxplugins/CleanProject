@@ -12,6 +12,8 @@
 #include "Interfaces/IMainFrameModule.h"
 #include "ObjectTools.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
+#include "Widgets/Input/SButton.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 

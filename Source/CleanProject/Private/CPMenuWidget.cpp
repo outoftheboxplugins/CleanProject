@@ -4,10 +4,14 @@
 
 #include "CleanProjectModule.h"
 #include "CPSettings.h"
+
 #include "AssetRegistryModule.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Widgets/Docking/SDockTab.h"
+#include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 

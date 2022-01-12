@@ -4,7 +4,6 @@
 
 #include "CPSettings.h"
 #include "CPLog.h"
-#include "CPMenuExtensions.h"
 
 #include "ContentBrowserModule.h"
 #include "ISettingsModule.h"
@@ -128,5 +127,7 @@ void FCleanProjectModule::UnregisterMenuSpawner()
 {
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(MenuTabName);
 }
+
+IMPLEMENT_MODULE(FCleanProjectModule, CleanProject);
 
 #undef LOCTEXT_NAMESPACE
