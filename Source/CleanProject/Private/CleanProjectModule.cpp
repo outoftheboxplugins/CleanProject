@@ -8,6 +8,7 @@
 #include "ContentBrowserModule.h"
 #include "ISettingsModule.h"
 #include "LevelEditor.h"
+#include "ToolMenus.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
@@ -50,12 +51,20 @@ void FCleanProjectModule::ShutdownModule()
 
 void FCleanProjectModule::RegisterMenus()
 {
-	MenuExtender = CPMenuExtensions::CreateMenuExtender();
-
-	if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>("LevelEditor"))
-	{
-		LevelEditorModule->GetMenuExtensibilityManager()->AddExtender(MenuExtender);
-	}
+	FToolMenuOwnerScoped OwnerScoped(this);
+	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Tools");
+	FToolMenuSection& Section = Menu->AddSection("CleanProject", LOCTEXT("CleanProject", "CleanProject"));
+	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
+		"MenuCleanupUnusedAssets",
+		LOCTEXT("MenuCleanupUnusedAssets", "Cleanup unused assets"),
+		LOCTEXT("MenuCleanupRedirectsTooltip", "Fix redirects in your whole project."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateLambda([]()
+				{
+					UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects* from menu."));
+					//CPOperations::FixUpRedirectsInProject();
+				})
+	)));
 }
 
 void FCleanProjectModule::UnregisterMenus()
