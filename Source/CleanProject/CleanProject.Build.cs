@@ -20,6 +20,7 @@ public class CleanProject : ModuleRules
 				"Slate",
 				"Projects",
 				"WorkspaceMenuStructure",
+				"ToolMenus",
 			} );
 	}
 }

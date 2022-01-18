@@ -22,7 +22,6 @@ private:
 // Register & Unregister
 private:
 	void RegisterMenus();
-	void UnregisterMenus();
 
 	void RegisterSettings() const;
 	void UnregisterSettings() const;
@@ -34,8 +33,6 @@ private:
 	void UnregisterMenuSpawner();
 
 private:
-	TSharedPtr<FExtender> MenuExtender;
-
 	FDelegateHandle CBAssetsExtenderDelegateHandle;
 	FDelegateHandle CBFoldersExtenderDelegateHandle;
 };

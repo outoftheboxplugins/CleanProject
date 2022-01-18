@@ -9,9 +9,6 @@ namespace CPMenuExtensions
 {
 	TSharedRef<SDockTab> SpawnMenuTab(const FSpawnTabArgs& Args);
 
-	TSharedPtr<FExtender> CreateMenuExtender();
-	void AddMenuExtension(FMenuBuilder& MenuBuilder);
-
 	TSharedRef<FExtender> CreateContentBrowserAssetsExtender(const TArray<FAssetData>& SelectedAssets);
 	void CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
 

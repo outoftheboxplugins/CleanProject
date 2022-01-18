@@ -6,8 +6,10 @@
 #include "CPLog.h"
 
 #include "ContentBrowserModule.h"
+#include "CPOperations.h"
 #include "ISettingsModule.h"
 #include "LevelEditor.h"
+#include "ToolMenus.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
@@ -45,27 +47,49 @@ void FCleanProjectModule::ShutdownModule()
 	UnregisterMenuSpawner();
 	UnregisterAssetActions();
 	UnregisterSettings();
-	UnregisterMenus();
 }
 
 void FCleanProjectModule::RegisterMenus()
-{
-	MenuExtender = CPMenuExtensions::CreateMenuExtender();
+{	
+    FToolMenuOwnerScoped OwnerScoped(this);
+	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Tools");
+	FToolMenuSection& Section = Menu->AddSection("CleanProject", LOCTEXT("CleanProject", "CleanProject"));
+	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
+	"MenuCleanupUnusedAssets",
+		LOCTEXT("MenuCleanupUnusedAssets", "Cleanup unused assets"),
+		LOCTEXT("MenuCleanupUnusedAssetsTooltip", "Check for unused assets in your project based on your settings."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateLambda([]()
+			{
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* from menu."));
+				CPOperations::CheckAllDependencies();
+			})
 
-	if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>("LevelEditor"))
-	{
-		LevelEditorModule->GetMenuExtensibilityManager()->AddExtender(MenuExtender);
-	}
-}
+		)));
 
-void FCleanProjectModule::UnregisterMenus()
-{
-	if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>("LevelEditor"))
-	{
-		LevelEditorModule->GetMenuExtensibilityManager()->RemoveExtender(MenuExtender);
-	}
+	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
+	"MenuCleanupRedirects",
+		LOCTEXT("MenuCleanupRedirects", "Cleanup redirects"),
+		LOCTEXT("MenuCleanupRedirectsTooltip", "Fix redirects in your whole project."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateLambda([]()
+			{
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects* from menu."));
+				CPOperations::FixUpRedirectsInProject();
+			})
+		)));
 
-	MenuExtender = nullptr;
+	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
+	"MenuCleanupEmptyFolders",
+		LOCTEXT("MenuCleanupEmptyFolders", "Cleanup empty folders"),
+		LOCTEXT("MenuCleanupEmptyFoldersTooltip", "Delete all the empty folders from your project."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateLambda([]()
+			{
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from menu."));
+				CPOperations::DeleteEmptyProjectFolders();
+			})
+		)));
 }
 
 void FCleanProjectModule::RegisterSettings() const

@@ -29,56 +29,6 @@ TSharedRef<SDockTab> CPMenuExtensions::SpawnMenuTab(const FSpawnTabArgs& Args)
 		];
 }
 
-TSharedPtr<FExtender> CPMenuExtensions::CreateMenuExtender()
-{
-	TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender);
-
-	MenuExtender->AddMenuExtension(MainMenuExtensionHook, EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateStatic(CPMenuExtensions::AddMenuExtension));
-
-	return MenuExtender;
-}
-
-void CPMenuExtensions::AddMenuExtension(FMenuBuilder& MenuBuilder)
-{
-	MenuBuilder.BeginSection("CleanProject", LOCTEXT("MenuSection", "Plugins"));
-
-	MenuBuilder.AddMenuEntry(
-		LOCTEXT("MenuCleanupUnusedAssets", "Cleanup unused assets"),
-		LOCTEXT("MenuCleanupUnusedAssetsTooltip", "Check for unused assets in your project based on your settings."),
-		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateLambda([]()
-			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* from menu."));
-				CPOperations::CheckAllDependencies();
-			})
-
-		));
-
-	MenuBuilder.AddMenuEntry(
-		LOCTEXT("MenuCleanupRedirects", "Cleanup redirects"),
-		LOCTEXT("MenuCleanupRedirectsTooltip", "Fix redirects in your whole project."),
-		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateLambda([]()
-			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects* from menu."));
-				CPOperations::FixUpRedirectsInProject();
-			})
-		));
-
-	MenuBuilder.AddMenuEntry(
-		LOCTEXT("MenuCleanupEmptyFolders", "Cleanup empty folders"),
-		LOCTEXT("MenuCleanupEmptyFoldersTooltip", "Delete all the empty folders from your project."),
-		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateLambda([]()
-			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from menu."));
-				CPOperations::DeleteEmptyProjectFolders();
-			})
-		));
-
-	MenuBuilder.EndSection();
-}
-
 TSharedRef<FExtender> CPMenuExtensions::CreateContentBrowserAssetsExtender(const TArray<FAssetData>& SelectedAssets)
 {
 	TSharedRef<FExtender> ContentBrowserExtender = MakeShareable(new FExtender);
