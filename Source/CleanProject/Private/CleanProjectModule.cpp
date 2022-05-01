@@ -53,7 +53,8 @@ void FCleanProjectModule::RegisterMenus()
 {	
     FToolMenuOwnerScoped OwnerScoped(this);
 	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Tools");
-	FToolMenuSection& Section = Menu->AddSection("CleanProject", LOCTEXT("CleanProject", "CleanProject"));
+
+	FToolMenuSection& Section = Menu->FindOrAddSection("CleanProject");
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
 	"MenuCleanupUnusedAssets",
 		LOCTEXT("MenuCleanupUnusedAssets", "Cleanup unused assets"),
@@ -63,8 +64,8 @@ void FCleanProjectModule::RegisterMenus()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* from menu."));
 				CPOperations::CheckAllDependencies();
-			})
-
+			}),
+			FCanExecuteAction()
 		)));
 
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
@@ -76,7 +77,8 @@ void FCleanProjectModule::RegisterMenus()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects* from menu."));
 				CPOperations::FixUpRedirectsInProject();
-			})
+			}),
+			FCanExecuteAction()
 		)));
 
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
@@ -88,7 +90,8 @@ void FCleanProjectModule::RegisterMenus()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from menu."));
 				CPOperations::DeleteEmptyProjectFolders();
-			})
+			}),
+			FCanExecuteAction()
 		)));
 }
 
