@@ -214,16 +214,16 @@ namespace CPOperations
 	{
 		int64 TotalDiskSize = 0;
 		{
-			FScopedSlowTask SlowTask(AssetsList.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
+			//FScopedSlowTask SlowTask(AssetsList.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
 			const bool bShowCancelButton = true;
 			const bool bAllowPie = false;
-			SlowTask.MakeDialog(bShowCancelButton, bAllowPie);
+			//SlowTask.MakeDialog(bShowCancelButton, bAllowPie);
 
 			for (const FAssetData& AssetDataReported : AssetsList)
 			{
 				const FText CurrentAssetName = FText::FromName(AssetDataReported.PackageName);
 				const FText CurrentAssetText = FText::Format(LOCTEXT("CurrentAsset", "Current Asset: {0}"), CurrentAssetName);
-				SlowTask.EnterProgressFrame(1.f, CurrentAssetText);
+				//SlowTask.EnterProgressFrame(1.f, CurrentAssetText);
 				TotalDiskSize += GetAssetDiskSize(AssetDataReported);
 			}
 		}
@@ -262,10 +262,10 @@ namespace CPOperations
 			Result.AddTopLevelDependency(AssetName);
 		}
 
-		FScopedSlowTask SlowTask(AssetsNameList.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
+		//FScopedSlowTask SlowTask(AssetsNameList.Num(), LOCTEXT("SlowTaskTitle", "Gathering Dependencies..."));
 		const bool bShowCancelButton = true;
 		const bool bAllowPie = false;
-		SlowTask.MakeDialog(bShowCancelButton, bAllowPie);
+		//SlowTask.MakeDialog(bShowCancelButton, bAllowPie);
 		TSet<FString> ExternalActorsPaths;
 		TSet<FName> PackageNamesChecked;
 		for (const FChildDependency& TopDependency : Result.TopLevelDependencies)
@@ -273,7 +273,7 @@ namespace CPOperations
 			const FName DependencyName = TopDependency.GetAssetName();
 			const FText CurrentAssetName = FText::FromName(DependencyName);
 			const FText CurrentAssetText = FText::Format(LOCTEXT("CurrentAsset", "Current Asset: {0}"), CurrentAssetName);
-			SlowTask.EnterProgressFrame(1.f, CurrentAssetText);
+			//SlowTask.EnterProgressFrame(1.f, CurrentAssetText);
 			if (!PackageNamesChecked.Contains(DependencyName))
 			{
 				PackageNamesChecked.Add(DependencyName);
