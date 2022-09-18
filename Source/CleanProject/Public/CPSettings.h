@@ -38,6 +38,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
 	bool bWhitelistMapsToPackage = true;
 	/**
+	 * Convenience function to programatically add assets to the whitelisted set 
+	 */
+	void WhitelistAssets(const TArray<FAssetData> Assets);
+	/**
+	 * Convenience function to programatically add assets to the blacklisted set 
+	 */
+	void BlacklistAssets(const TArray<FAssetData> Assets);
+
+	/**
 	 * Old version for storing assets we want to whitelist
 	 * TODO: Delete this when conversion is done
 	 */
@@ -68,8 +77,6 @@ private:
 	UCPSettings();
 
 public:
-	void WhitelistAssets(const TArray<FAssetData> Assets);
-	void BlacklistAssets(const TArray<FAssetData> Assets);
 	TSet<FName> GetWhitelistAssetsPaths() const;
 
 	void IncreaseSpaceGained(int64 ExtraSpaceGained);

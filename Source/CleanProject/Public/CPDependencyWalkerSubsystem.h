@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class CLEANPROJECT_API UCPDependencyWalkerSubsystem : public UEditorSubsystem
+class CLEANPROJECT_API UCPDependencyWalkerSubsystem final : public UEditorSubsystem
 {
 	GENERATED_BODY()
 
@@ -21,4 +21,5 @@ public:
 	TSet<FName> GetWhitelistedAssets() const;
 
 private:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 };

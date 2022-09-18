@@ -2,6 +2,7 @@
 
 #include "CPDependencyWalkerSubsystem.h"
 
+#include "CPLog.h"
 #include "CPSettings.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Settings/ProjectPackagingSettings.h"
@@ -45,4 +46,13 @@ TSet<FName> UCPDependencyWalkerSubsystem::GetWhitelistedAssets() const
 	Result.Append(ExplicitlyWhitelisted);
 
 	return Result;
+}
+
+void UCPDependencyWalkerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+
+	LOG_TRACE();
+
+	GetMutableDefault<UCPSettings>()->IncreaseSpaceGained(100);
 }

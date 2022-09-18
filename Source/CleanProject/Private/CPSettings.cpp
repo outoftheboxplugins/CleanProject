@@ -160,9 +160,5 @@ void UCPSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 
 void UCPSettings::SaveToDefaultConfig()
 {
-	SaveConfig();
-
-	//TODO: the fuck is this?
-	GConfig->SetArray(TEXT("/Script/CleanProject.CPSettings"), TEXT("WhitelistAssetsPaths"), WhitelistAssetsPaths, GetDefaultConfigFilename());
-	GConfig->SetInt(TEXT("/Script/CleanProject.CPSettings"), TEXT("SpaceGained"), SpaceGained, GetDefaultConfigFilename());
+	SaveConfig(CPF_Config, *GetDefaultConfigFilename());
 }
