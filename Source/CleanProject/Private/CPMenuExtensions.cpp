@@ -9,6 +9,7 @@
 
 #include "Framework/MultiBox/MultiBoxExtender.h" // for FExtender
 #include "AssetRegistryModule.h"
+#include "CPDependencyWalkerSubsystem.h"
 #include "Widgets/SCPBlacklistDialog.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Widgets/Docking/SDockTab.h"
@@ -108,7 +109,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 		FUIAction(FExecuteAction::CreateLambda([SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets* from selected folders."));
-				const TArray<FAssetData> AssetsInSelectedFolders = CPOperations::GetAssetsInPaths(SelectedFolders);
+				const TArray<FAssetData> AssetsInSelectedFolders = UCPDependencyWalkerSubsystem::Get()->GetAssetsInPaths(SelectedFolders);
 				CPOperations::CheckDependenciesOf(AssetsInSelectedFolders);
 			})
 		));
@@ -121,7 +122,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 		FUIAction(FExecuteAction::CreateLambda([SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Whitelist Assets* from selected folders."));
-				const TArray<FAssetData> AssetsInSelectedFolders = CPOperations::GetAssetsInPaths(SelectedFolders);
+				const TArray<FAssetData> AssetsInSelectedFolders = UCPDependencyWalkerSubsystem::Get()->GetAssetsInPaths(SelectedFolders);
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 				Settings->WhitelistAssets(AssetsInSelectedFolders);
 			})
@@ -135,7 +136,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 		FUIAction(FExecuteAction::CreateLambda([SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Blacklist Assets* from selected folders."));
-				const TArray<FAssetData> AssetsInSelectedFolders = CPOperations::GetAssetsInPaths(SelectedFolders);
+				const TArray<FAssetData> AssetsInSelectedFolders = UCPDependencyWalkerSubsystem::Get()->GetAssetsInPaths(SelectedFolders);
 				SCPBlacklistDialog::OpenBlacklistDialog(AssetsInSelectedFolders);
 			})
 		));

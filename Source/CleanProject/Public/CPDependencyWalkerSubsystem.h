@@ -16,4 +16,8 @@ class CLEANPROJECT_API UCPDependencyWalkerSubsystem : public UEditorSubsystem
 
 public:
 	static UCPDependencyWalkerSubsystem* Get();
+
+	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths);
+
+private:
 };

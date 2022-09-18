@@ -121,21 +121,6 @@ namespace OperationsHelpers
 
 namespace CPOperations
 {
-	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths)
-	{
-		FARFilter Filter;
-		Filter.bRecursivePaths = true;
-		for (const FString& FolderPath : FolderPaths)
-		{
-			Filter.PackagePaths.Add(FName(FolderPath));
-		}
-		TArray<FAssetData> AllAssetData;
-		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-		AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
-
-		return AllAssetData;
-	}
-
 	TArray<FAssetData> CheckForUnusedAssets()
 	{
 		const TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
