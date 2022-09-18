@@ -129,6 +129,26 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
     ChildSlot
     [
 		SNew(SVerticalBox)
+
+		+SVerticalBox::Slot()
+		.AutoHeight()
+		[
+			SAssignNew(WhitelistedAssetsListView, SListView<FAssetDataPtr>)
+			.ListItemsSource(&WhitelistedAssets)
+			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
+				{
+					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo, ECPAssetDependencyType::MapAssets);
+				})
+			.HeaderRow(
+				SNew(SHeaderRow)
+				+ SHeaderRow::Column(ColumnVariableName)
+				.DefaultLabel(TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([=]()
+					{
+					//TODO: explain what in-use assets are and depending on the enabled flag is packaged maps get added to the list or not
+						return LOCTEXT("WhitelistAssets", "Whitelist Assets");
+					})))
+			)
+		]
 		
 		+SVerticalBox::Slot()
 		.AutoHeight()
@@ -255,7 +275,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute)
 {
 	return SNew(SBorder)
-		.BorderImage(FEditorStyle::GetBrush("DetailsView.CategoryMiddle"))
+		.BorderImage( FAppStyle::Get().GetBrush("Brushes.Header") )
 		.Padding(FMargin(0.0f, 0.0f, ScrollbarPaddingSize, 0.0f))
 		[
 			SNew(SSplitter)

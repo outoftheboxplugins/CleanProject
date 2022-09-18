@@ -81,6 +81,16 @@ private:
 	FReply OnOpenSettings();
 
 private:
+	TSharedPtr<SListView<FAssetDataPtr>> WhitelistedAssetsListView;
+	TArray<FAssetDataPtr> WhitelistedAssets;
+	
+	
+	
+	
+	
+	
+	
+	
 	TSharedPtr<STreeView<FAssetDataPtr>> DependenciesTreeView;
 	CPOperations::FTreeAssetDependency AssetsDependencies;
 

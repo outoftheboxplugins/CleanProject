@@ -27,6 +27,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
 	TArray<FSoftObjectPath> WhitelistedAssets;
 
+	/**
+	 * Should we use treat the explicitly cooked/packaged maps as whitelisted?
+	 * TODO: Should we handle the special Game/Maps folder ?
+	 */
+	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
+	bool bWhitelistMapsToPackage = true;
+
 	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use WhitelistedAssets")
 	UPROPERTY(VisibleDefaultsOnly, config, Category = "Deprecated")
 	TArray<FString> WhitelistAssetsPaths;
@@ -35,7 +42,7 @@ private:
 	/**
 	 * How many bytes we've saved so far by deleting assets with this system
 	 */
-	UPROPERTY(config, Category = "Report")
+	UPROPERTY(config)
 	int64 SpaceGained = 0;
 
 	virtual void PostInitProperties() override;
@@ -94,15 +101,8 @@ public:
 	// When performing a project-wide clean, should all the maps be included in the reference check?
 	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
 	bool bCheckAllMapsReferences = true;
-
-private:
-	
-	
-
 public:
 	// Columns to be hidden in the final report
 	UPROPERTY(EditAnywhere, config, Category = "Report")
 	TArray<FString> ReportHiddenColumns;
-
-private:
 };
