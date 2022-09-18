@@ -13,18 +13,6 @@
  * Menu Widget containing a UI interface for the developer to interact with the Clean Project.
  */
 
-class SCPAssetDependencyRow final : public SMultiColumnTableRow<FAssetDataPtr>
-{
-public:
-	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem);
-
-private:
-	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
-
-private:
-	FAssetDataPtr Item;
-};
-
 class SCPMenuWidget : public SCompoundWidget
 {
 public:

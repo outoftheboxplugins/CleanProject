@@ -5,6 +5,7 @@
 #include "CleanProjectModule.h"
 #include "CPSettings.h"
 
+#include "SCPMenuAssetsListView.h"
 #include "AssetRegistryModule.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Interfaces/IPluginManager.h"
@@ -16,39 +17,6 @@
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SCPAssetDependencyRow
-void SCPAssetDependencyRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem)
-{
-	// Cache the list item so we can get information about the current Item when required
-	Item = InListItem;
-
-	FSuperRowType::Construct(InArgs, InOwnerTable);
-}
-
-TSharedRef<SWidget> SCPAssetDependencyRow::GenerateWidgetForColumn(const FName& ColumnName)
-{
-	TSharedPtr<SWidget> HorizontalBox;
-	SAssignNew(HorizontalBox, SHorizontalBox)
-		+SHorizontalBox::Slot()
-		.AutoWidth()
-		.Padding(6, 0, 0, 0)
-		[
-			SNew(SExpanderArrow, SharedThis(this)).IndentAmount(12)
-		]
-		
-		+SHorizontalBox::Slot()
-		.FillWidth(1.0f)
-		[
-			SNew(STextBlock)
-			.Text(FText::FromName(*Item))
-		];
-
-	return HorizontalBox.ToSharedRef();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SCPMenuWidget
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
 	UCPSettings* ProjectSettings = GetMutableDefault<UCPSettings>();
@@ -65,7 +33,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			.ListItemsSource(&UnusedAssetsList)
 			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
 				{
-					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo);
+					return SNew(SCPMenuAssetsListView, OwnerTable, InInfo);
 				})
 			.HeaderRow(
 				SNew(SHeaderRow)
@@ -101,7 +69,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			.TreeItemsSource(&InuseAssetsDependencies.TopLevelAssetsPtr)
 			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
 				{
-					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo);
+					return SNew(SCPMenuAssetsListView, OwnerTable, InInfo);
 				})
 			.OnGetChildren(this, &SCPMenuWidget::OnGetChildren)
 			.HeaderRow(
