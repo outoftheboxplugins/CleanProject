@@ -5,6 +5,7 @@
 #include "CPLog.h"
 #include "AssetRegistryModule.h"
 #include "AssetToolsModule.h"
+#include "CPDependencyWalkerSubsystem.h"
 #include "CPSettings.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Misc/FileHelper.h"
@@ -131,18 +132,7 @@ namespace CPOperations
 	{
 		const UCPSettings* Settings = GetDefault<UCPSettings>();
 		// Collect all the names we want to check dependencies for.
-		TSet<FName> PackageNameToCheck;
-		PackageNameToCheck.Append(Settings->GetWhitelistAssetsPaths());
-		
-		{
-			if (Settings->bCheckAllMapsReferences)
-			{
-				for (const FAssetData& WorldAsset : GetAllGameAssets<UWorld>())
-				{
-					PackageNameToCheck.Add(WorldAsset.PackageName);
-				}
-			}
-		}
+		TSet<FName> PackageNameToCheck = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets();
 
 		// Remove the whitelisted assets regardless if they are used selected for dependencies or not.
 		OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, Settings->GetWhitelistAssetsPaths());

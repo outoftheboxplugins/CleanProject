@@ -83,15 +83,6 @@ public:
 	FSimpleMulticastDelegate OnAnyPropertyChanged;
 
 public:
-	
-	// Should we always check the dependencies of the whitelisted assets when scanning for references?
-	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
-	bool bCheckWhitelistReferences = true;
-
-	// When performing a project-wide clean, should all the maps be included in the reference check?
-	UPROPERTY(EditAnywhere, config, Category = "Whitelist")
-	bool bCheckAllMapsReferences = true;
-public:
 	// Columns to be hidden in the final report
 	UPROPERTY(EditAnywhere, config, Category = "Report")
 	TArray<FString> ReportHiddenColumns;
