@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 
 #include "Widgets/SCompoundWidget.h"
-#include "AssetRegistry\AssetData.h"
-#include "AssetRegistry\ARFilter.h"
+#include "AssetData.h"
+#include "ARFilter.h"
 
 #include "ContentBrowserDelegates.h"
 
