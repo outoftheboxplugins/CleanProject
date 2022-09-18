@@ -309,43 +309,6 @@ namespace CPOperations
 		}
 	}
 
-	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform /*= ""*/, const FString& Configuration /*= ""*/)
-	{
-		const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-		const EFileWrite WriteFlags = bAppend ? EFileWrite::FILEWRITE_Append : EFileWrite::FILEWRITE_None;
-		const TArray<FString> SelectedConfigurations = OperationsHelpers::GetListFromSelection(Settings->BlacklistFiles, Configuration);
-		const TArray<FString> SelectedPlatforms = OperationsHelpers::GetListFromSelection(Settings->PlatformsPaths, Platform);
-		FString FileContent;
-		for (const FAssetData& AssetData : AssetsToBlacklist)
-		{
-			FString assetPath = AssetData.PackageName.ToString();
-			FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
-		}
-
-		if (Settings->bSaveToTempFile)
-		{
-			const FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
-
-			FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect,
-				&IFileManager::Get(), WriteFlags);
-			FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), nullptr, nullptr);
-		}
-		else
-		{
-			const FString ProjectBuildRoot = FPaths::ProjectDir() + "Build";
-			for (const FString& platformFolder : SelectedPlatforms)
-			{
-				for (const FString& listFile : SelectedConfigurations)
-				{
-					FString slash = FGenericPlatformMisc::GetDefaultPathSeparator();
-					FString platformPath = ProjectBuildRoot + slash + platformFolder + slash + listFile;
-					FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect,
-						&IFileManager::Get(), WriteFlags);
-				}
-			}
-		}
-	}
-
 	void FixUpRedirectsInProject()
 	{
 		const TArray<FAssetData> RedirectAssetList = GetAllGameAssets<UObjectRedirector>();

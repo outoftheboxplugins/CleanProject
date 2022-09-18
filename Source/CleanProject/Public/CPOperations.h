@@ -68,9 +68,6 @@ namespace CPOperations
 	// Recursively get all the dependencies of a certain package.
 	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency);
 
-	// Generate the blacklist for a specific platform or configuration.
-	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform = "", const FString& Configuration = "");
-
 	// Fix up the redirects in the whole project.
 	void FixUpRedirectsInProject();
 

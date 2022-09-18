@@ -2,7 +2,6 @@
 
 #include "SCPAssetDialog.h"
 
-#include "SCPBlacklistDialog.h"
 #include "AssetManagerEditorModule.h"
 #include "ContentBrowserModule.h"
 #include "CPLog.h"
@@ -283,21 +282,10 @@ void SCPAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 {
 	LOG_TRACE();
 
-	bool bRemoveAssets = true;
-	const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-	if (Settings->bShouldSkipBlacklistDialog || Settings->bSaveToTempFile)
-	{
-		CPOperations::GenerateBlacklist(AssetsToBlacklist, Settings->bShouldAppendDefault);
-	}
-	else
-	{
-		bRemoveAssets = SCPBlacklistDialog::OpenBlacklistDialog(AssetsToBlacklist);
-	}
+	UCPSettings* Settings = GetMutableDefault<UCPSettings>();
+	Settings->BlacklistAssets(AssetsToBlacklist);
 
-	if (bRemoveAssets)
-	{
-		RemoveFromList(AssetsToBlacklist);
-	}
+	RemoveFromList(AssetsToBlacklist);
 }
 
 void SCPAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)

@@ -10,7 +10,6 @@
 #include "Framework/MultiBox/MultiBoxExtender.h" // for FExtender
 #include "AssetRegistryModule.h"
 #include "CPDependencyWalkerSubsystem.h"
-#include "Widgets/SCPBlacklistDialog.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Widgets/Docking/SDockTab.h"
 
@@ -79,7 +78,8 @@ void CPMenuExtensions::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder
 		FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Blacklist Assets* from selected assets."));
-				SCPBlacklistDialog::OpenBlacklistDialog(SelectedAssets);
+				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
+				Settings->BlacklistAssets(SelectedAssets);
 			})
 		));
 
@@ -137,7 +137,8 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Blacklist Assets* from selected folders."));
 				const TArray<FAssetData> AssetsInSelectedFolders = UCPDependencyWalkerSubsystem::Get()->GetAssetsInPaths(SelectedFolders);
-				SCPBlacklistDialog::OpenBlacklistDialog(AssetsInSelectedFolders);
+				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
+				Settings->BlacklistAssets(AssetsInSelectedFolders);
 			})
 		));
 
