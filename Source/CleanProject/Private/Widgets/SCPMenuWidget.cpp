@@ -7,6 +7,7 @@
 
 #include "SCPMenuAssetRow.h"
 #include "AssetRegistryModule.h"
+#include "CPDependencyWalkerSubsystem.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
@@ -221,15 +222,12 @@ void SCPMenuWidget::RefreshUnusedAssets()
 	const TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusedAssets();
 	UnusedAssetsCount = UnusedAssets.Num();
 
+	//TODO: Ditch the AllDependencyAssets and use the new WhitelistedAssets
+	TSet<FName> WhitelistedAssets = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets();
 	TArray<FAssetDataPtr> AllDependencyAssets;
-	const UProjectPackagingSettings* const PackagingSettings = GetDefault<UProjectPackagingSettings>();
-	Algo::Transform(PackagingSettings->MapsToCook, AllDependencyAssets, [](FFilePath const& File){return MakeShared<FName>(File.FilePath);});
-	Algo::Transform(GetDefault<UCPSettings>()->WhitelistedAssets, AllDependencyAssets, [](FSoftObjectPath const& Object){return MakeShared<FName>(Object.GetAssetPathName());});
 
-	{
-		InuseAssetsDependencies = CPOperations::GetAssetDependenciesTree(AllDependencyAssets);
-		InuseAssetsTreeView->RebuildList();
-	}
+	InuseAssetsDependencies = CPOperations::GetAssetDependenciesTree(AllDependencyAssets);
+	InuseAssetsTreeView->RebuildList();
 }
 
 bool SCPMenuWidget::IsGameAsset(const FAssetData& AssetData) const

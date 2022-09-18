@@ -2,14 +2,16 @@
 
 #include "CPDependencyWalkerSubsystem.h"
 
+#include "CPSettings.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "Settings/ProjectPackagingSettings.h"
 
 UCPDependencyWalkerSubsystem* UCPDependencyWalkerSubsystem::Get()
 {
 	return GEditor->GetEditorSubsystem<UCPDependencyWalkerSubsystem>();
 }
 
-TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString> FolderPaths)
+TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString> FolderPaths) const
 {
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;
@@ -22,4 +24,25 @@ TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString
 	AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
 
 	return AllAssetData;
+}
+
+TSet<FName> UCPDependencyWalkerSubsystem::GetWhitelistedAssets() const
+{
+	TSet<FName> Result;
+	const UProjectPackagingSettings* const PackagingSettings = GetDefault<UProjectPackagingSettings>();
+
+	// First get the assets which are explicitly cooked by the user via MapsToCook list
+	Algo::Transform(PackagingSettings->MapsToCook, Result, [](const FFilePath& File){ return FName(File.FilePath); });
+
+	// Second get the assets which are inside an always cook folder
+	TArray<FString> FoldersToCook;
+	Algo::Transform(PackagingSettings->DirectoriesToAlwaysCook, FoldersToCook, [](FDirectoryPath const& Directory){ return Directory.Path; });
+	const TArray<FAssetData> AssetsToCook = GetAssetsInPaths(FoldersToCook);
+	Algo::Transform(AssetsToCook, Result, [](const FAssetData& AssetData){ return AssetData.ObjectPath; });
+
+	// Third get the assets which were explicitly selected by the user in our plugin settings
+	const TSet<FName> ExplicitlyWhitelisted = GetDefault<UCPSettings>()->GetWhitelistAssetsPaths();;
+	Result.Append(ExplicitlyWhitelisted);
+
+	return Result;
 }
