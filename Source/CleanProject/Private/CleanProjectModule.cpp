@@ -2,12 +2,10 @@
 
 #include "CleanProjectModule.h"
 
-#include "CPSettings.h"
 #include "CPLog.h"
+#include "CPOperations.h"
 
 #include "ContentBrowserModule.h"
-#include "CPOperations.h"
-#include "ISettingsModule.h"
 #include "LevelEditor.h"
 #include "ToolMenus.h"
 #include "WorkspaceMenuStructure.h"
@@ -17,17 +15,7 @@
 
 namespace
 {
-	const FName SettingsProjectContainer	= FName("Project");
-	const FName SettingsCategory			= FName("Plugins");
-	const FName SettingsSection				= FName("Clean Project");
-
 	const FName MenuTabName					= FName("CleanProjectMenuTab");
-}
-
-/* STATIC */ void FCleanProjectModule::OpenCleanProjectSettings()
-{
-	ISettingsModule& SettingsModule = FModuleManager::LoadModuleChecked<ISettingsModule>("Settings");
-	SettingsModule.ShowViewer(SettingsProjectContainer, SettingsCategory, SettingsSection);
 }
 
 void FCleanProjectModule::StartupModule()
@@ -35,7 +23,6 @@ void FCleanProjectModule::StartupModule()
 	LOG_TRACE();
 
 	RegisterMenus();
-	RegisterSettings();
 	RegisterAssetActions();
 	RegisterMenuSpawner();
 }
@@ -46,7 +33,6 @@ void FCleanProjectModule::ShutdownModule()
 
 	UnregisterMenuSpawner();
 	UnregisterAssetActions();
-	UnregisterSettings();
 }
 
 void FCleanProjectModule::RegisterMenus()
@@ -93,25 +79,6 @@ void FCleanProjectModule::RegisterMenus()
 			}),
 			FCanExecuteAction()
 		)));
-}
-
-void FCleanProjectModule::RegisterSettings() const
-{
-	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
-	{
-		SettingsModule->RegisterSettings(SettingsProjectContainer, SettingsCategory, SettingsSection,
-			LOCTEXT("EditorSettingsName", "Clean Project"),
-			LOCTEXT("EditorSettingsDescription", "Cleanup and project management improvements."),
-			GetMutableDefault<UCPSettings>());
-	}
-}
-
-void FCleanProjectModule::UnregisterSettings() const
-{
-	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
-	{
-		SettingsModule->UnregisterSettings(SettingsProjectContainer, SettingsCategory, SettingsSection);
-	}
 }
 
 void FCleanProjectModule::RegisterAssetActions()

@@ -11,8 +11,6 @@
 
 class FCleanProjectModule : public IModuleInterface
 {
-public:
-	static void OpenCleanProjectSettings();
 
 // IModuleInterface interface
 private:
@@ -22,9 +20,6 @@ private:
 // Register & Unregister
 private:
 	void RegisterMenus();
-
-	void RegisterSettings() const;
-	void UnregisterSettings() const;
 
 	void RegisterAssetActions();
 	void UnregisterAssetActions();
@@ -36,6 +31,3 @@ private:
 	FDelegateHandle CBAssetsExtenderDelegateHandle;
 	FDelegateHandle CBFoldersExtenderDelegateHandle;
 };
-
-
-

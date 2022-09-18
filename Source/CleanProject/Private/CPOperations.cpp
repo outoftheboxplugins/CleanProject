@@ -267,7 +267,6 @@ namespace CPOperations
 		const bool bShowCancelButton = true;
 		const bool bAllowPie = false;
 		//SlowTask.MakeDialog(bShowCancelButton, bAllowPie);
-		TSet<FString> ExternalActorsPaths;
 		TSet<FName> PackageNamesChecked;
 		for (const FChildDependency& TopDependency : Result.TopLevelDependencies)
 		{
@@ -278,14 +277,14 @@ namespace CPOperations
 			if (!PackageNamesChecked.Contains(DependencyName))
 			{
 				PackageNamesChecked.Add(DependencyName);
-				RecursiveGetDependencies(DependencyName, PackageNamesChecked, Result, ExternalActorsPaths);
+				RecursiveGetDependencies(DependencyName, PackageNamesChecked, Result);
 			}
 		}
 
 		return Result;
 	}
 
-	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency, TSet<FString>& ExternalActorsPaths)
+	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency)
 	{
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 		TArray<FName> Dependencies;
@@ -297,20 +296,13 @@ namespace CPOperations
 			{
 				if (AssetData.GetClass() && AssetData.GetClass()->IsChildOf<UWorld>())
 				{
-					FString ExternalActorsPath = ULevel::GetExternalActorsPath(PackageName.ToString());
-					if (!ExternalActorsPath.IsEmpty() && !ExternalActorsPaths.Contains(ExternalActorsPath))
+					TArray<FString> ExternalActorsPackages = ULevel::GetOnDiskExternalActorPackages(PackageName.ToString());
+					for (const FString& ExternalActorsPackage : ExternalActorsPackages)
 					{
-						ExternalActorsPaths.Add(ExternalActorsPath);
-						AssetRegistryModule.Get().ScanPathsSynchronous({ ExternalActorsPath }, true);
-						TArray<FAssetData> ExternalActorAssets;
-						AssetRegistryModule.Get().GetAssetsByPath(FName(*ExternalActorsPath), ExternalActorAssets, true);
-
-						for (const FAssetData& ExternalActorAsset : ExternalActorAssets)
-						{
-							ResultTreeDependency.AddDependency(PackageName, ExternalActorAsset.PackageName);
-							AllDependencies.Add(ExternalActorAsset.PackageName);
-							RecursiveGetDependencies(ExternalActorAsset.PackageName, AllDependencies, ResultTreeDependency, ExternalActorsPaths);
-						}
+						FName ExternalActorPackageName = FName(ExternalActorsPackage);
+						ResultTreeDependency.AddDependency(PackageName, ExternalActorPackageName);
+						AllDependencies.Add(ExternalActorPackageName);
+						RecursiveGetDependencies(ExternalActorPackageName, AllDependencies, ResultTreeDependency);
 					}
 				}
 			}
@@ -326,7 +318,7 @@ namespace CPOperations
 			{
 				ResultTreeDependency.AddDependency(PackageName, DependencyName);
 				AllDependencies.Add(DependencyName);
-				RecursiveGetDependencies(DependencyName, AllDependencies, ResultTreeDependency, ExternalActorsPaths);
+				RecursiveGetDependencies(DependencyName, AllDependencies, ResultTreeDependency);
 			}
 		}
 	}

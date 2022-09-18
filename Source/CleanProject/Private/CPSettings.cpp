@@ -2,8 +2,32 @@
 
 #include "CPSettings.h"
 #include "AssetData.h"
+#include "ISettingsModule.h"
 
 #include "Misc/ConfigCacheIni.h"
+
+void UCPSettings::OpenSettings()
+{
+	const UCPSettings* Settings = GetDefault<UCPSettings>();
+
+	ISettingsModule& SettingsModule = FModuleManager::LoadModuleChecked<ISettingsModule>("Settings");
+	SettingsModule.ShowViewer(Settings->GetContainerName(), Settings->GetCategoryName(), Settings->GetSectionName());
+}
+
+void UCPSettings::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	//Backwards compatibility
+	for(const FString& OldPath : WhitelistAssetsPaths)
+	{
+		WhitelistedAssets.Emplace(FSoftObjectPath(OldPath));
+	}
+}
+
+
+// Backwards compatibility ***************************************************************************************************************************
+
 
 UCPSettings::UCPSettings()
 {

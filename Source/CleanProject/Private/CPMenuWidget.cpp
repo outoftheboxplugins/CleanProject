@@ -420,7 +420,7 @@ FReply SCPMenuWidget::OnGoToDocumentation()
 
 FReply SCPMenuWidget::OnOpenSettings()
 {
-	FCleanProjectModule::OpenCleanProjectSettings();
+	UCPSettings::OpenSettings();
 
 	return FReply::Handled();
 }
