@@ -1,8 +1,8 @@
 ﻿// Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
 
-#include "SCPMenuAssetsListView.h"
+#include "SCPMenuAssetRow.h"
 
-void SCPMenuAssetsListView::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TSharedPtr<FName> InListItem)
+void SCPMenuAssetRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TSharedPtr<FName> InListItem)
 {
 	// Cache the list item so we can get information about the current Item when required
 	Item = InListItem;
@@ -10,7 +10,7 @@ void SCPMenuAssetsListView::Construct(const FArguments& InArgs, const TSharedRef
 	FSuperRowType::Construct(InArgs, InOwnerTable);
 }
 
-TSharedRef<SWidget> SCPMenuAssetsListView::GenerateWidgetForColumn(const FName& ColumnName)
+TSharedRef<SWidget> SCPMenuAssetRow::GenerateWidgetForColumn(const FName& ColumnName)
 {
 	TSharedPtr<SWidget> HorizontalBox;
 	SAssignNew(HorizontalBox, SHorizontalBox)

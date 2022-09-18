@@ -26,12 +26,6 @@ private:
 
 	void OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& OutChildren);
 
-// Resizing
-private:
-	void OnInfoSlotResized(float newSize) { UniformInfoSlotSize = newSize; }
-	float GetInfoSlotSizeLeft() const { return UniformInfoSlotSize; }
-	float GetInfoSlotSizeRight() const { return 1.0f - UniformInfoSlotSize; }
-
 // Refreshing
 private:
 	void OnFilesLoaded();
@@ -60,8 +54,5 @@ private:
 	TSharedPtr<SListView<FAssetDataPtr>> UnusedAssetsListView;
 	TArray<FAssetDataPtr> UnusedAssetsList;
 
-	// Strange default
-	int64 UnusedAssetsCount = 1024;
-	// Is this even used?
-	float UniformInfoSlotSize = 0.5f;
+	int64 UnusedAssetsCount = 0;
 };

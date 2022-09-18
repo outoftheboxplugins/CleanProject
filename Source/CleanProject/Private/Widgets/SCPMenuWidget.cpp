@@ -5,20 +5,19 @@
 #include "CleanProjectModule.h"
 #include "CPSettings.h"
 
-#include "SCPMenuAssetsListView.h"
+#include "SCPMenuAssetRow.h"
 #include "AssetRegistryModule.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
-#include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Settings/ProjectPackagingSettings.h"
-#include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
+	//TODO: Can we find a way to refresh if MapsToCook change?
 	UCPSettings* ProjectSettings = GetMutableDefault<UCPSettings>();
 	ProjectSettings->OnAnyPropertyChanged.AddSP(this, &SCPMenuWidget::RefreshUnusedAssets);
 
@@ -27,18 +26,33 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		SNew(SVerticalBox)
 
 		+SVerticalBox::Slot()
-		.AutoHeight()
+		[
+			SAssignNew(InuseAssetsTreeView, STreeView<FAssetDataPtr>)
+			.TreeItemsSource(&InuseAssetsDependencies.TopLevelAssetsPtr)
+			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
+				{
+					return SNew(SCPMenuAssetRow, OwnerTable, InInfo);
+				})
+			.OnGetChildren(this, &SCPMenuWidget::OnGetChildren)
+			.HeaderRow(
+				SNew(SHeaderRow)
+				+SHeaderRow::Column("InuseAssetsList")
+				.DefaultLabel(LOCTEXT("InuseAssetsList", "In use assets - whitelisted assets and explicitly cooked/packaged maps"))
+			)
+		]
+
+		+SVerticalBox::Slot()
 		[
 			SAssignNew(UnusedAssetsListView, SListView<FAssetDataPtr>)
 			.ListItemsSource(&UnusedAssetsList)
 			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
 				{
-					return SNew(SCPMenuAssetsListView, OwnerTable, InInfo);
+					return SNew(SCPMenuAssetRow, OwnerTable, InInfo);
 				})
 			.HeaderRow(
 				SNew(SHeaderRow)
 				+ SHeaderRow::Column("UnusedAssetsList")
-				.DefaultLabel(LOCTEXT("UnusedAssetsList", "In use assets - whitelisted assets + maps to be packaged"))
+				.DefaultLabel(LOCTEXT("UnusedAssetsList", "Unused assets - not directly whitelisted or referenced by any actively used asset"))
 			)
 		]
 		
@@ -46,9 +60,9 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		.AutoHeight()
 		[
 			CreateInfoWidget(LOCTEXT("ProjectSpaceGained", "Space gained in project"), 
-			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([=]()
+			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([]()
 					{
-						return FText::AsMemory(ProjectSettings->GetSpaceGained());
+						return FText::AsMemory(GetDefault<UCPSettings>()->GetSpaceGained());
 					})))
 		]
 		
@@ -56,29 +70,13 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		.AutoHeight()
 		[
 			CreateInfoWidget(LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets"), 
-			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([=]()
+			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
 				{
-					const int64 UsedAssets = GetUnusedAssetsCount();
-					return FText::AsNumber(UsedAssets);
+					//TODO: Check if this updates properly
+					return FText::AsNumber(UnusedAssetsCount);
 				})))
 		]
 
-		+SVerticalBox::Slot()
-		[
-			SAssignNew(InuseAssetsTreeView, STreeView<FAssetDataPtr>)
-			.TreeItemsSource(&InuseAssetsDependencies.TopLevelAssetsPtr)
-			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
-				{
-					return SNew(SCPMenuAssetsListView, OwnerTable, InInfo);
-				})
-			.OnGetChildren(this, &SCPMenuWidget::OnGetChildren)
-			.HeaderRow(
-				SNew(SHeaderRow)
-				+SHeaderRow::Column("DepedenciesTreeView")
-				.DefaultLabel(LOCTEXT("DepedenciesTreeView", "Depedencies Tree View"))
-			)
-		]
-		
 		+SVerticalBox::Slot()
 		.AutoHeight()
 		.Padding(0, 5, 0, 5)
@@ -145,8 +143,8 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FTex
 			.HitDetectionSplitterHandleSize(5.0f)
 			
 			+SSplitter::Slot()
-			.Value(TAttribute<float>::Create(TAttribute<float>::FGetter::CreateSP(this, &SCPMenuWidget::GetInfoSlotSizeLeft)))
-			.OnSlotResized(SSplitter::FOnSlotResized::CreateSP(this, &SCPMenuWidget::OnInfoSlotResized))
+			.Value(0.5f)
+			.Resizable(false)
 			[
 				SNew(STextBlock)
 				.Text(Title)
@@ -154,7 +152,8 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FTex
 			]
 			
 			+SSplitter::Slot()
-			.Value(TAttribute<float>::Create(TAttribute<float>::FGetter::CreateSP(this, &SCPMenuWidget::GetInfoSlotSizeRight)))
+			.Value(0.5f)
+			.Resizable(false)
 			[
 				SNew(STextBlock)
 				.Text(MetricValueAttribute)

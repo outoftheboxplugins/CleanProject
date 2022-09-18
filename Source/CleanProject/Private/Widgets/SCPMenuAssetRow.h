@@ -2,7 +2,7 @@
 
 #pragma once
 
-class SCPMenuAssetsListView final : public SMultiColumnTableRow<TSharedPtr<FName>>
+class SCPMenuAssetRow final : public SMultiColumnTableRow<TSharedPtr<FName>>
 {
 public:
 	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TSharedPtr<FName> InListItem);

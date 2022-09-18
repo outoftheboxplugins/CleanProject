@@ -296,6 +296,7 @@ namespace CPOperations
 			{
 				if (AssetData.GetClass() && AssetData.GetClass()->IsChildOf<UWorld>())
 				{
+					//TODO: Check if this logic actually works for external actors
 					TArray<FString> ExternalActorsPackages = ULevel::GetOnDiskExternalActorPackages(PackageName.ToString());
 					for (const FString& ExternalActorsPackage : ExternalActorsPackages)
 					{

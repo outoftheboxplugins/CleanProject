@@ -25,7 +25,7 @@ public:
 	 * Add assets (including their dependencies) you want to prevent our system from deleting here
 	 */
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
-	TArray<FSoftObjectPath> WhitelistedAssets;
+	TSet<FSoftObjectPath> WhitelistedAssets;
 
 	/**
 	 * Should we use treat the explicitly cooked/packaged maps as whitelisted?
