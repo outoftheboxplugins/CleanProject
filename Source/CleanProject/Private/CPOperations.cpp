@@ -1,7 +1,7 @@
 // Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
 
 #include "CPOperations.h"
-#include "SCPAssetDialog.h"
+#include "Widgets/SCPAssetDialog.h"
 #include "CPLog.h"
 #include "AssetRegistryModule.h"
 #include "AssetToolsModule.h"
@@ -121,21 +121,6 @@ namespace OperationsHelpers
 
 namespace CPOperations
 {
-	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths)
-	{
-		FARFilter Filter;
-		Filter.bRecursivePaths = true;
-		for (const FString& FolderPath : FolderPaths)
-		{
-			Filter.PackagePaths.Add(FName(FolderPath));
-		}
-		TArray<FAssetData> AllAssetData;
-		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-		AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
-
-		return AllAssetData;
-	}
-
 	TArray<FAssetData> CheckForUnusedAssets()
 	{
 		const TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
@@ -267,7 +252,6 @@ namespace CPOperations
 		const bool bShowCancelButton = true;
 		const bool bAllowPie = false;
 		//SlowTask.MakeDialog(bShowCancelButton, bAllowPie);
-		TSet<FString> ExternalActorsPaths;
 		TSet<FName> PackageNamesChecked;
 		for (const FChildDependency& TopDependency : Result.TopLevelDependencies)
 		{
@@ -278,14 +262,14 @@ namespace CPOperations
 			if (!PackageNamesChecked.Contains(DependencyName))
 			{
 				PackageNamesChecked.Add(DependencyName);
-				RecursiveGetDependencies(DependencyName, PackageNamesChecked, Result, ExternalActorsPaths);
+				RecursiveGetDependencies(DependencyName, PackageNamesChecked, Result);
 			}
 		}
 
 		return Result;
 	}
 
-	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency, TSet<FString>& ExternalActorsPaths)
+	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency)
 	{
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 		TArray<FName> Dependencies;
@@ -297,20 +281,14 @@ namespace CPOperations
 			{
 				if (AssetData.GetClass() && AssetData.GetClass()->IsChildOf<UWorld>())
 				{
-					FString ExternalActorsPath = ULevel::GetExternalActorsPath(PackageName.ToString());
-					if (!ExternalActorsPath.IsEmpty() && !ExternalActorsPaths.Contains(ExternalActorsPath))
+					//TODO: Check if this logic actually works for external actors
+					TArray<FString> ExternalActorsPackages = ULevel::GetOnDiskExternalActorPackages(PackageName.ToString());
+					for (const FString& ExternalActorsPackage : ExternalActorsPackages)
 					{
-						ExternalActorsPaths.Add(ExternalActorsPath);
-						AssetRegistryModule.Get().ScanPathsSynchronous({ ExternalActorsPath }, true);
-						TArray<FAssetData> ExternalActorAssets;
-						AssetRegistryModule.Get().GetAssetsByPath(FName(*ExternalActorsPath), ExternalActorAssets, true);
-
-						for (const FAssetData& ExternalActorAsset : ExternalActorAssets)
-						{
-							ResultTreeDependency.AddDependency(PackageName, ExternalActorAsset.PackageName);
-							AllDependencies.Add(ExternalActorAsset.PackageName);
-							RecursiveGetDependencies(ExternalActorAsset.PackageName, AllDependencies, ResultTreeDependency, ExternalActorsPaths);
-						}
+						FName ExternalActorPackageName = FName(ExternalActorsPackage);
+						ResultTreeDependency.AddDependency(PackageName, ExternalActorPackageName);
+						AllDependencies.Add(ExternalActorPackageName);
+						RecursiveGetDependencies(ExternalActorPackageName, AllDependencies, ResultTreeDependency);
 					}
 				}
 			}
@@ -326,44 +304,7 @@ namespace CPOperations
 			{
 				ResultTreeDependency.AddDependency(PackageName, DependencyName);
 				AllDependencies.Add(DependencyName);
-				RecursiveGetDependencies(DependencyName, AllDependencies, ResultTreeDependency, ExternalActorsPaths);
-			}
-		}
-	}
-
-	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform /*= ""*/, const FString& Configuration /*= ""*/)
-	{
-		const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-		const EFileWrite WriteFlags = bAppend ? EFileWrite::FILEWRITE_Append : EFileWrite::FILEWRITE_None;
-		const TArray<FString> SelectedConfigurations = OperationsHelpers::GetListFromSelection(Settings->BlacklistFiles, Configuration);
-		const TArray<FString> SelectedPlatforms = OperationsHelpers::GetListFromSelection(Settings->PlatformsPaths, Platform);
-		FString FileContent;
-		for (const FAssetData& AssetData : AssetsToBlacklist)
-		{
-			FString assetPath = AssetData.PackageName.ToString();
-			FileContent += FString::Printf(TEXT("../../..%s\n"), *assetPath);
-		}
-
-		if (Settings->bSaveToTempFile)
-		{
-			const FString FilePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("Blacklist.txt");
-
-			FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::AutoDetect,
-				&IFileManager::Get(), WriteFlags);
-			FPlatformProcess::LaunchURL(*FString::Printf(TEXT("file://%s"), *FilePath), nullptr, nullptr);
-		}
-		else
-		{
-			const FString ProjectBuildRoot = FPaths::ProjectDir() + "Build";
-			for (const FString& platformFolder : SelectedPlatforms)
-			{
-				for (const FString& listFile : SelectedConfigurations)
-				{
-					FString slash = FGenericPlatformMisc::GetDefaultPathSeparator();
-					FString platformPath = ProjectBuildRoot + slash + platformFolder + slash + listFile;
-					FFileHelper::SaveStringToFile(FileContent, *platformPath, FFileHelper::EEncodingOptions::AutoDetect,
-						&IFileManager::Get(), WriteFlags);
-				}
+				RecursiveGetDependencies(DependencyName, AllDependencies, ResultTreeDependency);
 			}
 		}
 	}

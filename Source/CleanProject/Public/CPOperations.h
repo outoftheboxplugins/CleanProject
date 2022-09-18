@@ -11,8 +11,6 @@ using FAssetDataPtr = TSharedPtr<FName>;
 
 namespace CPOperations
 {
-	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths);
-
 	/*
 	* Shows all all the selected assets which are not used by any other asset in the content browser.
 	* Assets to test: selected assets
@@ -68,10 +66,7 @@ namespace CPOperations
 	FTreeAssetDependency GetAssetDependenciesTree(const TArray<FName>& AssetsNameList);
 
 	// Recursively get all the dependencies of a certain package.
-	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency, TSet<FString>& ExternalActorsPaths);
-
-	// Generate the blacklist for a specific platform or configuration.
-	void GenerateBlacklist(const TArray<FAssetData>& AssetsToBlacklist, const bool bAppend, const FString& Platform = "", const FString& Configuration = "");
+	void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency);
 
 	// Fix up the redirects in the whole project.
 	void FixUpRedirectsInProject();

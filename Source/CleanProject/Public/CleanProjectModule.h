@@ -11,8 +11,6 @@
 
 class FCleanProjectModule : public IModuleInterface
 {
-public:
-	static void OpenCleanProjectSettings();
 
 // IModuleInterface interface
 private:
@@ -22,9 +20,6 @@ private:
 // Register & Unregister
 private:
 	void RegisterMenus();
-
-	void RegisterSettings() const;
-	void UnregisterSettings() const;
 
 	void RegisterAssetActions();
 	void UnregisterAssetActions();
@@ -37,5 +32,5 @@ private:
 	FDelegateHandle CBFoldersExtenderDelegateHandle;
 };
 
-
-
+//TODO: Plugin to alt tab assets, see recents, open last closed -> experience similar to browser
+//TODO: right click asset -> explicitly cook / add to maps to package

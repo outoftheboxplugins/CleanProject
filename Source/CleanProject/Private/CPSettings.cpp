@@ -2,30 +2,37 @@
 
 #include "CPSettings.h"
 #include "AssetData.h"
+#include "ISettingsModule.h"
 
 #include "Misc/ConfigCacheIni.h"
+
+void UCPSettings::OpenSettings()
+{
+	const UCPSettings* Settings = GetDefault<UCPSettings>();
+
+	ISettingsModule& SettingsModule = FModuleManager::LoadModuleChecked<ISettingsModule>("Settings");
+	SettingsModule.ShowViewer(Settings->GetContainerName(), Settings->GetCategoryName(), Settings->GetSectionName());
+}
+
+void UCPSettings::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	//Backwards compatibility
+	for(const FString& OldWhitelistPath : WhitelistAssetsPaths)
+	{
+		WhitelistedAssets.Emplace(FSoftObjectPath(OldWhitelistPath));
+	}
+}
+
+
+// Backwards compatibility ***************************************************************************************************************************
+
 
 UCPSettings::UCPSettings()
 {
 	// TOSOLVE: check if the whitelisted asset path exists when loading the variable.
 	// TOSOLVE: auto update paths when assets are moved.
-	
-    PlatformsPaths = 
-    { 
-        "WindowsNoEditor",
-        "Android",
-        "IOS",
-        "Mac",
-        "Linux"
-    };
-
-    BlacklistFiles =
-    { 
-        "PakBlacklist-Debug.txt",
-        "PakBlacklist-Development.txt",
-        "PakBlacklist-Test.txt",
-        "PakBlacklist-Shipping.txt",
-    };
 
 	// TOSOLVE: cleanup or expose those.
     ReportHiddenColumns =
@@ -104,9 +111,24 @@ void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
 	{
-		WhitelistAssetsPaths.Add(Asset.PackageName.ToString());
+		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
+		WhitelistedAssets.Emplace(AssetPath);
 	}
 
+	//TODO: Do we need to save here?
+	SaveToDefaultConfig();
+	OnAnyPropertyChanged.Broadcast();
+}
+
+void UCPSettings::BlacklistAssets(const TArray<FAssetData> Assets)
+{
+	for (const FAssetData& Asset : Assets)
+	{
+		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
+		BlacklistedAssets.Emplace(AssetPath);
+	}
+
+	//TODO: Do we need to save here?
 	SaveToDefaultConfig();
 	OnAnyPropertyChanged.Broadcast();
 }
@@ -114,9 +136,9 @@ void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
 TArray<FName> UCPSettings::GetWhitelistAssetsPaths() const
 {
 	TArray<FName> WhitelistPaths;
-	for (const FString& Path : WhitelistAssetsPaths)
+	for (const FSoftObjectPath& Path : WhitelistedAssets)
 	{
-		WhitelistPaths.Add(FName(Path));
+		WhitelistPaths.Add(Path.GetAssetPathName());
 	}
 
 	return WhitelistPaths;
@@ -144,6 +166,7 @@ void UCPSettings::SaveToDefaultConfig()
 {
 	SaveConfig();
 
+	//TODO: the fuck is this?
 	GConfig->SetArray(TEXT("/Script/CleanProject.CPSettings"), TEXT("WhitelistAssetsPaths"), WhitelistAssetsPaths, GetDefaultConfigFilename());
 	GConfig->SetInt(TEXT("/Script/CleanProject.CPSettings"), TEXT("SpaceGained"), SpaceGained, GetDefaultConfigFilename());
 }
