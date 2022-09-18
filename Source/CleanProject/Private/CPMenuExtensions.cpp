@@ -2,14 +2,14 @@
 
 #include "CPMenuExtensions.h"
 
-#include "CPMenuWidget.h"
+#include "Widgets/SCPMenuWidget.h"
 #include "CPOperations.h"
 #include "CPLog.h"
 #include "CPSettings.h"
 
 #include "Framework/MultiBox/MultiBoxExtender.h" // for FExtender
 #include "AssetRegistryModule.h"
-#include "SCPBlacklistDialog.h"
+#include "Widgets/SCPBlacklistDialog.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Widgets/Docking/SDockTab.h"
 

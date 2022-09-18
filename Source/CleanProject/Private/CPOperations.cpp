@@ -1,7 +1,7 @@
 // Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
 
 #include "CPOperations.h"
-#include "SCPAssetDialog.h"
+#include "Widgets/SCPAssetDialog.h"
 #include "CPLog.h"
 #include "AssetRegistryModule.h"
 #include "AssetToolsModule.h"

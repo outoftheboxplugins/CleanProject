@@ -1,6 +1,6 @@
 // Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
 
-#include "CPMenuWidget.h"
+#include "SCPMenuWidget.h"
 
 #include "CleanProjectModule.h"
 #include "CPSettings.h"
