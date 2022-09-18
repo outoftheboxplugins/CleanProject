@@ -14,6 +14,7 @@ public class CleanProject : ModuleRules
 				"Core",
 				"CoreUObject",
 				"DeveloperSettings",
+				"DeveloperToolSettings",
 				"EditorStyle",
 				"Engine",
 				"InputCore",

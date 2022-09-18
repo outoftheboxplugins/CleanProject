@@ -2,55 +2,39 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-
 #include "Widgets/SCompoundWidget.h"
 
+#include "CoreMinimal.h"
 #include "CPOperations.h"
-#include "Widgets/SWindow.h"
-#include "Editor/EditorEngine.h"
+
 #include "Templates/SharedPointer.h"
 #include "Widgets/Views/STreeView.h"
 /**
  * Menu Widget containing a UI interface for the developer to interact with the Clean Project.
  */
 
-enum class ECPAssetDependencyType : uint8
-{
-	None,
-	MapAssets,
-	WhitelistAssets,
-	AnyAssets,
-};
-
 class SCPAssetDependencyRow final : public SMultiColumnTableRow<FAssetDataPtr>
 {
 public:
-	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem, ECPAssetDependencyType InAssetDependencyType);
+	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem);
 
 private:
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
-	FSlateColor GetTextColor() const;
 
 private:
 	FAssetDataPtr Item;
-	ECPAssetDependencyType AssetDependencyType = ECPAssetDependencyType::None;
 };
 
 class SCPMenuWidget : public SCompoundWidget
 {
 public:
-    SLATE_BEGIN_ARGS(SCPMenuWidget) { }
+	SLATE_BEGIN_ARGS(SCPMenuWidget) { }
 	SLATE_END_ARGS()
 
-    void Construct(const FArguments& InArgs);
+	void Construct(const FArguments& InArgs);
 	
 private:
 	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute);
-
-	FText GetColumnNameByType(ECPAssetDependencyType AssetDependencyType) const;
-	FText GetMapAssetsColumnName() const { return GetColumnNameByType(ECPAssetDependencyType::MapAssets); }
-	FText GetWhitelistAssetsColumnName() const { return GetColumnNameByType(ECPAssetDependencyType::WhitelistAssets); }
 
 	void OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& OutChildren);
 
@@ -81,25 +65,15 @@ private:
 	FReply OnOpenSettings();
 
 private:
-	TSharedPtr<SListView<FAssetDataPtr>> WhitelistedAssetsListView;
-	TArray<FAssetDataPtr> WhitelistedAssets;
-	
-	
-	
-	
-	
-	
-	
-	
-	TSharedPtr<STreeView<FAssetDataPtr>> DependenciesTreeView;
-	CPOperations::FTreeAssetDependency AssetsDependencies;
+	TSharedPtr<STreeView<FAssetDataPtr>> InuseAssetsTreeView;
+	//TODO: What the fuck is this type?
+	CPOperations::FTreeAssetDependency InuseAssetsDependencies;
 
-	TSharedPtr<SListView<FAssetDataPtr>> MapAssetsListView;
-	TArray<FAssetDataPtr> MapAssets;
+	TSharedPtr<SListView<FAssetDataPtr>> UnusedAssetsListView;
+	TArray<FAssetDataPtr> UnusedAssetsList;
 
-	TSharedPtr<SListView<FAssetDataPtr>> WhitelistAssetsListView;
-	TArray<FAssetDataPtr> WhitelistAssets;
-
+	// Strange default
 	int64 UnusedAssetsCount = 1024;
+	// Is this even used?
 	float UniformInfoSlotSize = 0.5f;
 };

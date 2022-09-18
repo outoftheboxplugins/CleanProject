@@ -10,113 +10,41 @@
 #include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Settings/ProjectPackagingSettings.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-namespace
-{
-	const float ScrollbarPaddingSize = 16.0f;
-
-	const FName ColumnVariableName = FName("AssetName");
-
-	const FLinearColor EnabledDependencyColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	const FLinearColor DisabledDependencyColor = FLinearColor(0.25f, 0.25f, 0.25f, 1.0f);
-
-	bool GetEnabledByDependencyType(const ECPAssetDependencyType AssetDependencyType)
-	{
-		const UCPSettings* ProjectSettings = GetDefault<UCPSettings>();
-		bool bIsEnabled = false;
-
-		switch (AssetDependencyType)
-		{
-		case ECPAssetDependencyType::None:
-			bIsEnabled = false;
-			break;
-		case ECPAssetDependencyType::MapAssets:
-			bIsEnabled = ProjectSettings->bCheckAllMapsReferences;
-			break;
-		case ECPAssetDependencyType::WhitelistAssets:
-			bIsEnabled = ProjectSettings->bCheckWhitelistReferences;
-			break;
-		case ECPAssetDependencyType::AnyAssets:
-			bIsEnabled = true;
-			break;
-		}
-
-		return bIsEnabled;
-	}
-
-	TArray<FAssetDataPtr> TransformAssetDataArray(const TArray<FName>& AssetArray)
-	{
-		TArray<FAssetDataPtr> ResultArray;
-
-		for (const auto& AssetElement : AssetArray)
-		{
-			ResultArray.Add(MakeShareable(new FName(AssetElement)));
-		}
-
-		return ResultArray;
-	}
-	TArray<FAssetDataPtr> TransformAssetDataArray(const TArray<FAssetData>& AssetArray)
-	{
-		TArray<FAssetDataPtr> ResultArray;
-
-		for (const auto& AssetElement : AssetArray)
-		{
-			ResultArray.Add(MakeShareable(new FName(AssetElement.PackageName)));
-		}
-
-		return ResultArray;
-	}
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SCPAssetDependencyRow
-void SCPAssetDependencyRow::Construct(
-	const FArguments& InArgs,
-	const TSharedRef<STableViewBase>& InOwnerTable,
-	FAssetDataPtr InListItem,
-	ECPAssetDependencyType InAssetDependencyType)
+void SCPAssetDependencyRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FAssetDataPtr InListItem)
 {
-	// Setting the list item since it will be used by the super constructor.
+	// Cache the list item so we can get information about the current Item when required
 	Item = InListItem;
-	AssetDependencyType = InAssetDependencyType;
 
 	FSuperRowType::Construct(InArgs, InOwnerTable);
 }
 
 TSharedRef<SWidget> SCPAssetDependencyRow::GenerateWidgetForColumn(const FName& ColumnName)
 {
-	if (ColumnName == ColumnVariableName)
-	{
-		return SNew(SHorizontalBox)
-			+SHorizontalBox::Slot()
-			.AutoWidth()
-			.Padding(6, 0, 0, 0)
-			[
-				SNew(SExpanderArrow, SharedThis(this)).IndentAmount(12)
-			]
-			
-			+SHorizontalBox::Slot()
-			.FillWidth(1.0f)
-			[
-				SNew(STextBlock)
-				.Text(FText::FromName(*Item))
-				.ColorAndOpacity(this, &SCPAssetDependencyRow::GetTextColor)
-			];
-	}
+	TSharedPtr<SWidget> HorizontalBox;
+	SAssignNew(HorizontalBox, SHorizontalBox)
+		+SHorizontalBox::Slot()
+		.AutoWidth()
+		.Padding(6, 0, 0, 0)
+		[
+			SNew(SExpanderArrow, SharedThis(this)).IndentAmount(12)
+		]
+		
+		+SHorizontalBox::Slot()
+		.FillWidth(1.0f)
+		[
+			SNew(STextBlock)
+			.Text(FText::FromName(*Item))
+		];
 
-	UE_LOG(LogTemp, Error, TEXT("Could not identify column based on name."));
-	return SNew(STextBlock).Text(LOCTEXT("WatchUnkownColumn", "Unknown Column"));
-}
-
-FSlateColor SCPAssetDependencyRow::GetTextColor() const
-{
-	const bool bIsEnabled = GetEnabledByDependencyType(AssetDependencyType);
-	const FLinearColor TextColor = bIsEnabled ? EnabledDependencyColor : DisabledDependencyColor;
-	return FSlateColor(TextColor);
+	return HorizontalBox.ToSharedRef();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -126,27 +54,23 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 	UCPSettings* ProjectSettings = GetMutableDefault<UCPSettings>();
 	ProjectSettings->OnAnyPropertyChanged.AddSP(this, &SCPMenuWidget::RefreshUnusedAssets);
 
-    ChildSlot
-    [
+	ChildSlot
+	[
 		SNew(SVerticalBox)
 
 		+SVerticalBox::Slot()
 		.AutoHeight()
 		[
-			SAssignNew(WhitelistedAssetsListView, SListView<FAssetDataPtr>)
-			.ListItemsSource(&WhitelistedAssets)
+			SAssignNew(UnusedAssetsListView, SListView<FAssetDataPtr>)
+			.ListItemsSource(&UnusedAssetsList)
 			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
 				{
-					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo, ECPAssetDependencyType::MapAssets);
+					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo);
 				})
 			.HeaderRow(
 				SNew(SHeaderRow)
-				+ SHeaderRow::Column(ColumnVariableName)
-				.DefaultLabel(TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([=]()
-					{
-					//TODO: explain what in-use assets are and depending on the enabled flag is packaged maps get added to the list or not
-						return LOCTEXT("WhitelistAssets", "Whitelist Assets");
-					})))
+				+ SHeaderRow::Column("UnusedAssetsList")
+				.DefaultLabel(LOCTEXT("UnusedAssetsList", "In use assets - whitelisted assets + maps to be packaged"))
 			)
 		]
 		
@@ -156,8 +80,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			CreateInfoWidget(LOCTEXT("ProjectSpaceGained", "Space gained in project"), 
 			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([=]()
 					{
-						const int64 SizeGained = ProjectSettings->GetSpaceGained();
-						return (SizeGained > 0) ? FText::AsMemory(SizeGained) : LOCTEXT("UnkownSize", "UnkownSize");
+						return FText::AsMemory(ProjectSettings->GetSpaceGained());
 					})))
 		]
 		
@@ -174,46 +97,16 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 
 		+SVerticalBox::Slot()
 		[
-			SAssignNew(MapAssetsListView, SListView<FAssetDataPtr>)
-			.ListItemsSource(&MapAssets)
+			SAssignNew(InuseAssetsTreeView, STreeView<FAssetDataPtr>)
+			.TreeItemsSource(&InuseAssetsDependencies.TopLevelAssetsPtr)
 			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
 				{
-					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo, ECPAssetDependencyType::MapAssets);
-				})
-			.HeaderRow(
-				SNew(SHeaderRow)
-				+ SHeaderRow::Column(ColumnVariableName)
-				.DefaultLabel(this, &SCPMenuWidget::GetMapAssetsColumnName)
-			)
-		]
-
-		+SVerticalBox::Slot()
-		[
-			SAssignNew(WhitelistAssetsListView, SListView<FAssetDataPtr>)
-			.ListItemsSource(&WhitelistAssets)
-			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
-				{
-					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo, ECPAssetDependencyType::WhitelistAssets);
-				})
-			.HeaderRow(
-				SNew(SHeaderRow)
-				+SHeaderRow::Column(ColumnVariableName)
-				.DefaultLabel(this, &SCPMenuWidget::GetWhitelistAssetsColumnName)
-			)
-		]
-
-		+SVerticalBox::Slot()
-		[
-			SAssignNew(DependenciesTreeView, STreeView<FAssetDataPtr>)
-			.TreeItemsSource(&AssetsDependencies.TopLevelAssetsPtr)
-			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
-				{
-					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo, ECPAssetDependencyType::AnyAssets);
+					return SNew(SCPAssetDependencyRow, OwnerTable, InInfo);
 				})
 			.OnGetChildren(this, &SCPMenuWidget::OnGetChildren)
 			.HeaderRow(
 				SNew(SHeaderRow)
-				+SHeaderRow::Column(ColumnVariableName)
+				+SHeaderRow::Column("DepedenciesTreeView")
 				.DefaultLabel(LOCTEXT("DepedenciesTreeView", "Depedencies Tree View"))
 			)
 		]
@@ -259,7 +152,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 				.OnClicked(this, &SCPMenuWidget::OnRefreshUnused)
 			]
 		]
-    ];
+	];
 
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 	if(AssetRegistryModule.Get().IsLoadingAssets())
@@ -276,7 +169,7 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FTex
 {
 	return SNew(SBorder)
 		.BorderImage( FAppStyle::Get().GetBrush("Brushes.Header") )
-		.Padding(FMargin(0.0f, 0.0f, ScrollbarPaddingSize, 0.0f))
+		.Padding(FMargin(0.0f, 0.0f, 16.0f, 0.0f))
 		[
 			SNew(SSplitter)
 			.Style(FEditorStyle::Get(), "DetailsView.Splitter")
@@ -302,31 +195,9 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FTex
 		];
 }
 
-FText SCPMenuWidget::GetColumnNameByType(ECPAssetDependencyType AssetDependencyType) const
-{
-	const bool bIsEnabled = GetEnabledByDependencyType(AssetDependencyType);
-
-	const FText EnabledText = bIsEnabled ? LOCTEXT("EnabledAsset", "Enabled") : LOCTEXT("DisabledAsset", "Disabled");
-
-	FText AssetType;
-	switch (AssetDependencyType)
-	{
-	case ECPAssetDependencyType::MapAssets:
-		AssetType = LOCTEXT("MapAssets", "Map Assets");
-		break;
-	case ECPAssetDependencyType::WhitelistAssets:
-		AssetType = LOCTEXT("WhitelistAssets", "Whitelist Assets");
-		break;
-	default:
-		AssetType = LOCTEXT("AnyAssets", "Any Assets");
-	}
-
-	return FText::Format(INVTEXT("{0} - {1}"), AssetType, EnabledText);
-}
-
 void SCPMenuWidget::OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& OutChildren)
 {
-	CPOperations::FChildDependency& OwnerItem = AssetsDependencies[*InItem];
+	CPOperations::FChildDependency& OwnerItem = InuseAssetsDependencies[*InItem];
 	OutChildren = OwnerItem.GetChildrenAssetPtrs();
 }
 
@@ -380,34 +251,17 @@ int64 SCPMenuWidget::GetUnusedAssetsCount() const
 
 void SCPMenuWidget::RefreshUnusedAssets()
 {
-	{
-		const TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusedAssets();
-		UnusedAssetsCount = UnusedAssets.Num();
-	}
-	{
-		const TArray<FAssetData> NewMapAssets = CPOperations::GetAllGameAssets<UWorld>();
-		MapAssets = TransformAssetDataArray(NewMapAssets);
-		MapAssetsListView->RequestListRefresh();
-	}
-	{
-		const TArray<FName> NewWhitelistAssets = GetDefault<UCPSettings>()->GetWhitelistAssetsPaths();
-		WhitelistAssets = TransformAssetDataArray(NewWhitelistAssets);
-		WhitelistAssetsListView->RequestListRefresh();
-	}
-	{
-		TArray<FAssetDataPtr> AllDependencyAssets;
-		const UCPSettings* ProjectSettings = GetDefault<UCPSettings>();
-		if(ProjectSettings->bCheckAllMapsReferences)
-		{
-			AllDependencyAssets.Append(MapAssets);
-		}
-		if (ProjectSettings->bCheckWhitelistReferences)
-		{
-			AllDependencyAssets.Append(WhitelistAssets);
-		}
+	const TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusedAssets();
+	UnusedAssetsCount = UnusedAssets.Num();
 
-		AssetsDependencies = CPOperations::GetAssetDependenciesTree(AllDependencyAssets);
-		DependenciesTreeView->RebuildList();
+	TArray<FAssetDataPtr> AllDependencyAssets;
+	const UProjectPackagingSettings* const PackagingSettings = GetDefault<UProjectPackagingSettings>();
+	Algo::Transform(PackagingSettings->MapsToCook, AllDependencyAssets, [](FFilePath const& File){return MakeShared<FName>(File.FilePath);});
+	Algo::Transform(GetDefault<UCPSettings>()->WhitelistedAssets, AllDependencyAssets, [](FSoftObjectPath const& Object){return MakeShared<FName>(Object.GetAssetPathName());});
+
+	{
+		InuseAssetsDependencies = CPOperations::GetAssetDependenciesTree(AllDependencyAssets);
+		InuseAssetsTreeView->RebuildList();
 	}
 }
 

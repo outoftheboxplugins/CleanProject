@@ -34,7 +34,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
 	bool bWhitelistMapsToPackage = true;
 
-	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use WhitelistedAssets")
+	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use UnusedAssetsList")
 	UPROPERTY(VisibleDefaultsOnly, config, Category = "Deprecated")
 	TArray<FString> WhitelistAssetsPaths;
 
