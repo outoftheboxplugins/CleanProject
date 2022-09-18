@@ -203,9 +203,10 @@ namespace CPOperations
 	{
 		const FName PackageName = FName(*Asset.GetPackage()->GetName());
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-		if (const FAssetPackageData* PackageData = AssetRegistryModule.Get().GetAssetPackageData(PackageName))
+		TOptional<FAssetPackageData> PackageData = AssetRegistryModule.Get().GetAssetPackageDataCopy(PackageName);
+		if (PackageData.IsSet())
 		{
-			return PackageData->DiskSize;
+			return PackageData.GetValue().DiskSize;
 		}
 		return -1;
 	}
@@ -391,7 +392,7 @@ namespace CPOperations
 
 	void DeleteEmptyProjectFolders(TArray<FString> SelectedFolders)
 	{
-		for (const FString SelectedFolder : SelectedFolders)
+		for (const FString& SelectedFolder : SelectedFolders)
 		{
 			FString ConvertedName;
 			if (FPackageName::TryConvertLongPackageNameToFilename(SelectedFolder, ConvertedName))
