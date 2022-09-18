@@ -132,14 +132,9 @@ namespace CPOperations
 		const UCPSettings* Settings = GetDefault<UCPSettings>();
 		// Collect all the names we want to check dependencies for.
 		TSet<FName> PackageNameToCheck;
+		PackageNameToCheck.Append(Settings->GetWhitelistAssetsPaths());
+		
 		{
-			if (Settings->bCheckWhitelistReferences)
-			{
-				for (const FName& WhitelistAssetPath : Settings->GetWhitelistAssetsPaths())
-				{
-					PackageNameToCheck.Add(WhitelistAssetPath);
-				}
-			}
 			if (Settings->bCheckAllMapsReferences)
 			{
 				for (const FAssetData& WorldAsset : GetAllGameAssets<UWorld>())

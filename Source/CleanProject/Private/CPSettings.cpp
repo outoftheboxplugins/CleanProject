@@ -133,15 +133,11 @@ void UCPSettings::BlacklistAssets(const TArray<FAssetData> Assets)
 	OnAnyPropertyChanged.Broadcast();
 }
 
-TArray<FName> UCPSettings::GetWhitelistAssetsPaths() const
+TSet<FName> UCPSettings::GetWhitelistAssetsPaths() const
 {
-	TArray<FName> WhitelistPaths;
-	for (const FSoftObjectPath& Path : WhitelistedAssets)
-	{
-		WhitelistPaths.Add(Path.GetAssetPathName());
-	}
-
-	return WhitelistPaths;
+	TSet<FName> Result;
+	Algo::Transform(WhitelistedAssets, Result, [](const FSoftObjectPath& Path){ return Path.GetAssetPathName(); });
+	return Result;
 }
 
 void UCPSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)

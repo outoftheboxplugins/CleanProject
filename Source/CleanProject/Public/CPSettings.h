@@ -70,7 +70,7 @@ private:
 public:
 	void WhitelistAssets(const TArray<FAssetData> Assets);
 	void BlacklistAssets(const TArray<FAssetData> Assets);
-	TArray<FName> GetWhitelistAssetsPaths() const;
+	TSet<FName> GetWhitelistAssetsPaths() const;
 
 	void IncreaseSpaceGained(int64 ExtraSpaceGained);
 	int64 GetSpaceGained() const { return SpaceGained; }
