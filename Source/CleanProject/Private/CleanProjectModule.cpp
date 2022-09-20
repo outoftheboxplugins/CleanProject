@@ -4,12 +4,14 @@
 
 #include "CPLog.h"
 #include "CPOperations.h"
+#include "Widgets/SCPMenuWidget.h"
 
 #include "ContentBrowserModule.h"
 #include "LevelEditor.h"
 #include "ToolMenus.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
+
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -109,7 +111,14 @@ void FCleanProjectModule::UnregisterAssetActions()
 
 void FCleanProjectModule::RegisterMenuSpawner()
 {
-	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateStatic(CPMenuExtensions::SpawnMenuTab));
+	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateLambda([](const FSpawnTabArgs& Args)
+	{
+		return SNew(SDockTab)
+			.TabRole(ETabRole::NomadTab)
+			[
+				SNew(SCPMenuWidget)
+			];
+	}));
 
 	CPMenuTab
 		.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Clean Project Menu"))

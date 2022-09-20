@@ -2,7 +2,6 @@
 
 #include "CPMenuExtensions.h"
 
-#include "Widgets/SCPMenuWidget.h"
 #include "CPOperations.h"
 #include "CPLog.h"
 #include "CPSettings.h"
@@ -20,14 +19,6 @@ namespace
 	const FName MainMenuExtensionHook = FName("FileLoadAndSave");
 }
 
-TSharedRef<SDockTab> CPMenuExtensions::SpawnMenuTab(const FSpawnTabArgs& Args)
-{
-	return SNew(SDockTab)
-		.TabRole(ETabRole::NomadTab)
-		[
-			SNew(SCPMenuWidget)
-		];
-}
 
 TSharedRef<FExtender> CPMenuExtensions::CreateContentBrowserAssetsExtender(const TArray<FAssetData>& SelectedAssets)
 {
