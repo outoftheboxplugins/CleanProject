@@ -2,13 +2,6 @@
 
 #pragma once
 
-#include "Modules/ModuleManager.h"
-#include "CPMenuExtensions.h"
-
-/**
- * Implements the CleanProject editor module.
- */
-
 class FCleanProjectModule : public IModuleInterface
 {
 
