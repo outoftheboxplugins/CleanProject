@@ -38,13 +38,26 @@ public:
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
 	bool bWhitelistMapsToPackage = true;
 	/**
-	 * Convenience function to programatically add assets to the whitelisted set 
+	 * Convenience function to programatically add assets to the whitelisted set and saving config 
 	 */
 	void WhitelistAssets(const TArray<FAssetData> Assets);
 	/**
-	 * Convenience function to programatically add assets to the blacklisted set 
+	 * Convenience function to programatically add assets to the blacklisted set and saving config 
 	 */
 	void BlacklistAssets(const TArray<FAssetData> Assets);
+	/**
+	 * Increases the space gained metric and saves config 
+	 */
+	void IncreaseSpaceGained(int64 ExtraSpaceGained);
+	/**
+	 * Returns the space gained by using CleanProject 
+	 */
+	int64 GetSpaceGained() const { return SpaceGained; }
+
+	/**
+	 * Returns the asset path of the whitelisted assets as FName
+	 */
+	TSet<FName> GetWhitelistAssetsPaths() const;
 
 	/**
 	 * Old version for storing assets we want to whitelist
@@ -67,28 +80,15 @@ private:
 	virtual FName GetCategoryName() const override		{ return TEXT("Out-of-the-Box Plugins"); }
 	virtual FName GetSectionName() const override		{ return TEXT("Clean Project"); }
 	// End UDeveloperSettings interface
-
-
-
-
-
+	
+	/**
+	 * Saves the current values to the .ini file inside root Config folder
+	 */
+	void SaveToDefaultConfig();
 
 	// Backwards compatibility ***************************************************************************************************************************
+	//TODO: Review if we still want to use the hidden report columns
 	UCPSettings();
-
-public:
-	TSet<FName> GetWhitelistAssetsPaths() const;
-
-	void IncreaseSpaceGained(int64 ExtraSpaceGained);
-	int64 GetSpaceGained() const { return SpaceGained; }
-
-private:
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-	void SaveToDefaultConfig();
-public:
-	
-	FSimpleMulticastDelegate OnAnyPropertyChanged;
-
 public:
 	// Columns to be hidden in the final report
 	UPROPERTY(EditAnywhere, config, Category = "Report")

@@ -18,10 +18,6 @@
 
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
-	//TODO: Can we find a way to refresh if MapsToCook change?
-	UCPSettings* ProjectSettings = GetMutableDefault<UCPSettings>();
-	ProjectSettings->OnAnyPropertyChanged.AddSP(this, &SCPMenuWidget::RefreshUnusedAssets);
-
 	ChildSlot
 	[
 		SNew(SVerticalBox)

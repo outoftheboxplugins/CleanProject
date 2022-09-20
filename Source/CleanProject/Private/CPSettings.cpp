@@ -25,10 +25,6 @@ void UCPSettings::PostInitProperties()
 	}
 }
 
-
-// Backwards compatibility ***************************************************************************************************************************
-
-
 UCPSettings::UCPSettings()
 {
 	// TOSOLVE: check if the whitelisted asset path exists when loading the variable.
@@ -115,9 +111,7 @@ void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
 		WhitelistedAssets.Emplace(AssetPath);
 	}
 
-	//TODO: Do we need to save here?
 	SaveToDefaultConfig();
-	OnAnyPropertyChanged.Broadcast();
 }
 
 void UCPSettings::BlacklistAssets(const TArray<FAssetData> Assets)
@@ -128,9 +122,7 @@ void UCPSettings::BlacklistAssets(const TArray<FAssetData> Assets)
 		BlacklistedAssets.Emplace(AssetPath);
 	}
 
-	//TODO: Do we need to save here?
 	SaveToDefaultConfig();
-	OnAnyPropertyChanged.Broadcast();
 }
 
 TSet<FName> UCPSettings::GetWhitelistAssetsPaths() const
@@ -143,19 +135,7 @@ TSet<FName> UCPSettings::GetWhitelistAssetsPaths() const
 void UCPSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)
 {
 	SpaceGained += ExtraSpaceGained;
-
 	SaveToDefaultConfig();
-
-	OnAnyPropertyChanged.Broadcast();
-}
-
-void UCPSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	SaveToDefaultConfig();
-	
-	OnAnyPropertyChanged.Broadcast();
 }
 
 void UCPSettings::SaveToDefaultConfig()
