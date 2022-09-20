@@ -4,6 +4,7 @@
 
 #include "CPLog.h"
 #include "CPOperations.h"
+#include "CPMenuExtensions.h"
 #include "Widgets/SCPMenuWidget.h"
 
 #include "ContentBrowserModule.h"
