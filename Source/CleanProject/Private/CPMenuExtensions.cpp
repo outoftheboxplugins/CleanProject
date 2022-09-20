@@ -1,24 +1,17 @@
-// Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
+// Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
 
 #include "CPMenuExtensions.h"
 
-#include "CPOperations.h"
 #include "CPLog.h"
+#include "CPDependencyWalkerSubsystem.h"
+#include "CPOperations.h"
 #include "CPSettings.h"
 
-#include "Framework/MultiBox/MultiBoxExtender.h" // for FExtender
 #include "AssetRegistryModule.h"
-#include "CPDependencyWalkerSubsystem.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "Widgets/Docking/SDockTab.h"
+#include "Framework/MultiBox/MultiBoxExtender.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
-
-namespace
-{
-	const FName MainMenuExtensionHook = FName("FileLoadAndSave");
-}
-
 
 TSharedRef<FExtender> CPMenuExtensions::CreateContentBrowserAssetsExtender(const TArray<FAssetData>& SelectedAssets)
 {
@@ -27,7 +20,7 @@ TSharedRef<FExtender> CPMenuExtensions::CreateContentBrowserAssetsExtender(const
 		"AssetContextAdvancedActions",
 		EExtensionHook::After,
 		nullptr,
-		FMenuExtensionDelegate::CreateStatic(CPMenuExtensions::CreateContentBrowserAssetsEntry, SelectedAssets));
+		FMenuExtensionDelegate::CreateStatic(CreateContentBrowserAssetsEntry, SelectedAssets));
 
 	return ContentBrowserExtender;
 }
@@ -84,7 +77,7 @@ TSharedRef<FExtender> CPMenuExtensions::CreateContentBrowserFoldersExtender(cons
 		"PathContextBulkOperations",
 		EExtensionHook::After,
 		nullptr,
-		FMenuExtensionDelegate::CreateStatic(CPMenuExtensions::CreateContentBrowserFoldersEntry, SelectedFolders));
+		FMenuExtensionDelegate::CreateStatic(CreateContentBrowserFoldersEntry, SelectedFolders));
 
 	return ContentBrowserExtender;
 }
