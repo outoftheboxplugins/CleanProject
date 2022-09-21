@@ -1,4 +1,4 @@
-// Copyright Out-of-the-Box Plugins 2018-2021. All Rights Reserved.
+// Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
 
 #include "CleanProjectModule.h"
 
@@ -13,12 +13,11 @@
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
-
 #define LOCTEXT_NAMESPACE "CleanProject"
 
 namespace
 {
-	const FName MenuTabName					= FName("CleanProjectMenuTab");
+	const FName MenuTabName = FName("CleanProjectMenuTab");
 }
 
 void FCleanProjectModule::StartupModule()
@@ -39,8 +38,8 @@ void FCleanProjectModule::ShutdownModule()
 }
 
 void FCleanProjectModule::RegisterMenus()
-{	
-    FToolMenuOwnerScoped OwnerScoped(this);
+{
+	FToolMenuOwnerScoped OwnerScoped(this);
 	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Tools");
 
 	FToolMenuSection& Section = Menu->FindOrAddSection("CleanProject");
@@ -112,6 +111,21 @@ void FCleanProjectModule::UnregisterAssetActions()
 
 void FCleanProjectModule::RegisterMenuSpawner()
 {
+	FText const OutOfTheBoxCategoryName = LOCTEXT("MenuTabCategory", "Out-of-the-Box");
+	TSharedPtr<FWorkspaceItem> OutOfTheBoxCategory;
+
+	TArray<TSharedRef<FWorkspaceItem>> ExistingCategories = WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot()->GetChildItems();
+	TSharedRef<FWorkspaceItem>* ExistingOutOfTheBoxCategory = ExistingCategories.FindByPredicate([=](TSharedRef<FWorkspaceItem> const& Category){ return Category->GetDisplayName().EqualTo(OutOfTheBoxCategoryName);});
+
+	if(ExistingOutOfTheBoxCategory)
+	{
+		OutOfTheBoxCategory = *ExistingOutOfTheBoxCategory;
+	}
+	else
+	{
+		OutOfTheBoxCategory = WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot()->AddGroup(OutOfTheBoxCategoryName);
+	}
+
 	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateLambda([](const FSpawnTabArgs& Args)
 	{
 		return SNew(SDockTab)
@@ -124,7 +138,7 @@ void FCleanProjectModule::RegisterMenuSpawner()
 	CPMenuTab
 		.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Clean Project Menu"))
 		.SetTooltipText(LOCTEXT("MenuTabTooltip", "Organize your project and visualize the data behind the process."))
-		.SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory());
+		.SetGroup(OutOfTheBoxCategory.ToSharedRef());
 }
 
 void FCleanProjectModule::UnregisterMenuSpawner()
