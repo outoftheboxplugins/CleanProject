@@ -111,7 +111,7 @@ void FCleanProjectModule::UnregisterAssetActions()
 
 void FCleanProjectModule::RegisterMenuSpawner()
 {
-	FText const OutOfTheBoxCategoryName = LOCTEXT("MenuTabCategory", "Out-of-the-Box");
+	FText const OutOfTheBoxCategoryName = INVTEXT("Out-of-the-Box");
 	TSharedPtr<FWorkspaceItem> OutOfTheBoxCategory;
 
 	TArray<TSharedRef<FWorkspaceItem>> ExistingCategories = WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot()->GetChildItems();
@@ -126,6 +126,8 @@ void FCleanProjectModule::RegisterMenuSpawner()
 		OutOfTheBoxCategory = WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot()->AddGroup(OutOfTheBoxCategoryName);
 	}
 
+	TSharedRef<FWorkspaceItem> CleanProjectCategory = OutOfTheBoxCategory->AddGroup(LOCTEXT("MenuTabCategory", "Clean Project"));
+
 	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateLambda([](const FSpawnTabArgs& Args)
 	{
 		return SNew(SDockTab)
@@ -136,9 +138,9 @@ void FCleanProjectModule::RegisterMenuSpawner()
 	}));
 
 	CPMenuTab
-		.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Clean Project Menu"))
+		.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Dashboard"))
 		.SetTooltipText(LOCTEXT("MenuTabTooltip", "Organize your project and visualize the data behind the process."))
-		.SetGroup(OutOfTheBoxCategory.ToSharedRef());
+		.SetGroup(CleanProjectCategory);
 }
 
 void FCleanProjectModule::UnregisterMenuSpawner()
