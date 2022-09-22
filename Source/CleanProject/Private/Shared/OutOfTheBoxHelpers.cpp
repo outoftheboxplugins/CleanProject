@@ -5,25 +5,41 @@
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
-namespace OutOfTheBoxHelpers
+namespace  OutOfTheBoxHelpersInternal
 {
-	TSharedRef<FWorkspaceItem> GetSharedMenuCategory()
+	TSharedRef<FWorkspaceItem> FindOrAdd(TSharedRef<FWorkspaceItem> Parent, FText const& Name)
 	{
-		FText const OutOfTheBoxCategoryName = INVTEXT("Out-of-the-Box");
-		TSharedPtr<FWorkspaceItem> OutOfTheBoxCategory;
+		TSharedPtr<FWorkspaceItem> FoundCategory;
 
-		TArray<TSharedRef<FWorkspaceItem>> ExistingCategories = WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot()->GetChildItems();
-		TSharedRef<FWorkspaceItem>* ExistingOutOfTheBoxCategory = ExistingCategories.FindByPredicate([=](TSharedRef<FWorkspaceItem> const& Category){ return Category->GetDisplayName().EqualTo(OutOfTheBoxCategoryName);});
+		TArray<TSharedRef<FWorkspaceItem>> ExistingCategories = Parent->GetChildItems();
+		TSharedRef<FWorkspaceItem>* ExistingCategory = ExistingCategories.FindByPredicate([=](TSharedRef<FWorkspaceItem> const& Category){ return Category->GetDisplayName().EqualTo(Name);});
 
-		if(ExistingOutOfTheBoxCategory)
+		if(ExistingCategory)
 		{
-			OutOfTheBoxCategory = *ExistingOutOfTheBoxCategory;
+			FoundCategory = *ExistingCategory;
 		}
 		else
 		{
-			OutOfTheBoxCategory = WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot()->AddGroup(OutOfTheBoxCategoryName);
+			FoundCategory = WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot()->AddGroup(Name);
 		}
 
-		return OutOfTheBoxCategory.ToSharedRef();
+		return FoundCategory.ToSharedRef();
+	}
+}
+
+namespace OutOfTheBoxHelpers
+{
+	TSharedRef<FWorkspaceItem> GetPluginWorkspaceMenuCategory(FText const& PluginName)
+	{
+		FText const OutOfTheBoxCategoryName = INVTEXT("Out-of-the-Box");
+		TSharedRef<FWorkspaceItem> const OutOfTheBoxCategory = OutOfTheBoxHelpersInternal::FindOrAdd(WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot(), OutOfTheBoxCategoryName);
+		TSharedRef<FWorkspaceItem> PluginCategory = OutOfTheBoxHelpersInternal::FindOrAdd(OutOfTheBoxCategory, PluginName);
+
+		return PluginCategory;
+	}
+	
+	UToolMenu* GetSharedToolMenuCategory()
+	{
+		return nullptr;
 	}
 }

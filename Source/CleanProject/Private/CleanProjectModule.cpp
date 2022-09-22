@@ -42,10 +42,8 @@ void FCleanProjectModule::RegisterMenus()
 {
 	FToolMenuOwnerScoped OwnerScoped(this);
 
-	TSharedRef<FWorkspaceItem> Test = OutOfTheBoxHelpers::GetSharedMenuCategory();
-	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Tools");
-
-	FToolMenuSection& Section = Menu->FindOrAddSection("CleanProject");
+	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu(UToolMenus::JoinMenuPaths("LevelEditor.MainMenu.Tools", FName(INVTEXT("Out-of-the-Box").ToString())));
+	FToolMenuSection& Section = Menu->FindOrAddSection("Clean Project");
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
 	"MenuCleanupUnusedAssets",
 		LOCTEXT("MenuCleanupUnusedAssets", "Cleanup unused assets"),
@@ -114,7 +112,7 @@ void FCleanProjectModule::UnregisterAssetActions()
 
 void FCleanProjectModule::RegisterMenuSpawner()
 {
-	TSharedRef<FWorkspaceItem> const CleanProjectCategory = OutOfTheBoxHelpers::GetSharedMenuCategory()->AddGroup(LOCTEXT("MenuTabCategory", "Clean Project"));
+	TSharedRef<FWorkspaceItem> const CleanProjectCategory = OutOfTheBoxHelpers::GetPluginWorkspaceMenuCategory(LOCTEXT("MenuTabCategory", "Clean Project"));
 	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateLambda([](const FSpawnTabArgs& Args)
 	{
 		return SNew(SDockTab)
