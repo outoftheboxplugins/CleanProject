@@ -12,6 +12,7 @@
 #include "ToolMenus.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
+#include "Shared/OutOfTheBoxHelpers.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -40,6 +41,8 @@ void FCleanProjectModule::ShutdownModule()
 void FCleanProjectModule::RegisterMenus()
 {
 	FToolMenuOwnerScoped OwnerScoped(this);
+
+	TSharedRef<FWorkspaceItem> Test = OutOfTheBoxHelpers::GetSharedMenuCategory();
 	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Tools");
 
 	FToolMenuSection& Section = Menu->FindOrAddSection("CleanProject");
@@ -111,23 +114,7 @@ void FCleanProjectModule::UnregisterAssetActions()
 
 void FCleanProjectModule::RegisterMenuSpawner()
 {
-	FText const OutOfTheBoxCategoryName = INVTEXT("Out-of-the-Box");
-	TSharedPtr<FWorkspaceItem> OutOfTheBoxCategory;
-
-	TArray<TSharedRef<FWorkspaceItem>> ExistingCategories = WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot()->GetChildItems();
-	TSharedRef<FWorkspaceItem>* ExistingOutOfTheBoxCategory = ExistingCategories.FindByPredicate([=](TSharedRef<FWorkspaceItem> const& Category){ return Category->GetDisplayName().EqualTo(OutOfTheBoxCategoryName);});
-
-	if(ExistingOutOfTheBoxCategory)
-	{
-		OutOfTheBoxCategory = *ExistingOutOfTheBoxCategory;
-	}
-	else
-	{
-		OutOfTheBoxCategory = WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot()->AddGroup(OutOfTheBoxCategoryName);
-	}
-
-	TSharedRef<FWorkspaceItem> CleanProjectCategory = OutOfTheBoxCategory->AddGroup(LOCTEXT("MenuTabCategory", "Clean Project"));
-
+	TSharedRef<FWorkspaceItem> const CleanProjectCategory = OutOfTheBoxHelpers::GetSharedMenuCategory()->AddGroup(LOCTEXT("MenuTabCategory", "Clean Project"));
 	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateLambda([](const FSpawnTabArgs& Args)
 	{
 		return SNew(SDockTab)
