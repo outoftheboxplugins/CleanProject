@@ -20,7 +20,7 @@ namespace  OutOfTheBoxHelpersInternal
 		}
 		else
 		{
-			FoundCategory = WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot()->AddGroup(Name);
+			FoundCategory = Parent->AddGroup(Name);
 		}
 
 		return FoundCategory.ToSharedRef();
