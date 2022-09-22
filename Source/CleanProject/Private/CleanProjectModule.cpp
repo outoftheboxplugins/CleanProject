@@ -140,6 +140,7 @@ void FCleanProjectModule::RegisterMenuSpawner()
 	CPMenuTab
 		.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Dashboard"))
 		.SetTooltipText(LOCTEXT("MenuTabTooltip", "Organize your project and visualize the data behind the process."))
+		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "DerivedData.ResourceUsage"))
 		.SetGroup(CleanProjectCategory);
 }
 
