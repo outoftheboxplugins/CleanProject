@@ -9,11 +9,11 @@ class FCleanProjectModule : public IModuleInterface
 private:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
-void MakeCleanProjectActionsMenu(UToolMenu* InMenu);
 
 // Register & Unregister
 private:
 	void RegisterMenus();
+	void MakeCleanProjectActionsMenu(UToolMenu* InMenu);
 
 	void RegisterAssetActions();
 	void UnregisterAssetActions();

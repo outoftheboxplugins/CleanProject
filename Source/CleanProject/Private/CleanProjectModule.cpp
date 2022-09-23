@@ -38,6 +38,15 @@ void FCleanProjectModule::ShutdownModule()
 	UnregisterAssetActions();
 }
 
+void FCleanProjectModule::RegisterMenus()
+{
+	FToolMenuSection& SharedSection = OutOfTheBoxHelpers::GetSharedActionsCategory();
+	SharedSection.AddSubMenu("Clean Project", LOCTEXT("MenuActionDisplayName", "Clean Project"), {},
+		FNewToolMenuDelegate::CreateRaw(this, &FCleanProjectModule::MakeCleanProjectActionsMenu),
+		false,
+		FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Search"));
+}
+
 void FCleanProjectModule::MakeCleanProjectActionsMenu(UToolMenu* InMenu)
 {
 	FToolMenuOwnerScoped OwnerScoped(this);
@@ -77,15 +86,6 @@ void FCleanProjectModule::MakeCleanProjectActionsMenu(UToolMenu* InMenu)
 				CPOperations::DeleteEmptyProjectFolders();
 			})
 		)));
-}
-
-void FCleanProjectModule::RegisterMenus()
-{
-	FToolMenuSection& SharedSection = OutOfTheBoxHelpers::GetSharedActionsCategory();
-	SharedSection.AddSubMenu("Clean Project", LOCTEXT("MenuActionDisplayName", "Clean Project"), {},
-		FNewToolMenuDelegate::CreateRaw(this, &FCleanProjectModule::MakeCleanProjectActionsMenu),
-		false,
-		FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Search"));
 }
 
 void FCleanProjectModule::RegisterAssetActions()
