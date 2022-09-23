@@ -2,6 +2,7 @@
 
 #include "OutOfTheBoxHelpers.h"
 
+#include "ToolMenus.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
@@ -29,17 +30,17 @@ namespace  OutOfTheBoxHelpersInternal
 
 namespace OutOfTheBoxHelpers
 {
-	TSharedRef<FWorkspaceItem> GetPluginWorkspaceMenuCategory(FText const& PluginName)
+	TSharedRef<FWorkspaceItem> GetSharedWindowsCategory()
 	{
-		FText const OutOfTheBoxCategoryName = INVTEXT("Out-of-the-Box");
-		TSharedRef<FWorkspaceItem> const OutOfTheBoxCategory = OutOfTheBoxHelpersInternal::FindOrAdd(WorkspaceMenu::GetMenuStructure().GetToolsStructureRoot(), OutOfTheBoxCategoryName);
-		TSharedRef<FWorkspaceItem> PluginCategory = OutOfTheBoxHelpersInternal::FindOrAdd(OutOfTheBoxCategory, PluginName);
-
-		return PluginCategory;
+		return OutOfTheBoxHelpersInternal::FindOrAdd(WorkspaceMenu::GetMenuStructure().GetStructureRoot(), OutOfTheBoxCategoryText);
 	}
 	
-	UToolMenu* GetSharedToolMenuCategory()
+	FToolMenuSection& GetSharedActionsCategory()
 	{
-		return nullptr;
+		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Tools");
+		FToolMenuSection& SharedSection = Menu->FindOrAddSection(OutOfTheBoxCategoryName);
+		SharedSection.Label = OutOfTheBoxCategoryText;
+
+		return SharedSection;
 	}
 }

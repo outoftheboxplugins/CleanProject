@@ -25,9 +25,9 @@ void FCleanProjectModule::StartupModule()
 {
 	LOG_TRACE();
 
-	RegisterMenus();
 	RegisterAssetActions();
 	RegisterMenuSpawner();
+	RegisterMenus();
 }
 
 void FCleanProjectModule::ShutdownModule()
@@ -38,12 +38,11 @@ void FCleanProjectModule::ShutdownModule()
 	UnregisterAssetActions();
 }
 
-void FCleanProjectModule::RegisterMenus()
+
+void FCleanProjectModule::MakeRecentPythonScriptMenu(UToolMenu* InMenu)
 {
 	FToolMenuOwnerScoped OwnerScoped(this);
-
-	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu(UToolMenus::JoinMenuPaths("LevelEditor.MainMenu.Tools", FName(INVTEXT("Out-of-the-Box").ToString())));
-	FToolMenuSection& Section = Menu->FindOrAddSection("Clean Project");
+	FToolMenuSection& Section = InMenu->AddSection("Actions");
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
 	"MenuCleanupUnusedAssets",
 		LOCTEXT("MenuCleanupUnusedAssets", "Cleanup unused assets"),
@@ -84,6 +83,16 @@ void FCleanProjectModule::RegisterMenus()
 		)));
 }
 
+void FCleanProjectModule::RegisterMenus()
+{
+
+	FToolMenuSection& Section = OutOfTheBoxHelpers::GetSharedActionsCategory();
+	Section.AddSubMenu("Clean Project", LOCTEXT("MenuActionDisplayName", "Clean Project"), {},
+		FNewToolMenuDelegate::CreateLambda(this, &FCleanProjectModule::MakeRecentPythonScriptMenu),
+		false,
+		FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Search"));
+}
+
 void FCleanProjectModule::RegisterAssetActions()
 {
 	if (FContentBrowserModule* ContentBrowserModule = FModuleManager::GetModulePtr<FContentBrowserModule>(TEXT("ContentBrowser")))
@@ -112,7 +121,7 @@ void FCleanProjectModule::UnregisterAssetActions()
 
 void FCleanProjectModule::RegisterMenuSpawner()
 {
-	TSharedRef<FWorkspaceItem> const CleanProjectCategory = OutOfTheBoxHelpers::GetPluginWorkspaceMenuCategory(LOCTEXT("MenuTabCategory", "Clean Project"));
+	TSharedRef<FWorkspaceItem> const CleanProjectCategory = OutOfTheBoxHelpers::GetSharedWindowsCategory();
 	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateLambda([](const FSpawnTabArgs& Args)
 	{
 		return SNew(SDockTab)
@@ -123,7 +132,7 @@ void FCleanProjectModule::RegisterMenuSpawner()
 	}));
 
 	CPMenuTab
-		.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Dashboard"))
+		.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Clean Project Dashboard"))
 		.SetTooltipText(LOCTEXT("MenuTabTooltip", "Organize your project and visualize the data behind the process."))
 		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "DerivedData.ResourceUsage"))
 		.SetGroup(CleanProjectCategory);

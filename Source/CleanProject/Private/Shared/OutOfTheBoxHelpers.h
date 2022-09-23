@@ -4,6 +4,9 @@
 
 namespace OutOfTheBoxHelpers
 {
-	TSharedRef<FWorkspaceItem> GetPluginWorkspaceMenuCategory(FText const& PluginName);
-	UToolMenu* GetSharedToolMenuCategory();
+	FText const OutOfTheBoxCategoryText = INVTEXT("Out-of-the-Box Plugins");
+	FName const OutOfTheBoxCategoryName = "Out-of-the-Box Plugins";
+
+	TSharedRef<FWorkspaceItem> GetSharedWindowsCategory();
+	FToolMenuSection& GetSharedActionsCategory();
 }

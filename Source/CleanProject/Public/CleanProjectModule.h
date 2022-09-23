@@ -9,6 +9,7 @@ class FCleanProjectModule : public IModuleInterface
 private:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+void MakeRecentPythonScriptMenu(UToolMenu* InMenu);
 
 // Register & Unregister
 private:
