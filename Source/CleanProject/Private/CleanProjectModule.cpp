@@ -38,8 +38,7 @@ void FCleanProjectModule::ShutdownModule()
 	UnregisterAssetActions();
 }
 
-
-void FCleanProjectModule::MakeRecentPythonScriptMenu(UToolMenu* InMenu)
+void FCleanProjectModule::MakeCleanProjectActionsMenu(UToolMenu* InMenu)
 {
 	FToolMenuOwnerScoped OwnerScoped(this);
 	FToolMenuSection& Section = InMenu->AddSection("Actions");
@@ -52,8 +51,7 @@ void FCleanProjectModule::MakeRecentPythonScriptMenu(UToolMenu* InMenu)
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* from menu."));
 				CPOperations::CheckAllDependencies();
-			}),
-			FCanExecuteAction()
+			})
 		)));
 
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
@@ -65,8 +63,7 @@ void FCleanProjectModule::MakeRecentPythonScriptMenu(UToolMenu* InMenu)
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects* from menu."));
 				CPOperations::FixUpRedirectsInProject();
-			}),
-			FCanExecuteAction()
+			})
 		)));
 
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
@@ -78,17 +75,15 @@ void FCleanProjectModule::MakeRecentPythonScriptMenu(UToolMenu* InMenu)
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from menu."));
 				CPOperations::DeleteEmptyProjectFolders();
-			}),
-			FCanExecuteAction()
+			})
 		)));
 }
 
 void FCleanProjectModule::RegisterMenus()
 {
-
-	FToolMenuSection& Section = OutOfTheBoxHelpers::GetSharedActionsCategory();
-	Section.AddSubMenu("Clean Project", LOCTEXT("MenuActionDisplayName", "Clean Project"), {},
-		FNewToolMenuDelegate::CreateRaw(this, &FCleanProjectModule::MakeRecentPythonScriptMenu),
+	FToolMenuSection& SharedSection = OutOfTheBoxHelpers::GetSharedActionsCategory();
+	SharedSection.AddSubMenu("Clean Project", LOCTEXT("MenuActionDisplayName", "Clean Project"), {},
+		FNewToolMenuDelegate::CreateRaw(this, &FCleanProjectModule::MakeCleanProjectActionsMenu),
 		false,
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Search"));
 }
