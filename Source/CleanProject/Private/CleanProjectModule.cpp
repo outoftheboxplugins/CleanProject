@@ -88,7 +88,7 @@ void FCleanProjectModule::RegisterMenus()
 
 	FToolMenuSection& Section = OutOfTheBoxHelpers::GetSharedActionsCategory();
 	Section.AddSubMenu("Clean Project", LOCTEXT("MenuActionDisplayName", "Clean Project"), {},
-		FNewToolMenuDelegate::CreateLambda(this, &FCleanProjectModule::MakeRecentPythonScriptMenu),
+		FNewToolMenuDelegate::CreateRaw(this, &FCleanProjectModule::MakeRecentPythonScriptMenu),
 		false,
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Search"));
 }
