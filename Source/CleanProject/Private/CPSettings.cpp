@@ -1,10 +1,9 @@
 // Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
 
 #include "CPSettings.h"
+
 #include "AssetData.h"
 #include "ISettingsModule.h"
-
-#include "Misc/ConfigCacheIni.h"
 
 void UCPSettings::OpenSettings()
 {
@@ -18,8 +17,8 @@ void UCPSettings::PostInitProperties()
 {
 	Super::PostInitProperties();
 
-	//Backwards compatibility
-	for(const FString& OldWhitelistPath : WhitelistAssetsPaths)
+	// Backwards compatibility
+	for (const FString& OldWhitelistPath : WhitelistAssetsPaths)
 	{
 		WhitelistedAssets.Emplace(FSoftObjectPath(OldWhitelistPath));
 	}
@@ -31,18 +30,17 @@ UCPSettings::UCPSettings()
 	// TOSOLVE: auto update paths when assets are moved.
 
 	// TOSOLVE: cleanup or expose those.
-    ReportHiddenColumns =
-    {
+	ReportHiddenColumns = {
 		"Class",
-    	"CookRule",
-    	"Chunks",
-    	"Format",
-    	"sRGB",
-    	"TextureGroup",
-    	"Dimensions",
-    	"HasAlphaChannel",
-    	"AddressY",
-    	"AddressX",
+		"CookRule",
+		"Chunks",
+		"Format",
+		"sRGB",
+		"TextureGroup",
+		"Dimensions",
+		"HasAlphaChannel",
+		"AddressY",
+		"AddressX",
 		"Type",
 		"ParentClass",
 		"ModuleName",
@@ -54,13 +52,13 @@ UCPSettings::UCPSettings()
 		"AddressY",
 		"LODBias",
 		"SRGB",
-    	"NeverStream",
+		"NeverStream",
 		"CompressionSettings",
-    	"MipLoadOptions",
+		"MipLoadOptions",
 		"Filter",
 		"MipLoadOptions",
 		"LODGroup",
-    	"VirtualTexture",
+		"VirtualTexture",
 		"VirtualTextureStreaming",
 		"NeverStream",
 		"PrimaryAssetType",
@@ -100,7 +98,7 @@ UCPSettings::UCPSettings()
 		"bUseNormalizedRootMotionScale",
 		"SequenceLength",
 		"RetargetSource",
-    };
+	};
 }
 
 void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
@@ -128,7 +126,7 @@ void UCPSettings::BlacklistAssets(const TArray<FAssetData> Assets)
 TSet<FName> UCPSettings::GetWhitelistAssetsPaths() const
 {
 	TSet<FName> Result;
-	Algo::Transform(WhitelistedAssets, Result, [](const FSoftObjectPath& Path){ return Path.GetAssetPathName(); });
+	Algo::Transform(WhitelistedAssets, Result, [](const FSoftObjectPath& Path) { return Path.GetAssetPathName(); });
 	return Result;
 }
 
