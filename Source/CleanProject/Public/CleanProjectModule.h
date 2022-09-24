@@ -12,14 +12,15 @@ private:
 
 // Register & Unregister
 private:
-	void RegisterMenus();
-	void MakeCleanProjectActionsMenu(UToolMenu* InMenu);
+	void RegisterToolActions();
+	void CreateToolActionEntries(UToolMenu* InMenu);
+	void UnregisterToolActions();
 
 	void RegisterAssetActions();
 	void UnregisterAssetActions();
 
-	void RegisterMenuSpawner();
-	void UnregisterMenuSpawner();
+	void RegisterToolWindows();
+	void UnregisterToolWindows();
 
 private:
 	FDelegateHandle CBAssetsExtenderDelegateHandle;

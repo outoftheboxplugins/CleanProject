@@ -26,28 +26,62 @@ void FCleanProjectModule::StartupModule()
 	LOG_TRACE();
 
 	RegisterAssetActions();
-	RegisterMenuSpawner();
-	RegisterMenus();
+	RegisterToolWindows();
+	RegisterToolActions();
 }
 
 void FCleanProjectModule::ShutdownModule()
 {
 	LOG_TRACE();
 
-	UnregisterMenuSpawner();
 	UnregisterAssetActions();
+	UnregisterToolWindows();
+	UnregisterToolActions();
 }
 
-void FCleanProjectModule::RegisterMenus()
+void FCleanProjectModule::RegisterAssetActions()
+{
+	if (FContentBrowserModule* ContentBrowserModule = FModuleManager::GetModulePtr<FContentBrowserModule>(TEXT("ContentBrowser")))
+	{
+		TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuExtenderDelegates = ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
+		CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateStatic(CPMenuExtensions::CreateContentBrowserAssetsExtender));
+		CBAssetsExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
+
+		TArray<FContentBrowserMenuExtender_SelectedPaths>& CBFolderMenuExtenderDelegates = ContentBrowserModule->GetAllPathViewContextMenuExtenders();
+		CBFolderMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedPaths::CreateStatic(CPMenuExtensions::CreateContentBrowserFoldersExtender));
+		CBFoldersExtenderDelegateHandle = CBFolderMenuExtenderDelegates.Last().GetHandle();
+	}
+}
+
+void FCleanProjectModule::RegisterToolWindows()
+{
+	TSharedRef<FWorkspaceItem> const CleanProjectCategory = OutOfTheBoxHelpers::GetSharedWindowsCategory();
+	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateLambda([](const FSpawnTabArgs& Args)
+	{
+		return SNew(SDockTab)
+			.TabRole(ETabRole::NomadTab)
+			[
+				SNew(SCPMenuWidget)
+			];
+	}));
+
+	CPMenuTab
+		.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Clean Project Dashboard"))
+		.SetTooltipText(LOCTEXT("MenuTabTooltip", "Organize your project and visualize the data behind the process."))
+		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "DerivedData.ResourceUsage"))
+		.SetGroup(CleanProjectCategory);
+}
+
+void FCleanProjectModule::RegisterToolActions()
 {
 	FToolMenuSection& SharedSection = OutOfTheBoxHelpers::GetSharedActionsCategory();
-	SharedSection.AddSubMenu("Clean Project", LOCTEXT("MenuActionDisplayName", "Clean Project"), {},
-		FNewToolMenuDelegate::CreateRaw(this, &FCleanProjectModule::MakeCleanProjectActionsMenu),
+	SharedSection.AddSubMenu("CleanProject", LOCTEXT("MenuActionDisplayName", "Clean Project"), {},
+		FNewToolMenuDelegate::CreateRaw(this, &FCleanProjectModule::CreateToolActionEntries),
 		false,
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Search"));
 }
 
-void FCleanProjectModule::MakeCleanProjectActionsMenu(UToolMenu* InMenu)
+void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
 {
 	FToolMenuOwnerScoped OwnerScoped(this);
 	FToolMenuSection& Section = InMenu->AddSection("Actions");
@@ -88,20 +122,6 @@ void FCleanProjectModule::MakeCleanProjectActionsMenu(UToolMenu* InMenu)
 		)));
 }
 
-void FCleanProjectModule::RegisterAssetActions()
-{
-	if (FContentBrowserModule* ContentBrowserModule = FModuleManager::GetModulePtr<FContentBrowserModule>(TEXT("ContentBrowser")))
-	{
-		TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuExtenderDelegates = ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
-		CBAssetMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateStatic(CPMenuExtensions::CreateContentBrowserAssetsExtender));
-		CBAssetsExtenderDelegateHandle = CBAssetMenuExtenderDelegates.Last().GetHandle();
-
-		TArray<FContentBrowserMenuExtender_SelectedPaths>& CBFolderMenuExtenderDelegates = ContentBrowserModule->GetAllPathViewContextMenuExtenders();
-		CBFolderMenuExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedPaths::CreateStatic(CPMenuExtensions::CreateContentBrowserFoldersExtender));
-		CBFoldersExtenderDelegateHandle = CBFolderMenuExtenderDelegates.Last().GetHandle();
-	}
-}
-
 void FCleanProjectModule::UnregisterAssetActions()
 {
 	if (FContentBrowserModule* ContentBrowserModule = FModuleManager::GetModulePtr<FContentBrowserModule>(TEXT("ContentBrowser")))
@@ -114,28 +134,14 @@ void FCleanProjectModule::UnregisterAssetActions()
 	}
 }
 
-void FCleanProjectModule::RegisterMenuSpawner()
-{
-	TSharedRef<FWorkspaceItem> const CleanProjectCategory = OutOfTheBoxHelpers::GetSharedWindowsCategory();
-	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateLambda([](const FSpawnTabArgs& Args)
-	{
-		return SNew(SDockTab)
-			.TabRole(ETabRole::NomadTab)
-			[
-				SNew(SCPMenuWidget)
-			];
-	}));
-
-	CPMenuTab
-		.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Clean Project Dashboard"))
-		.SetTooltipText(LOCTEXT("MenuTabTooltip", "Organize your project and visualize the data behind the process."))
-		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "DerivedData.ResourceUsage"))
-		.SetGroup(CleanProjectCategory);
-}
-
-void FCleanProjectModule::UnregisterMenuSpawner()
+void FCleanProjectModule::UnregisterToolWindows()
 {
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(MenuTabName);
+}
+
+void FCleanProjectModule::UnregisterToolActions()
+{
+	UToolMenus::Get()->UnregisterOwner(this);
 }
 
 IMPLEMENT_MODULE(FCleanProjectModule, CleanProject);
