@@ -57,7 +57,7 @@ public:
 	/**
 	 * Returns the asset path of the whitelisted assets as FName
 	 */
-	TSet<FName> GetWhitelistAssetsPaths() const;
+	TSet<FAssetData> GetWhitelistAssetsPaths() const;
 
 private:
 	/**

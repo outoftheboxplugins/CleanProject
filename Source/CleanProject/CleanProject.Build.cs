@@ -25,7 +25,8 @@ public class CleanProject : ModuleRules
 				"SlateCore",
 				"ToolMenus",
 				"UnrealEd",
-				"WorkspaceMenuStructure",
+				"WorkspaceMenuStructure", 
+				"EditorScriptingUtilities",
 			} );
 	}
 }

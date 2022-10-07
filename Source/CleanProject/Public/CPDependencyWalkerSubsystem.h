@@ -4,10 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+
 #include "CPDependencyWalkerSubsystem.generated.h"
 
+enum class EScanType
+{
+	Fast,
+	Complex
+};
+
 /**
- * 
+ *
  */
 UCLASS()
 class CLEANPROJECT_API UCPDependencyWalkerSubsystem final : public UEditorSubsystem
@@ -17,9 +24,13 @@ class CLEANPROJECT_API UCPDependencyWalkerSubsystem final : public UEditorSubsys
 public:
 	static UCPDependencyWalkerSubsystem* Get();
 
+	void CheckAllDependencies(EScanType ScanType);
+
 	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths) const;
-	TSet<FName> GetWhitelistedAssets() const;
+	TArray<FAssetData> GetWhitelistedAssets() const;
 
 private:
+	TArray<FAssetData> GetAllGameAssets() const;
+
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 };

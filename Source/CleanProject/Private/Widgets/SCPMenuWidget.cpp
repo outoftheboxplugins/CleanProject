@@ -221,8 +221,8 @@ void SCPMenuWidget::RefreshUnusedAssets()
 	const TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusedAssets();
 	UnusedAssetsCount = UnusedAssets.Num();
 
-	// TODO: Ditch the AllDependencyAssets and use the new WhitelistedAssets
-	TSet<FName> WhitelistedAssets = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets();
+	// TOSOLVE: Ditch the AllDependencyAssets and use the new WhitelistedAssets
+	// TSet<FName> WhitelistedAssets = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets();
 	TArray<FAssetDataPtr> AllDependencyAssets;
 
 	InuseAssetsDependencies = CPOperations::GetAssetDependenciesTree(AllDependencyAssets);

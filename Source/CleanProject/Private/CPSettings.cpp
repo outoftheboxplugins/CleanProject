@@ -3,6 +3,8 @@
 #include "CPSettings.h"
 
 #include "AssetData.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "EditorAssetLibrary.h"
 #include "ISettingsModule.h"
 
 void UCPSettings::OpenSettings()
@@ -63,10 +65,15 @@ void UCPSettings::BlacklistAssets(const TArray<FAssetData> Assets)
 	SaveToDefaultConfig();
 }
 
-TSet<FName> UCPSettings::GetWhitelistAssetsPaths() const
+TSet<FAssetData> UCPSettings::GetWhitelistAssetsPaths() const
 {
-	TSet<FName> Result;
-	Algo::Transform(WhitelistedAssets, Result, [](const FSoftObjectPath& Path) { return Path.GetAssetPathName(); });
+	TSet<FAssetData> Result;
+	Algo::Transform(WhitelistedAssets, Result,
+		[](const FSoftObjectPath& Path)
+		{
+			const FString& AssetPath = Path.GetAssetPathString();
+			return UEditorAssetLibrary::FindAssetData(AssetPath);
+		});
 	return Result;
 }
 
