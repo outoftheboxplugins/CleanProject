@@ -2,7 +2,8 @@
 
 #include "SCPMenuAssetRow.h"
 
-void SCPMenuAssetRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TSharedPtr<FName> InListItem)
+void SCPMenuAssetRow::Construct(
+	const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TSharedPtr<FName> InListItem)
 {
 	// Cache the list item so we can get information about the current Item when required
 	Item = InListItem;
@@ -12,6 +13,7 @@ void SCPMenuAssetRow::Construct(const FArguments& InArgs, const TSharedRef<STabl
 
 TSharedRef<SWidget> SCPMenuAssetRow::GenerateWidgetForColumn(const FName& ColumnName)
 {
+	// clang-format off
 	TSharedPtr<SWidget> HorizontalBox;
 	SAssignNew(HorizontalBox, SHorizontalBox)
 		+SHorizontalBox::Slot()
@@ -27,6 +29,7 @@ TSharedRef<SWidget> SCPMenuAssetRow::GenerateWidgetForColumn(const FName& Column
 			SNew(STextBlock)
 			.Text(FText::FromName(*Item))
 		];
+	// clang-format on
 
 	return HorizontalBox.ToSharedRef();
 }

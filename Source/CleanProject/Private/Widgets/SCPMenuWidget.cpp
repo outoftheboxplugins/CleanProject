@@ -2,22 +2,22 @@
 
 #include "SCPMenuWidget.h"
 
-#include "CleanProjectModule.h"
-#include "CPSettings.h"
-
-#include "SCPMenuAssetRow.h"
 #include "AssetRegistryModule.h"
 #include "CPDependencyWalkerSubsystem.h"
-#include "Widgets/Layout/SSeparator.h"
+#include "CPSettings.h"
+#include "CleanProjectModule.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
+#include "SCPMenuAssetRow.h"
 #include "Settings/ProjectPackagingSettings.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Layout/SSeparator.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
 void SCPMenuWidget::Construct(const FArguments& InArgs)
 {
+	// clang-format off
 	ChildSlot
 	[
 		SNew(SVerticalBox)
@@ -116,9 +116,10 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			]
 		]
 	];
+	// clang-format on
 
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	if(AssetRegistryModule.Get().IsLoadingAssets())
+	if (AssetRegistryModule.Get().IsLoadingAssets())
 	{
 		AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SCPMenuWidget::OnFilesLoaded);
 	}
@@ -130,6 +131,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 
 TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute)
 {
+	// clang-format off
 	return SNew(SBorder)
 		.BorderImage( FAppStyle::Get().GetBrush("Brushes.Header") )
 		.Padding(FMargin(0.0f, 0.0f, 16.0f, 0.0f))
@@ -157,6 +159,7 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FTex
 				.Justification(ETextJustify::Center)
 			]
 		];
+	// clang-format on
 }
 
 void SCPMenuWidget::OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& OutChildren)
@@ -178,7 +181,7 @@ void SCPMenuWidget::OnFilesLoaded()
 
 void SCPMenuWidget::OnAssetAdded(const FAssetData& AssetData)
 {
-	if(IsGameAsset(AssetData))
+	if (IsGameAsset(AssetData))
 	{
 		RefreshUnusedAssets();
 	}
@@ -186,7 +189,7 @@ void SCPMenuWidget::OnAssetAdded(const FAssetData& AssetData)
 
 void SCPMenuWidget::OnAssetRemoved(const FAssetData& AssetData)
 {
-	if(IsGameAsset(AssetData))
+	if (IsGameAsset(AssetData))
 	{
 		RefreshUnusedAssets();
 	}
@@ -194,7 +197,7 @@ void SCPMenuWidget::OnAssetRemoved(const FAssetData& AssetData)
 
 void SCPMenuWidget::OnAssetRenamed(const FAssetData& AssetData, const FString& Name)
 {
-	if(IsGameAsset(AssetData))
+	if (IsGameAsset(AssetData))
 	{
 		RefreshUnusedAssets();
 	}
@@ -202,7 +205,7 @@ void SCPMenuWidget::OnAssetRenamed(const FAssetData& AssetData, const FString& N
 
 void SCPMenuWidget::OnAssetUpdated(const FAssetData& AssetData)
 {
-	if(IsGameAsset(AssetData))
+	if (IsGameAsset(AssetData))
 	{
 		RefreshUnusedAssets();
 	}
@@ -218,7 +221,7 @@ void SCPMenuWidget::RefreshUnusedAssets()
 	const TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusedAssets();
 	UnusedAssetsCount = UnusedAssets.Num();
 
-	//TODO: Ditch the AllDependencyAssets and use the new WhitelistedAssets
+	// TODO: Ditch the AllDependencyAssets and use the new WhitelistedAssets
 	TSet<FName> WhitelistedAssets = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets();
 	TArray<FAssetDataPtr> AllDependencyAssets;
 

@@ -4,13 +4,12 @@
 
 class FCleanProjectModule : public IModuleInterface
 {
-
-// IModuleInterface interface
 private:
+	// Begin IModuleInterface interface
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+	// End IModuleInterface interface
 
-// Register & Unregister
 private:
 	void RegisterToolActions();
 	void CreateToolActionEntries(UToolMenu* InMenu);
@@ -26,6 +25,3 @@ private:
 	FDelegateHandle CBAssetsExtenderDelegateHandle;
 	FDelegateHandle CBFoldersExtenderDelegateHandle;
 };
-
-//TODO: Plugin to alt tab assets, see recents, open last closed -> experience similar to browser
-//TODO: right click asset -> explicitly cook / add to maps to package
