@@ -53,23 +53,11 @@ public:
 	/**
 	 * Returns the space gained by using CleanProject
 	 */
-	int64 GetSpaceGained() const
-	{
-		return SpaceGained;
-	}
-
+	int64 GetSpaceGained() const;
 	/**
 	 * Returns the asset path of the whitelisted assets as FName
 	 */
 	TSet<FName> GetWhitelistAssetsPaths() const;
-
-	/**
-	 * Old version for storing assets we want to whitelist
-	 * TODO: Delete this when conversion is done
-	 */
-	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use WhitelistedAssets")
-	UPROPERTY(VisibleDefaultsOnly, config, Category = "Deprecated")
-	TArray<FString> WhitelistAssetsPaths;
 
 private:
 	/**
@@ -80,18 +68,9 @@ private:
 
 	// Begin UDeveloperSettings interface
 	virtual void PostInitProperties() override;
-	virtual FName GetContainerName() const override
-	{
-		return TEXT("Project");
-	}
-	virtual FName GetCategoryName() const override
-	{
-		return TEXT("Out-of-the-Box Plugins");
-	}
-	virtual FName GetSectionName() const override
-	{
-		return TEXT("Clean Project");
-	}
+	virtual FName GetContainerName() const override;
+	virtual FName GetCategoryName() const override;
+	virtual FName GetSectionName() const override;
 	// End UDeveloperSettings interface
 
 	/**
@@ -99,13 +78,20 @@ private:
 	 */
 	void SaveToDefaultConfig();
 
-	// Backwards compatibility
 	// ***************************************************************************************************************************
-	// TODO: Review if we still want to use the hidden report columns
-	UCPSettings();
-
+	// TOSOLVE: Backwards compatibility
 public:
-	// Columns to be hidden in the final report
+	UCPSettings();
+	/**
+	 * Columns to be hidden in the final report
+	 */
 	UPROPERTY(EditAnywhere, config, Category = "Report")
 	TArray<FString> ReportHiddenColumns;
+	/**
+	 * Old version for storing assets we want to whitelist
+	 */
+	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use WhitelistedAssets")
+	UPROPERTY(VisibleDefaultsOnly, config, Category = "Deprecated")
+	TArray<FString> WhitelistAssetsPaths;
+	// ***************************************************************************************************************************
 };

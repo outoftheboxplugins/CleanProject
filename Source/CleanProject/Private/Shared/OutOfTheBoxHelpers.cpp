@@ -6,41 +6,42 @@
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
-namespace  OutOfTheBoxHelpersInternal
+namespace OutOfTheBoxHelpersInternal
 {
-	TSharedRef<FWorkspaceItem> FindOrAdd(TSharedRef<FWorkspaceItem> Parent, FText const& Name)
+TSharedRef<FWorkspaceItem> FindOrAdd(TSharedRef<FWorkspaceItem> Parent, FText const& Name)
+{
+	TSharedPtr<FWorkspaceItem> FoundCategory;
+
+	TArray<TSharedRef<FWorkspaceItem>> ExistingCategories = Parent->GetChildItems();
+	const TSharedRef<FWorkspaceItem>* ExistingCategory = ExistingCategories.FindByPredicate(
+		[=](TSharedRef<FWorkspaceItem> const& Category) { return Category->GetDisplayName().EqualTo(Name); });
+
+	if (ExistingCategory)
 	{
-		TSharedPtr<FWorkspaceItem> FoundCategory;
-
-		TArray<TSharedRef<FWorkspaceItem>> ExistingCategories = Parent->GetChildItems();
-		TSharedRef<FWorkspaceItem>* ExistingCategory = ExistingCategories.FindByPredicate([=](TSharedRef<FWorkspaceItem> const& Category){ return Category->GetDisplayName().EqualTo(Name);});
-
-		if(ExistingCategory)
-		{
-			FoundCategory = *ExistingCategory;
-		}
-		else
-		{
-			FoundCategory = Parent->AddGroup(Name);
-		}
-
-		return FoundCategory.ToSharedRef();
+		FoundCategory = *ExistingCategory;
 	}
+	else
+	{
+		FoundCategory = Parent->AddGroup(Name);
+	}
+
+	return FoundCategory.ToSharedRef();
 }
+}	 // namespace OutOfTheBoxHelpersInternal
 
 namespace OutOfTheBoxHelpers
 {
-	TSharedRef<FWorkspaceItem> GetSharedWindowsCategory()
-	{
-		return OutOfTheBoxHelpersInternal::FindOrAdd(WorkspaceMenu::GetMenuStructure().GetStructureRoot(), OutOfTheBoxCategoryText);
-	}
-	
-	FToolMenuSection& GetSharedActionsCategory()
-	{
-		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Tools");
-		FToolMenuSection& SharedSection = Menu->FindOrAddSection(OutOfTheBoxCategoryName);
-		SharedSection.Label = OutOfTheBoxCategoryText;
-
-		return SharedSection;
-	}
+TSharedRef<FWorkspaceItem> GetSharedWindowsCategory()
+{
+	return OutOfTheBoxHelpersInternal::FindOrAdd(WorkspaceMenu::GetMenuStructure().GetStructureRoot(), OutOfTheBoxCategoryText);
 }
+
+FToolMenuSection& GetSharedActionsCategory()
+{
+	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Tools");
+	FToolMenuSection& SharedSection = Menu->FindOrAddSection(OutOfTheBoxCategoryName);
+	SharedSection.Label = OutOfTheBoxCategoryText;
+
+	return SharedSection;
+}
+}	 // namespace OutOfTheBoxHelpers

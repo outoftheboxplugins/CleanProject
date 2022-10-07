@@ -4,9 +4,9 @@
 
 namespace OutOfTheBoxHelpers
 {
-	FText const OutOfTheBoxCategoryText = INVTEXT("Out-of-the-Box Plugins");
-	FName const OutOfTheBoxCategoryName = "Out-of-the-Box Plugins";
+FText const OutOfTheBoxCategoryText = INVTEXT("Out-of-the-Box Plugins");
+FName const OutOfTheBoxCategoryName = "Out-of-the-Box Plugins";
 
-	TSharedRef<FWorkspaceItem> GetSharedWindowsCategory();
-	FToolMenuSection& GetSharedActionsCategory();
-}
+TSharedRef<FWorkspaceItem> GetSharedWindowsCategory();
+FToolMenuSection& GetSharedActionsCategory();
+}	 // namespace OutOfTheBoxHelpers

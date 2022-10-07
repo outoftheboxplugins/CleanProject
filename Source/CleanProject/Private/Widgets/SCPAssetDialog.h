@@ -2,39 +2,38 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-
-#include "Widgets/SCompoundWidget.h"
-#include "AssetData.h"
 #include "ARFilter.h"
-
 #include "ContentBrowserDelegates.h"
+#include "CoreMinimal.h"
+#include "Widgets/SCompoundWidget.h"
 
 class SCPAssetDialog : public SCompoundWidget
 {
-// Slate interface
+	// Slate interface
 public:
-	SLATE_BEGIN_ARGS(SCPAssetDialog) { }
+	SLATE_BEGIN_ARGS(SCPAssetDialog)
+	{
+	}
 	SLATE_END_ARGS()
 
-	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);	
+	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);
 
-// Window commands
+	// Window commands
 public:
 	static void OpenAssetDialog(const TArray<FAssetData>& AssetsToReport);
 	void CloseAssetDialog();
 
-// Slate Delegates
+	// Slate Delegates
 private:
 	TSharedPtr<SWidget> OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets);
 	static void OnRequestOpenAsset(const FAssetData& AssetData);
 
-// Custom Report column
+	// Custom Report column
 private:
 	FString GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const;
 	FText GetDiskSizeDisplayText(FAssetData& AssetData, FName ColumnName) const;
 
-// Buttons Actions
+	// Buttons Actions
 private:
 	FReply OnDeleteClicked();
 	FReply OnMoreInfoClicked();
@@ -42,7 +41,7 @@ private:
 	FReply OnBlacklistClicked();
 	FReply OnCancelClicked();
 
-// Functionality
+	// Functionality
 private:
 	void DeleteAssets(const TArray<FAssetData> AssetsToDelete);
 	void MoreInfoAsset(const TArray<FAssetData> AssetsToGetInfo);
@@ -54,7 +53,7 @@ private:
 	TArray<FAssetData> GetAssetsForAction() const;
 	TSharedRef<SWidget> CreateAssetPickerWidget();
 
-// Internal state
+	// Internal state
 private:
 	TArray<FAssetData> ReportAssets;
 	FGetCurrentSelectionDelegate GetCurrentSelectionDelegate;

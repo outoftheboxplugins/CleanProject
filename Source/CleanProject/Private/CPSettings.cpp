@@ -18,10 +18,72 @@ void UCPSettings::PostInitProperties()
 	Super::PostInitProperties();
 
 	// Backwards compatibility
+	PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	for (const FString& OldWhitelistPath : WhitelistAssetsPaths)
 	{
 		WhitelistedAssets.Emplace(FSoftObjectPath(OldWhitelistPath));
 	}
+	PRAGMA_ENABLE_DEPRECATION_WARNINGS
+}
+
+FName UCPSettings::GetContainerName() const
+{
+	return TEXT("Project");
+}
+
+FName UCPSettings::GetCategoryName() const
+{
+	return TEXT("Out-of-the-Box Plugins");
+}
+
+FName UCPSettings::GetSectionName() const
+{
+	return TEXT("Clean Project");
+}
+
+void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
+{
+	for (const FAssetData& Asset : Assets)
+	{
+		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
+		WhitelistedAssets.Emplace(AssetPath);
+	}
+
+	SaveToDefaultConfig();
+}
+
+void UCPSettings::BlacklistAssets(const TArray<FAssetData> Assets)
+{
+	for (const FAssetData& Asset : Assets)
+	{
+		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
+		BlacklistedAssets.Emplace(AssetPath);
+	}
+
+	SaveToDefaultConfig();
+}
+
+TSet<FName> UCPSettings::GetWhitelistAssetsPaths() const
+{
+	TSet<FName> Result;
+	Algo::Transform(WhitelistedAssets, Result, [](const FSoftObjectPath& Path) { return Path.GetAssetPathName(); });
+	return Result;
+}
+
+void UCPSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)
+{
+	SpaceGained += ExtraSpaceGained;
+	SaveToDefaultConfig();
+}
+
+int64 UCPSettings::GetSpaceGained() const
+{
+	return SpaceGained;
+}
+
+void UCPSettings::SaveToDefaultConfig()
+{
+	SaveConfig(CPF_Config, *GetDefaultConfigFilename());
 }
 
 UCPSettings::UCPSettings()
@@ -99,44 +161,4 @@ UCPSettings::UCPSettings()
 		"SequenceLength",
 		"RetargetSource",
 	};
-}
-
-void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
-{
-	for (const FAssetData& Asset : Assets)
-	{
-		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
-		WhitelistedAssets.Emplace(AssetPath);
-	}
-
-	SaveToDefaultConfig();
-}
-
-void UCPSettings::BlacklistAssets(const TArray<FAssetData> Assets)
-{
-	for (const FAssetData& Asset : Assets)
-	{
-		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
-		BlacklistedAssets.Emplace(AssetPath);
-	}
-
-	SaveToDefaultConfig();
-}
-
-TSet<FName> UCPSettings::GetWhitelistAssetsPaths() const
-{
-	TSet<FName> Result;
-	Algo::Transform(WhitelistedAssets, Result, [](const FSoftObjectPath& Path) { return Path.GetAssetPathName(); });
-	return Result;
-}
-
-void UCPSettings::IncreaseSpaceGained(int64 ExtraSpaceGained)
-{
-	SpaceGained += ExtraSpaceGained;
-	SaveToDefaultConfig();
-}
-
-void UCPSettings::SaveToDefaultConfig()
-{
-	SaveConfig(CPF_Config, *GetDefaultConfigFilename());
 }
