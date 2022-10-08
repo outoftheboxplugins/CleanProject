@@ -38,10 +38,15 @@ public:
 	void DeleteUnusedAssets(const TArray<FString>& InFolders, EScanType ScanType);
 	void DeleteUnusedAssets(const TArray<FAssetData>& InAssets, EScanType ScanType);
 
+	void DeleteAllEmptyPackageFolders();
+	void DeleteEmptyPackageFoldersIn(const TArray<FString>& InPaths);
+	void DeleteEmptyPackageFoldersIn(const FString& InPath);
+
 	void FixUpRedirectsInProject();
 
 	TArray<FAssetData> GetAllUnusedAssets(EScanType ScanType) const;
 	TArray<FAssetData> GetUnusedAssets(const TArray<FAssetData>& AssetsToCheck, EScanType ScanType) const;
+
 	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths) const;
 
 	template <typename T>

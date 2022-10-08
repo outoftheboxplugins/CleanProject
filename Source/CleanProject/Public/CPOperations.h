@@ -62,10 +62,4 @@ FTreeAssetDependency GetAssetDependenciesTree(const TArray<FName>& AssetsNameLis
 
 // Recursively get all the dependencies of a certain package.
 void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency);
-
-// Delete all the empty folders of the project.
-void DeleteEmptyProjectFolders();
-void DeleteEmptyProjectFolders(TArray<FString> SelectedFolders);
-
-void DeleteFolderByPath(const FString& FolderPath);
 };	  // namespace CPOperations

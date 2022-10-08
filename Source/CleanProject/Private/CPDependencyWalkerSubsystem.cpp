@@ -27,6 +27,45 @@ FString GetTabSpaces(int TabSize)
 
 	return Result;
 }
+
+void GetEmptyFolderInPath(const FString& BaseDirectory, TArray<FString>& OutEmptyFolders)
+{
+	struct FEmptyFolderVisitor : public IPlatformFile::FDirectoryVisitor
+	{
+		TArray<FString>& EmptyFolders;
+		const FString& CurrentDirectory;
+		bool bIsEmpty;
+
+		FEmptyFolderVisitor(TArray<FString>& InEmptyFolders, const FString& InCurrentDirectory)
+			: EmptyFolders(InEmptyFolders), CurrentDirectory(InCurrentDirectory), bIsEmpty(true)
+		{
+		}
+
+		virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory) override
+		{
+			if (bIsDirectory)
+			{
+				const FString DirectoryName(FilenameOrDirectory);
+				EmptyFolders.Add(DirectoryName);
+
+				GetEmptyFolderInPath(DirectoryName, EmptyFolders);
+			}
+			else
+			{
+				EmptyFolders.Remove(CurrentDirectory);
+				bIsEmpty = false;
+			}
+
+			return true;
+		}
+	};
+	FEmptyFolderVisitor EmptyFolderVisitor(OutEmptyFolders, BaseDirectory);
+	IFileManager::Get().IterateDirectoryRecursively(*BaseDirectory, EmptyFolderVisitor);
+	if (EmptyFolderVisitor.bIsEmpty)
+	{
+		OutEmptyFolders.Add(BaseDirectory);
+	}
+}
 }	 // namespace
 
 FAssetDependenciesTable::FAssetDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
@@ -135,6 +174,38 @@ void UCPDependencyWalkerSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& 
 	else
 	{
 		SCPAssetDialog::OpenAssetDialog(AssetsToRemove);
+	}
+}
+
+void UCPDependencyWalkerSubsystem::DeleteAllEmptyPackageFolders()
+{
+	FString GameContentFolder = TEXT("/Game");
+	DeleteEmptyPackageFoldersIn({GameContentFolder});
+}
+
+void UCPDependencyWalkerSubsystem::DeleteEmptyPackageFoldersIn(const TArray<FString>& InPaths)
+{
+	for (const FString& Path : InPaths)
+	{
+		DeleteEmptyPackageFoldersIn(Path);
+	}
+}
+
+void UCPDependencyWalkerSubsystem::DeleteEmptyPackageFoldersIn(const FString& InPath)
+{
+	const FString& FullPathFolder = FPackageName::LongPackageNameToFilename(InPath);
+	if (FullPathFolder.IsEmpty())
+	{
+		UE_LOG(LogCleanProject, Warning, TEXT("Could not convert folder: %s to full path"), *InPath);
+		return;
+	}
+
+	TArray<FString> ResultEmptyFolders;
+	GetEmptyFolderInPath(FullPathFolder, ResultEmptyFolders);
+
+	for (const FString& FolderToDelete : ResultEmptyFolders)
+	{
+		IFileManager::Get().DeleteDirectory(*FolderToDelete, false, true);
 	}
 }
 

@@ -5,103 +5,11 @@
 #include "AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "CPDependencyWalkerSubsystem.h"
-#include "CPLog.h"
-#include "CPSettings.h"
 #include "Engine/Level.h"
-#include "GenericPlatform/GenericPlatformMisc.h"
 #include "Misc/FileHelper.h"
-#include "Misc/MessageDialog.h"
-#include "Misc/Paths.h"
 #include "Misc/ScopedSlowTask.h"
-#include "Widgets/SCPAssetDialog.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
-
-namespace OperationsHelpers
-{
-void GetEmptyFolderInPath(const FString& BaseDirectory, TArray<FString>& OutEmptyFolders)
-{
-	struct FEmptyFolderVisitor : public IPlatformFile::FDirectoryVisitor
-	{
-		TArray<FString>& EmptyFolders;
-		const FString& CurrentDirectory;
-		bool bIsEmpty;
-
-		FEmptyFolderVisitor(TArray<FString>& InEmptyFolders, const FString& InCurrentDirectory)
-			: EmptyFolders(InEmptyFolders), CurrentDirectory(InCurrentDirectory), bIsEmpty(true)
-		{
-		}
-
-		virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory) override
-		{
-			if (bIsDirectory)
-			{
-				const FString DirectoryName(FilenameOrDirectory);
-				EmptyFolders.Add(DirectoryName);
-
-				GetEmptyFolderInPath(DirectoryName, EmptyFolders);
-			}
-			else
-			{
-				EmptyFolders.Remove(CurrentDirectory);
-				bIsEmpty = false;
-			}
-
-			return true;
-		}
-	};
-	FEmptyFolderVisitor EmptyFolderVisitor(OutEmptyFolders, BaseDirectory);
-	IFileManager::Get().IterateDirectoryRecursively(*BaseDirectory, EmptyFolderVisitor);
-	if (EmptyFolderVisitor.bIsEmpty)
-	{
-		OutEmptyFolders.Add(BaseDirectory);
-	}
-}
-
-bool LoadRedirectAssetsInProject(const TArray<FAssetData>& RedirectsList, TArray<UObjectRedirector*>& Objects)
-{
-	bool bAllAreLoaded = true;
-	for (const auto& RedirectAsset : RedirectsList)
-	{
-		const FString ObjectPath = RedirectAsset.ObjectPath.ToString();
-		UObjectRedirector* FoundObject = FindObject<UObjectRedirector>(nullptr, *ObjectPath);
-		if (FoundObject)
-		{
-			Objects.Add(FoundObject);
-		}
-		else
-		{
-			UObjectRedirector* LoadedObject = LoadObject<UObjectRedirector>(nullptr, *ObjectPath, nullptr, LOAD_None, nullptr);
-			if (LoadedObject)
-			{
-				Objects.Add(LoadedObject);
-			}
-			else
-			{
-				UE_LOG(LogCleanProject, Warning, TEXT("Failed to fixup redirects. Redirect %s - did not load."), *ObjectPath);
-				bAllAreLoaded = false;
-			}
-		}
-	}
-
-	return bAllAreLoaded;
-}
-
-TArray<FString> GetListFromSelection(const TArray<FString>& List, const FString& Selection)
-{
-	TArray<FString> Result;
-	if (List.Contains(Selection))
-	{
-		Result.Add(Selection);
-	}
-	else
-	{
-		Result = List;
-	}
-
-	return Result;
-}
-}	 // namespace OperationsHelpers
 
 namespace CPOperations
 {
@@ -217,37 +125,6 @@ void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependen
 			AllDependencies.Add(DependencyName);
 			RecursiveGetDependencies(DependencyName, AllDependencies, ResultTreeDependency);
 		}
-	}
-}
-
-void DeleteEmptyProjectFolders()
-{
-	const FString& ContentDirectory = FPaths::ProjectContentDir();
-	DeleteFolderByPath(ContentDirectory);
-}
-
-void DeleteEmptyProjectFolders(TArray<FString> SelectedFolders)
-{
-	for (const FString& SelectedFolder : SelectedFolders)
-	{
-		FString ConvertedName;
-		if (FPackageName::TryConvertLongPackageNameToFilename(SelectedFolder, ConvertedName))
-		{
-			const FString FolderName = ConvertedName + TEXT("/");
-			DeleteFolderByPath(FolderName);
-		}
-	}
-}
-
-void DeleteFolderByPath(const FString& FolderPath)
-{
-	UCPDependencyWalkerSubsystem::Get()->FixUpRedirectsInProject();
-
-	TArray<FString> EmptyFoldersFound;
-	OperationsHelpers::GetEmptyFolderInPath(FolderPath, EmptyFoldersFound);
-	for (const FString& FolderToDelete : EmptyFoldersFound)
-	{
-		IFileManager::Get().DeleteDirectory(*FolderToDelete, false, true);
 	}
 }
 

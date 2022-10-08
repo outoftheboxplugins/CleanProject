@@ -134,7 +134,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 			[SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from selected folders."));
-				CPOperations::DeleteEmptyProjectFolders(SelectedFolders);
+				UCPDependencyWalkerSubsystem::Get()->DeleteEmptyPackageFoldersIn(SelectedFolders);
 			})));
 
 	MenuBuilder.EndSection();

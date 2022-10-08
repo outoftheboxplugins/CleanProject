@@ -121,7 +121,7 @@ void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
 				[]()
 				{
 					UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from menu."));
-					CPOperations::DeleteEmptyProjectFolders();
+					UCPDependencyWalkerSubsystem::Get()->DeleteAllEmptyPackageFolders();
 				}))));
 }
 
