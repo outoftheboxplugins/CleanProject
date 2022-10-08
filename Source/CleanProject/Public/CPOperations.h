@@ -10,9 +10,6 @@ using FAssetDataPtr = TSharedPtr<FName>;
 
 namespace CPOperations
 {
-// Return which of the assets are unused based on the selected one.
-TArray<FAssetData> CheckForUnusedAssets(TArray<FAssetData> AssetsToTest);
-
 int64 GetAssetDiskSize(const FAssetData& Asset);
 int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList);
 

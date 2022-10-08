@@ -19,20 +19,6 @@
 
 namespace OperationsHelpers
 {
-void RemoveAllAssetsByName(TArray<FAssetData>& AssetsList, const TArray<FName>& AssetsNameToRemove)
-{
-	for (const FName& WhitelistAssetPath : AssetsNameToRemove)
-	{
-		AssetsList.RemoveAllSwap(
-			[&WhitelistAssetPath](const FAssetData& AssetData) { return AssetData.PackageName == WhitelistAssetPath; });
-	}
-}
-
-void RemoveAllAssetsByName(TArray<FAssetData>& AssetsList, const TSet<FName>& AssetsNameToRemove)
-{
-	RemoveAllAssetsByName(AssetsList, AssetsNameToRemove.Array());
-}
-
 void GetEmptyFolderInPath(const FString& BaseDirectory, TArray<FString>& OutEmptyFolders)
 {
 	struct FEmptyFolderVisitor : public IPlatformFile::FDirectoryVisitor
@@ -119,27 +105,6 @@ TArray<FString> GetListFromSelection(const TArray<FString>& List, const FString&
 
 namespace CPOperations
 {
-TArray<FAssetData> CheckForUnusedAssets(TArray<FAssetData> AssetsToTest)
-{
-	const UCPSettings* Settings = GetDefault<UCPSettings>();
-	// Collect all the names we want to check dependencies for.
-	// TSet<FName> PackageNameToCheck = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets();
-
-	// Remove the whitelisted assets regardless if they are used selected for dependencies or not.
-	// OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, Settings->GetWhitelistAssetsPaths());
-
-	// Remove the packages we are going to check dependencies for from the assets to test, because they depend on themselves.
-	// OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, PackageNameToCheck);
-
-	// Check the dependencies of the collected packages with a progressbar.
-	// const FTreeAssetDependency AssetsDependencies = GetAssetDependenciesTree(PackageNameToCheck.Array());
-
-	// Removed the dependencies found from the ones tested.
-	// OperationsHelpers::RemoveAllAssetsByName(AssetsToTest, AssetsDependencies);
-
-	return AssetsToTest;
-}
-
 int64 GetAssetDiskSize(const FAssetData& Asset)
 {
 	const FName PackageName = FName(*Asset.GetPackage()->GetName());
