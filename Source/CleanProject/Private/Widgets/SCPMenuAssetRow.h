@@ -5,11 +5,11 @@
 class SCPMenuAssetRow final : public SMultiColumnTableRow<TSharedPtr<FName>>
 {
 public:
-	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TSharedPtr<FName> InListItem);
+	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, TSharedPtr<FAssetData> InListItem);
 
 private:
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
 
 private:
-	TSharedPtr<FName> Item;
+	TSharedPtr<FAssetData> Item;
 };

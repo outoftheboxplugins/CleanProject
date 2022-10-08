@@ -24,13 +24,12 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 
 		+SVerticalBox::Slot()
 		[
-			SAssignNew(InuseAssetsTreeView, STreeView<FAssetDataPtr>)
-			.TreeItemsSource(&InuseAssetsDependencies.TopLevelAssetsPtr)
-			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
+			SAssignNew(InuseAssetsListView, SListView<TSharedPtr<FAssetData>>)
+			.ListItemsSource(&InuseAssetsList)
+			.OnGenerateRow_Lambda([](TSharedPtr<FAssetData> InInfo, const TSharedRef<STableViewBase>& OwnerTable)
 				{
 					return SNew(SCPMenuAssetRow, OwnerTable, InInfo);
 				})
-			.OnGetChildren(this, &SCPMenuWidget::OnGetChildren)
 			.HeaderRow(
 				SNew(SHeaderRow)
 				+SHeaderRow::Column("InuseAssetsList")
@@ -40,9 +39,9 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 
 		+SVerticalBox::Slot()
 		[
-			SAssignNew(UnusedAssetsListView, SListView<FAssetDataPtr>)
+			SAssignNew(UnusedAssetsListView, SListView<TSharedPtr<FAssetData>>)
 			.ListItemsSource(&UnusedAssetsList)
-			.OnGenerateRow_Lambda([](FAssetDataPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
+			.OnGenerateRow_Lambda([](TSharedPtr<FAssetData> InInfo, const TSharedRef<STableViewBase>& OwnerTable)
 				{
 					return SNew(SCPMenuAssetRow, OwnerTable, InInfo);
 				})
@@ -70,7 +69,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
 				{
 					//TODO: Check if this updates properly
-					return FText::AsNumber(UnusedAssetsCount);
+					return FText::AsNumber(UnusedAssetsList.Num());
 				})))
 		]
 
@@ -170,12 +169,6 @@ TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FTex
 	// clang-format on
 }
 
-void SCPMenuWidget::OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& OutChildren)
-{
-	CPOperations::FChildDependency& OwnerItem = InuseAssetsDependencies[*InItem];
-	OutChildren = OwnerItem.GetChildrenAssetPtrs();
-}
-
 void SCPMenuWidget::OnFilesLoaded()
 {
 	RefreshUnusedAssets();
@@ -221,20 +214,18 @@ void SCPMenuWidget::OnAssetUpdated(const FAssetData& AssetData)
 
 int64 SCPMenuWidget::GetUnusedAssetsCount() const
 {
-	return UnusedAssetsCount;
+	return UnusedAssetsList.Num();
 }
 
 void SCPMenuWidget::RefreshUnusedAssets()
 {
 	const TArray<FAssetData> UnusedAssets = UCPDependencyWalkerSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
-	UnusedAssetsCount = UnusedAssets.Num();
+	Algo::Transform(UnusedAssets, UnusedAssetsList, [](const FAssetData& AssetData) { return MakeShared<FAssetData>(AssetData); });
+	UnusedAssetsListView->RebuildList();
 
-	// TOSOLVE: Ditch the AllDependencyAssets and use the new WhitelistedAssets
-	// TSet<FName> WhitelistedAssets = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets();
-	TArray<FAssetDataPtr> AllDependencyAssets;
-
-	InuseAssetsDependencies = CPOperations::GetAssetDependenciesTree(AllDependencyAssets);
-	InuseAssetsTreeView->RebuildList();
+	const TArray<FAssetData> InuseAssets = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets().Array();
+	Algo::Transform(InuseAssets, InuseAssetsList, [](const FAssetData& AssetData) { return MakeShared<FAssetData>(AssetData); });
+	InuseAssetsListView->RebuildList();
 }
 
 bool SCPMenuWidget::IsGameAsset(const FAssetData& AssetData) const

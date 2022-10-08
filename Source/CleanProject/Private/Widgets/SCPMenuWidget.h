@@ -6,7 +6,6 @@
 #include "CoreMinimal.h"
 #include "Templates/SharedPointer.h"
 #include "Widgets/SCompoundWidget.h"
-#include "Widgets/Views/STreeView.h"
 
 /**
  * Menu Widget containing a UI interface for the developer to interact with the Clean Project.
@@ -23,8 +22,6 @@ public:
 
 private:
 	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute);
-
-	void OnGetChildren(FAssetDataPtr InItem, TArray<FAssetDataPtr>& OutChildren);
 
 	// Refreshing
 private:
@@ -48,13 +45,9 @@ private:
 	FReply OnOpenSettings();
 
 private:
-	TSharedPtr<STreeView<FAssetDataPtr>> InuseAssetsTreeView;
+	TSharedPtr<SListView<TSharedPtr<FAssetData>>> InuseAssetsListView;
+	TArray<TSharedPtr<FAssetData>> InuseAssetsList;
 
-	// TOSOLVE: What the fuck is this type?
-	CPOperations::FTreeAssetDependency InuseAssetsDependencies;
-
-	TSharedPtr<SListView<FAssetDataPtr>> UnusedAssetsListView;
-	TArray<FAssetDataPtr> UnusedAssetsList;
-
-	int64 UnusedAssetsCount = 0;
+	TSharedPtr<SListView<TSharedPtr<FAssetData>>> UnusedAssetsListView;
+	TArray<TSharedPtr<FAssetData>> UnusedAssetsList;
 };
