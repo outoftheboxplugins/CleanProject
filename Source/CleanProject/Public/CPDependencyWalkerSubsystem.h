@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
+#include "EditorSubsystem.h"
 
 #include "CPDependencyWalkerSubsystem.generated.h"
 
@@ -13,9 +13,19 @@ enum class EScanType
 	Complex
 };
 
-/**
- *
- */
+struct FAssetDependenciesTable
+{
+	FAssetDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType);
+
+	TSet<FAssetData> CompileReferences(const TSet<FAssetData>& Assets);
+
+private:
+	void BuildDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType);
+	void CompileReferencesRecursive(const TArray<FAssetData>& Assets, TSet<FAssetData>& OutReferences, int RecursionLevel = 0);
+
+	TMap<FAssetData, TArray<FAssetData>> Table;
+};
+
 UCLASS()
 class CLEANPROJECT_API UCPDependencyWalkerSubsystem final : public UEditorSubsystem
 {
@@ -27,10 +37,8 @@ public:
 	void CheckAllDependencies(EScanType ScanType);
 
 	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths) const;
-	TArray<FAssetData> GetWhitelistedAssets() const;
 
 private:
-	TArray<FAssetData> GetAllGameAssets() const;
-
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	TSet<FAssetData> GetWhitelistedAssets() const;
+	TSet<FAssetData> GetAllGameAssets() const;
 };

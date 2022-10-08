@@ -186,20 +186,6 @@ void SCPAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Custom Report column
-FString SCPAssetDialog::GetDiskSizeData(FAssetData& AssetData, FName ColumnName) const
-{
-	const int64 DiskSize = CPOperations::GetAssetDiskSize(AssetData);
-	return (DiskSize > 0) ? LexToString(DiskSize) : FString("Invalid");
-}
-
-FText SCPAssetDialog::GetDiskSizeDisplayText(FAssetData& AssetData, FName ColumnName) const
-{
-	const int64 DiskSize = CPOperations::GetAssetDiskSize(AssetData);
-	return (DiskSize > 0) ? FText::AsMemory(DiskSize) : LOCTEXT("UnkownSize", "UnkownSize");
-}
-
-//////////////////////////////////////////////////////////////////////////
 // Buttons Actions
 
 FReply SCPAssetDialog::OnDeleteClicked()
@@ -336,10 +322,7 @@ TSharedRef<SWidget> SCPAssetDialog::CreateAssetPickerWidget()
 {
 	FAssetPickerConfig Config;
 	{
-		Config.InitialAssetViewType = EAssetViewType::Column;
-		Config.bAddFilterUI = true;
-		Config.bShowPathInColumnView = true;
-		Config.bSortByPathInColumnView = true;
+		Config.InitialAssetViewType = EAssetViewType::List;
 
 		// Configure response to double-click and context-menu
 		Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateStatic(OnRequestOpenAsset);
@@ -347,18 +330,13 @@ TSharedRef<SWidget> SCPAssetDialog::CreateAssetPickerWidget()
 		Config.SetFilterDelegates.Add(&SetFilterDelegate);
 		Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
 
-		Config.bFocusSearchBoxWhenOpened = false;
-		Config.bPreloadAssetsForContextMenu = false;
-
-		// Hide path and type by default
-		const UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-		Config.HiddenColumnNames.Append(Settings->ReportHiddenColumns);
-
+		/*
 		// Add custom columns
 		Config.CustomColumns.Emplace(IAssetManagerEditorModule::DiskSizeName, LOCTEXT("SizeColumn", "Disk Size"),
 			LOCTEXT("SizeColumnTooltip", "Size of saved file on disk for only this asset"),
 			UObject::FAssetRegistryTag::TT_Numerical, FOnGetCustomAssetColumnData::CreateSP(this, &SCPAssetDialog::GetDiskSizeData),
 			FOnGetCustomAssetColumnDisplayText::CreateSP(this, &SCPAssetDialog::GetDiskSizeDisplayText));
+		*/
 	}
 
 	TArray<FName>& ReportObjectsPaths = ReportAssetsFilter.ObjectPaths;

@@ -7,14 +7,11 @@
 #include "CPSettings.h"
 #include "EditorAssetLibrary.h"
 #include "Misc/ScopedSlowTask.h"
+#include "ProfilingDebugging/ScopedTimers.h"
 #include "Settings/ProjectPackagingSettings.h"
+#include "Widgets/SCPAssetDialog.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
-
-UCPDependencyWalkerSubsystem* UCPDependencyWalkerSubsystem::Get()
-{
-	return GEditor->GetEditorSubsystem<UCPDependencyWalkerSubsystem>();
-}
 
 namespace
 {
@@ -28,44 +25,29 @@ FString GetTabSpaces(int TabSize)
 
 	return Result;
 }
+}	 // namespace
 
-void AddReferencesRecursive(const TArray<FAssetData>& Assets, const TMap<FAssetData, TArray<FAssetData>>& DependenciesTable,
-	TSet<FAssetData>& OutReferences, int RecursionLevel = 0)
+FAssetDependenciesTable::FAssetDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
 {
-	for (const FAssetData& Asset : Assets)
-	{
-		UE_LOG(LogCleanProject, Log, TEXT("%s%s"), *GetTabSpaces(RecursionLevel), *Asset.ObjectPath.ToString());
-		OutReferences.Add(Asset);
-
-		TArray<FAssetData> AssetDependencies;
-		for (TPair<FAssetData, TArray<FAssetData>> DependencyRow : DependenciesTable)
-		{
-			if (DependencyRow.Value.Contains(Asset))
-			{
-				AssetDependencies.Add(DependencyRow.Key);
-			}
-		}
-		AssetDependencies.RemoveAll([=](const FAssetData& AssetData) { return OutReferences.Contains(AssetData); });
-
-		AddReferencesRecursive(AssetDependencies, DependenciesTable, OutReferences, RecursionLevel + 1);
-	}
+	BuildDependenciesTable(InAssets, ScanType);
 }
 
-TMap<FAssetData, TArray<FAssetData>> BuildDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
+void FAssetDependenciesTable::BuildDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
 {
+	UE_LOG(LogCleanProject, Log, TEXT("*************** START BuildDependenciesTable ***************"));
+	FAutoScopedDurationTimer TotalTimer;
+
 	FScopedSlowTask SlowTask(InAssets.Num(), LOCTEXT("BuildDependenciesTable", "Build Dependencies Table"));
 	SlowTask.MakeDialog();
-	double BuildDependenciesStart = FPlatformTime::Seconds();
-	UE_LOG(LogCleanProject, Log, TEXT("Building dependencies started"));
 
-	TMap<FAssetData, TArray<FAssetData>> Result;
 	for (FAssetData Asset : InAssets)
 	{
 		const FString& AssetPath = Asset.ToSoftObjectPath().GetAssetPathString();
 
-		SlowTask.EnterProgressFrame(1, FText::FromString(AssetPath));
-		double AssetInspectingStart = FPlatformTime::Seconds();
 		UE_LOG(LogCleanProject, Log, TEXT("Inspecting: %s started"), *AssetPath);
+		FAutoScopedDurationTimer AssetTimer;
+
+		SlowTask.EnterProgressFrame(1, FText::FromString(AssetPath));
 
 		const bool bLoadAssetsToConfirm = ScanType == EScanType::Complex;
 		TArray<FString> Dependencies = UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPath, bLoadAssetsToConfirm);
@@ -76,33 +58,70 @@ TMap<FAssetData, TArray<FAssetData>> BuildDependenciesTable(const TSet<FAssetDat
 			FAssetData DependencyAsset = UEditorAssetLibrary::FindAssetData(Dependency);
 			DependencyAssets.Emplace(DependencyAsset);
 		}
-		Result.Emplace(Asset, DependencyAssets);
+		Table.Emplace(Asset, DependencyAssets);
 
-		double AssetInspectingDuration = FPlatformTime::Seconds() - AssetInspectingStart;
-		UE_LOG(LogCleanProject, Log, TEXT("Inspecting: %s took %s seconds"), *AssetPath, *LexToString(AssetInspectingDuration));
+		UE_LOG(LogCleanProject, Log, TEXT("Inspecting: %s took %s seconds"), *AssetPath, *LexToString(AssetTimer.GetTime()));
 	}
 
-	double BuildDependenciesDuration = FPlatformTime::Seconds() - BuildDependenciesStart;
-	UE_LOG(LogCleanProject, Log, TEXT("Building dependencies took: %s"), *LexToString(BuildDependenciesDuration));
-
-	return Result;
+	UE_LOG(LogCleanProject, Log, TEXT("Building dependencies took: %s"), *LexToString(TotalTimer.GetTime()));
+	UE_LOG(LogCleanProject, Log, TEXT("*************** STOP BuildDependenciesTable ***************"));
 }
-}	 // namespace
+
+TSet<FAssetData> FAssetDependenciesTable::CompileReferences(const TSet<FAssetData>& Assets)
+{
+	UE_LOG(LogCleanProject, Log, TEXT("*************** START CompileReferences ***************"));
+	FAutoScopedDurationTimer TotalTimer;
+
+	FScopedSlowTask SlowTask(1, LOCTEXT("RecursiveDependencies", "Recursive Dependencies"));
+	SlowTask.MakeDialog();
+
+	TSet<FAssetData> OutReferences;
+	CompileReferencesRecursive(Assets.Array(), OutReferences);
+
+	UE_LOG(LogCleanProject, Log, TEXT("Compiling references took: %s"), *LexToString(TotalTimer.GetTime()));
+	UE_LOG(LogCleanProject, Log, TEXT("*************** END CompileReferences ***************"));
+
+	return OutReferences;
+}
+
+void FAssetDependenciesTable::CompileReferencesRecursive(
+	const TArray<FAssetData>& Assets, TSet<FAssetData>& OutReferences, int RecursionLevel /* = 0 */)
+{
+	for (const FAssetData& Asset : Assets)
+	{
+		UE_LOG(LogCleanProject, Log, TEXT("%s%s"), *GetTabSpaces(RecursionLevel), *Asset.ObjectPath.ToString());
+		OutReferences.Add(Asset);
+
+		TArray<FAssetData> AssetDependencies;
+		for (TPair<FAssetData, TArray<FAssetData>> DependencyRow : Table)
+		{
+			if (DependencyRow.Value.Contains(Asset))
+			{
+				AssetDependencies.Add(DependencyRow.Key);
+			}
+		}
+		AssetDependencies.RemoveAll([=](const FAssetData& AssetData) { return OutReferences.Contains(AssetData); });
+
+		CompileReferencesRecursive(AssetDependencies, OutReferences, RecursionLevel + 1);
+	}
+}
+
+UCPDependencyWalkerSubsystem* UCPDependencyWalkerSubsystem::Get()
+{
+	return GEditor->GetEditorSubsystem<UCPDependencyWalkerSubsystem>();
+}
 
 void UCPDependencyWalkerSubsystem::CheckAllDependencies(EScanType ScanType)
 {
-	TArray<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
-	TSet<FAssetData> AllGameAssets = TSet(GetAllGameAssets());
+	const TSet<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
+	const TSet<FAssetData> AllGameAssets = GetAllGameAssets();
 
-	TMap<FAssetData, TArray<FAssetData>> DependenciesTable = BuildDependenciesTable(AllGameAssets, ScanType);
+	FAssetDependenciesTable DependenciesTable = FAssetDependenciesTable(AllGameAssets, ScanType);
+	const TSet<FAssetData> AssetsToKeep = DependenciesTable.CompileReferences(WhitelistedAssets);
 
-	TSet<FAssetData> AssetsToKeep;
-
-	UE_LOG(LogCleanProject, Log, TEXT("*************** START RECURSIVE DEPENDENCIES ***************"))
-	FScopedSlowTask SlowTask(1, LOCTEXT("RecursiveDependencies", "Recursive Dependencies"));
-	SlowTask.MakeDialog();
-	AddReferencesRecursive(WhitelistedAssets, DependenciesTable, AssetsToKeep);
-	UE_LOG(LogCleanProject, Log, TEXT("*************** END RECURSIVE DEPENDENCIES ***************"))
+	TArray<FAssetData> AssetsToRemove = AllGameAssets.Array();
+	AssetsToRemove.RemoveAll([=](const FAssetData& AssetData) { return AssetsToKeep.Contains(AssetData); });
+	SCPAssetDialog::OpenAssetDialog(AssetsToRemove);
 }
 
 TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString> FolderPaths) const
@@ -121,7 +140,7 @@ TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString
 	return AllAssetData;
 }
 
-TArray<FAssetData> UCPDependencyWalkerSubsystem::GetWhitelistedAssets() const
+TSet<FAssetData> UCPDependencyWalkerSubsystem::GetWhitelistedAssets() const
 {
 	TArray<FAssetData> Result;
 	const UProjectPackagingSettings* const PackagingSettings = GetDefault<UProjectPackagingSettings>();
@@ -141,12 +160,13 @@ TArray<FAssetData> UCPDependencyWalkerSubsystem::GetWhitelistedAssets() const
 	const TSet<FAssetData> ExplicitlyWhitelisted = GetDefault<UCPSettings>()->GetWhitelistAssetsPaths();
 	Result.Append(ExplicitlyWhitelisted.Array());
 
+	// Finally, remove all invalid assets before returning back
 	Result.RemoveAll([](const FAssetData& AssetData) { return !AssetData.IsValid(); });
 
-	return Result;
+	return TSet(Result);
 }
 
-TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAllGameAssets() const
+TSet<FAssetData> UCPDependencyWalkerSubsystem::GetAllGameAssets() const
 {
 	TArray<FAssetData> AllAssetData;
 
@@ -155,14 +175,7 @@ TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAllGameAssets() const
 	Filter.bRecursivePaths = true;
 
 	FAssetRegistryModule::GetRegistry().GetAssets(Filter, AllAssetData);
-	return AllAssetData;
-}
-
-void UCPDependencyWalkerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
-{
-	Super::Initialize(Collection);
-
-	LOG_TRACE();
+	return TSet(AllAssetData);
 }
 
 #undef LOCTEXT_NAMESPACE
