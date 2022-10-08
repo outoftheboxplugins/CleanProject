@@ -146,13 +146,6 @@ TArray<FAssetData> CheckForUnusedAssets(TArray<FAssetData> AssetsToTest)
 	return AssetsToTest;
 }
 
-void CheckAllDependencies()
-{
-	UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Fast);
-	// const TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
-	// CheckDependenciesOf(AllAssets);
-}
-
 void CheckDependenciesOf(const TArray<FAssetData> SelectedAssets)
 {
 	const TArray<FAssetData> UnusedAssets = CheckForUnusedAssets(SelectedAssets);

@@ -89,9 +89,16 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			+SHorizontalBox::Slot()
 			[
 				SNew(SButton)
-				.Text(LOCTEXT("RunCleanupNow", "Run Cleanup"))
-				.ToolTipText(LOCTEXT("RunCleanupNowTip", "Start the Cleanup-Unused-Assets check now."))
-				.OnClicked(this, &SCPMenuWidget::OnRunCleanupNow)
+				.Text(LOCTEXT("FastCleanupNow", "Fast Cleanup"))
+				.ToolTipText(LOCTEXT("FastCleanupNowTip", "Uses cached data to determine unused assets in your project."))
+				.OnClicked(this, &SCPMenuWidget::OnRunCleanupFast)
+			]
+			+SHorizontalBox::Slot()
+			[
+				SNew(SButton)
+				.Text(LOCTEXT("ComplexCleanupNow", "Complex Cleanup"))
+				.ToolTipText(LOCTEXT("ComplexCleanupNowTip", "!WARNING: VERY SLOW! Loads all assets to determine unused assets in your project."))
+				.OnClicked(this, &SCPMenuWidget::OnRunCleanupComplex)
 			]
 			+SHorizontalBox::Slot()
 			[
@@ -235,9 +242,15 @@ bool SCPMenuWidget::IsGameAsset(const FAssetData& AssetData) const
 	return GameAssets.Contains(AssetData);
 }
 
-FReply SCPMenuWidget::OnRunCleanupNow()
+FReply SCPMenuWidget::OnRunCleanupFast()
 {
-	CPOperations::CheckAllDependencies();
+	UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Fast);
+	return FReply::Handled();
+}
+
+FReply SCPMenuWidget::OnRunCleanupComplex()
+{
+	UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Complex);
 	return FReply::Handled();
 }
 

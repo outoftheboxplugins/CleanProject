@@ -121,7 +121,15 @@ void UCPDependencyWalkerSubsystem::CheckAllDependencies(EScanType ScanType)
 
 	TArray<FAssetData> AssetsToRemove = AllGameAssets.Array();
 	AssetsToRemove.RemoveAll([=](const FAssetData& AssetData) { return AssetsToKeep.Contains(AssetData); });
-	SCPAssetDialog::OpenAssetDialog(AssetsToRemove);
+
+	if (AssetsToRemove.Num() == 0)
+	{
+		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("NoFilesToDelete", "No unused assets found."));
+	}
+	else
+	{
+		SCPAssetDialog::OpenAssetDialog(AssetsToRemove);
+	}
 }
 
 TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString> FolderPaths) const

@@ -2,6 +2,7 @@
 
 #include "CleanProjectModule.h"
 
+#include "CPDependencyWalkerSubsystem.h"
 #include "CPLog.h"
 #include "CPMenuExtensions.h"
 #include "CPOperations.h"
@@ -81,14 +82,26 @@ void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
 {
 	FToolMenuOwnerScoped OwnerScoped(this);
 	FToolMenuSection& Section = InMenu->AddSection("Actions");
-	Section.AddEntry(FToolMenuEntry::InitMenuEntry("MenuCleanupUnusedAssets",
-		LOCTEXT("MenuCleanupUnusedAssets", "Cleanup unused assets"),
-		LOCTEXT("MenuCleanupUnusedAssetsTooltip", "Check for unused assets in your project based on your settings."), FSlateIcon(),
+	Section.AddEntry(FToolMenuEntry::InitMenuEntry("MenuCleanupUnusedAssetsFast",
+		LOCTEXT("MenuCleanupUnusedAssetsFast", "Cleanup unused assets Fast"),
+		LOCTEXT("MenuCleanupUnusedAssetsFastTooltip", "Uses cached data to determine unused assets in your project."), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets* from menu."));
-				CPOperations::CheckAllDependencies();
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Fast* from menu."));
+				UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Fast);
+			}))));
+
+	Section.AddEntry(FToolMenuEntry::InitMenuEntry("MenuCleanupUnusedAssetsComplex",
+		LOCTEXT("MenuCleanupUnusedAssetsComplex", "Cleanup unused assets Complex"),
+		LOCTEXT("MenuCleanupUnusedAssetsComplexTooltip",
+			"!WARNING: VERY SLOW! Loads all assets to determine unused assets in your project."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateLambda(
+			[]()
+			{
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Complex* from menu."));
+				UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Complex);
 			}))));
 
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry("MenuCleanupRedirects", LOCTEXT("MenuCleanupRedirects", "Cleanup redirects"),

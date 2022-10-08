@@ -41,7 +41,8 @@ private:
 
 	// Buttons
 private:
-	FReply OnRunCleanupNow();
+	FReply OnRunCleanupFast();
+	FReply OnRunCleanupComplex();
 	FReply OnRefreshUnused();
 	FReply OnGoToDocumentation();
 	FReply OnOpenSettings();

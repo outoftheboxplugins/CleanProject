@@ -15,7 +15,6 @@ namespace CPOperations
  * Assets to test: selected assets
  * Dependencies of: all game assets
  */
-void CheckAllDependencies();
 void CheckDependenciesOf(TArray<FAssetData> SelectedAssets);
 
 // Return which of the assets are unused based on the selected one.
