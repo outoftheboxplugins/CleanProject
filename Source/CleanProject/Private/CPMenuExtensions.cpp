@@ -32,7 +32,7 @@ void CPMenuExtensions::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder
 			[SelectedAssets]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Fast* from selected assets."));
-				UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedAssets, EScanType::Fast);
+				UCPDependencyWalkerSubsystem::Get()->DeleteUnusedAssets(SelectedAssets, EScanType::Fast);
 			})));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsCheckUnusedComplex", "Complex Check if selected assets are unused"),
@@ -43,7 +43,7 @@ void CPMenuExtensions::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder
 					  [SelectedAssets]()
 					  {
 						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected assets."));
-						  UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedAssets, EScanType::Complex);
+						  UCPDependencyWalkerSubsystem::Get()->DeleteUnusedAssets(SelectedAssets, EScanType::Complex);
 					  }),
 			FCanExecuteAction::CreateLambda([]() { return false; })));
 
@@ -89,7 +89,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 			[SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Fast* from selected folders."));
-				UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedFolders, EScanType::Fast);
+				UCPDependencyWalkerSubsystem::Get()->DeleteUnusedAssets(SelectedFolders, EScanType::Fast);
 			})));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCheckUnusedComplex", "Complex Check assets from the selected folders"),
@@ -100,7 +100,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 					  [SelectedFolders]()
 					  {
 						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected folders."));
-						  UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedFolders, EScanType::Complex);
+						  UCPDependencyWalkerSubsystem::Get()->DeleteUnusedAssets(SelectedFolders, EScanType::Complex);
 					  }),
 			FCanExecuteAction::CreateLambda([]() { return false; })));
 

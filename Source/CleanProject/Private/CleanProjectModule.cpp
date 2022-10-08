@@ -89,7 +89,7 @@ void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
 			[]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Fast* from menu."));
-				UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Fast);
+				UCPDependencyWalkerSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Fast);
 			}))));
 
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry("MenuCleanupUnusedAssetsComplex",
@@ -101,7 +101,7 @@ void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
 					  []()
 					  {
 						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Complex* from menu."));
-						  UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Complex);
+						  UCPDependencyWalkerSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Complex);
 					  }),
 			FCanExecuteAction::CreateLambda([]() { return false; }))));
 

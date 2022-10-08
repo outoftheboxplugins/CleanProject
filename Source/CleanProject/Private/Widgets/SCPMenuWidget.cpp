@@ -226,7 +226,7 @@ int64 SCPMenuWidget::GetUnusedAssetsCount() const
 
 void SCPMenuWidget::RefreshUnusedAssets()
 {
-	const TArray<FAssetData> UnusedAssets = CPOperations::CheckForUnusedAssets();
+	const TArray<FAssetData> UnusedAssets = UCPDependencyWalkerSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
 	UnusedAssetsCount = UnusedAssets.Num();
 
 	// TOSOLVE: Ditch the AllDependencyAssets and use the new WhitelistedAssets
@@ -247,7 +247,7 @@ FReply SCPMenuWidget::OnRunCleanupFast()
 {
 	UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Fast* from widget menu."));
 
-	UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Fast);
+	UCPDependencyWalkerSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Fast);
 	return FReply::Handled();
 }
 
@@ -255,7 +255,7 @@ FReply SCPMenuWidget::OnRunCleanupComplex()
 {
 	UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Complex* from widget menu."));
 
-	UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Complex);
+	UCPDependencyWalkerSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Complex);
 	return FReply::Handled();
 }
 

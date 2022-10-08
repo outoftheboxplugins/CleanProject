@@ -119,12 +119,6 @@ TArray<FString> GetListFromSelection(const TArray<FString>& List, const FString&
 
 namespace CPOperations
 {
-TArray<FAssetData> CheckForUnusedAssets()
-{
-	const TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
-	return CheckForUnusedAssets(AllAssets);
-}
-
 TArray<FAssetData> CheckForUnusedAssets(TArray<FAssetData> AssetsToTest)
 {
 	const UCPSettings* Settings = GetDefault<UCPSettings>();

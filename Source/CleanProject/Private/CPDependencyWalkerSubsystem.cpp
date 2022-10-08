@@ -111,34 +111,21 @@ UCPDependencyWalkerSubsystem* UCPDependencyWalkerSubsystem::Get()
 	return GEditor->GetEditorSubsystem<UCPDependencyWalkerSubsystem>();
 }
 
-void UCPDependencyWalkerSubsystem::CheckAllDependencies(EScanType ScanType)
+void UCPDependencyWalkerSubsystem::DeleteAllUnusedAssets(EScanType ScanType)
 {
-	const TArray<FAssetData> AssetsToCheck = GetAllGameAssets().Array();
-	CheckDependenciesOf(AssetsToCheck, ScanType);
+	const TArray<FAssetData> AllAssets = GetAllGameAssets().Array();
+	DeleteUnusedAssets(AllAssets, ScanType);
 }
 
-void UCPDependencyWalkerSubsystem::CheckDependenciesOf(const TArray<FString>& InFolders, EScanType ScanType)
+void UCPDependencyWalkerSubsystem::DeleteUnusedAssets(const TArray<FString>& InFolders, EScanType ScanType)
 {
 	const TArray<FAssetData> AssetsInSelectedFolders = GetAssetsInPaths(InFolders);
-	CheckDependenciesOf(AssetsInSelectedFolders, ScanType);
+	DeleteUnusedAssets(AssetsInSelectedFolders, ScanType);
 }
 
-void UCPDependencyWalkerSubsystem::CheckDependenciesOf(const TArray<FAssetData>& InAssets, EScanType ScanType)
+void UCPDependencyWalkerSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& InAssets, EScanType ScanType)
 {
-	if (ScanType == EScanType::Complex)
-	{
-		UE_LOG(LogCleanProject, Error,
-			TEXT("Complex scan is currently not available due to a crash while unloading in "
-				 "UEditorAssetLibrary::FindPackageReferencersForAsset"))
-	}
-	const TSet<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
-
-	FAssetDependenciesTable DependenciesTable = FAssetDependenciesTable(GetAllGameAssets(), ScanType);
-	const TSet<FAssetData> AssetsToKeep = DependenciesTable.CompileReferences(WhitelistedAssets);
-
-	TArray<FAssetData> AssetsToRemove = InAssets;
-	AssetsToRemove.RemoveAll([=](const FAssetData& AssetData) { return AssetsToKeep.Contains(AssetData); });
-
+	const TArray<FAssetData> AssetsToRemove = GetUnusedAssets(InAssets, ScanType);
 	if (AssetsToRemove.Num() == 0)
 	{
 		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("NoFilesToDelete", "No unused assets found."));
@@ -147,6 +134,31 @@ void UCPDependencyWalkerSubsystem::CheckDependenciesOf(const TArray<FAssetData>&
 	{
 		SCPAssetDialog::OpenAssetDialog(AssetsToRemove);
 	}
+}
+
+TArray<FAssetData> UCPDependencyWalkerSubsystem::GetUnusedAssets(const TArray<FAssetData>& AssetsToCheck, EScanType ScanType) const
+{
+	if (ScanType == EScanType::Complex)
+	{
+		UE_LOG(LogCleanProject, Error,
+			TEXT("Complex scan is currently not available due to a crash while unloading in "
+				 "UEditorAssetLibrary::FindPackageReferencersForAsset"));
+	}
+	const TSet<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
+
+	FAssetDependenciesTable DependenciesTable = FAssetDependenciesTable(GetAllGameAssets(), ScanType);
+	const TSet<FAssetData> AssetsToKeep = DependenciesTable.CompileReferences(WhitelistedAssets);
+
+	TArray<FAssetData> UnusedAssets = AssetsToCheck;
+	UnusedAssets.RemoveAll([=](const FAssetData& AssetData) { return AssetsToKeep.Contains(AssetData); });
+
+	return UnusedAssets;
+}
+
+TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAllUnusedAssets(EScanType ScanType) const
+{
+	const TArray<FAssetData> AllAssets = GetAllGameAssets().Array();
+	return GetUnusedAssets(AllAssets, ScanType);
 }
 
 TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString> FolderPaths) const
