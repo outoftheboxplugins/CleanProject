@@ -36,8 +36,8 @@ public:
 
 	void CheckAllDependencies(EScanType ScanType);
 
-	void CheckDependenciesOf(const TArray<FAssetData>& InAssets, EScanType ScanType);
 	void CheckDependenciesOf(const TArray<FString>& InFolders, EScanType ScanType);
+	void CheckDependenciesOf(const TArray<FAssetData>& InAssets, EScanType ScanType);
 
 	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths) const;
 

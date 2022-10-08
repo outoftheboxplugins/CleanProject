@@ -117,6 +117,12 @@ void UCPDependencyWalkerSubsystem::CheckAllDependencies(EScanType ScanType)
 	CheckDependenciesOf(AssetsToCheck, ScanType);
 }
 
+void UCPDependencyWalkerSubsystem::CheckDependenciesOf(const TArray<FString>& InFolders, EScanType ScanType)
+{
+	const TArray<FAssetData> AssetsInSelectedFolders = GetAssetsInPaths(InFolders);
+	CheckDependenciesOf(AssetsInSelectedFolders, ScanType);
+}
+
 void UCPDependencyWalkerSubsystem::CheckDependenciesOf(const TArray<FAssetData>& InAssets, EScanType ScanType)
 {
 	const TSet<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
@@ -135,12 +141,6 @@ void UCPDependencyWalkerSubsystem::CheckDependenciesOf(const TArray<FAssetData>&
 	{
 		SCPAssetDialog::OpenAssetDialog(AssetsToRemove);
 	}
-}
-
-void UCPDependencyWalkerSubsystem::CheckDependenciesOf(const TArray<FString>& InFolders, EScanType ScanType)
-{
-	const TArray<FAssetData> AssetsInSelectedFolders = GetAssetsInPaths(InFolders);
-	CheckDependenciesOf(AssetsInSelectedFolders, ScanType);
 }
 
 TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString> FolderPaths) const

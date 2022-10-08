@@ -81,7 +81,7 @@ TSharedRef<FExtender> CPMenuExtensions::CreateContentBrowserFoldersExtender(cons
 void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilder, TArray<FString> SelectedFolders)
 {
 	MenuBuilder.BeginSection("CleanProject", LOCTEXT("ContentBrowserFolderSection", "Clean Project"));
-	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCheckUnusedFast", "Fast Check if assets from the selected folders are unused"),
+	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCheckUnusedFast", "Fast Check assets from the selected folders"),
 		LOCTEXT("FoldersCheckUnusedFastTooltip", "Uses cached data to determine unused assets in the selected folders."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
@@ -91,7 +91,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 				UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedFolders, EScanType::Fast);
 			})));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCheckUnusedComplex", "Complex Check if assets from the selected folders are unused"),
+	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCheckUnusedComplex", "Complex Check assets from the selected folders"),
 		LOCTEXT("FoldersCheckUnusedComplexTooltip",
 			"!WARNING: VERY SLOW! Loads all assets to determine unused assets in the selected folders."),
 		FSlateIcon(),
