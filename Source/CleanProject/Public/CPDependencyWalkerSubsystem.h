@@ -38,8 +38,8 @@ public:
 	void DeleteUnusedAssets(const TArray<FString>& InFolders, EScanType ScanType);
 	void DeleteUnusedAssets(const TArray<FAssetData>& InAssets, EScanType ScanType);
 
-	TArray<FAssetData> GetUnusedAssets(const TArray<FAssetData>& AssetsToCheck, EScanType ScanType) const;
 	TArray<FAssetData> GetAllUnusedAssets(EScanType ScanType) const;
+	TArray<FAssetData> GetUnusedAssets(const TArray<FAssetData>& AssetsToCheck, EScanType ScanType) const;
 	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths) const;
 
 private:

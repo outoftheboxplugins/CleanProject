@@ -136,6 +136,12 @@ void UCPDependencyWalkerSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& 
 	}
 }
 
+TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAllUnusedAssets(EScanType ScanType) const
+{
+	const TArray<FAssetData> AllAssets = GetAllGameAssets().Array();
+	return GetUnusedAssets(AllAssets, ScanType);
+}
+
 TArray<FAssetData> UCPDependencyWalkerSubsystem::GetUnusedAssets(const TArray<FAssetData>& AssetsToCheck, EScanType ScanType) const
 {
 	if (ScanType == EScanType::Complex)
@@ -153,12 +159,6 @@ TArray<FAssetData> UCPDependencyWalkerSubsystem::GetUnusedAssets(const TArray<FA
 	UnusedAssets.RemoveAll([=](const FAssetData& AssetData) { return AssetsToKeep.Contains(AssetData); });
 
 	return UnusedAssets;
-}
-
-TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAllUnusedAssets(EScanType ScanType) const
-{
-	const TArray<FAssetData> AllAssets = GetAllGameAssets().Array();
-	return GetUnusedAssets(AllAssets, ScanType);
 }
 
 TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString> FolderPaths) const
