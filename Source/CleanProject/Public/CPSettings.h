@@ -26,6 +26,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
 	TSet<FSoftObjectPath> WhitelistedAssets;
 	/**
+	 * Old version for storing assets we want to whitelist
+	 */
+	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use WhitelistedAssets")
+	UPROPERTY(VisibleDefaultsOnly, config, Category = "Deprecated")
+	TArray<FString> WhitelistAssetsPaths;
+	/**
 	 * Assets we should actively exclude from the final pak
 	 * Add assets you want to prevent from getting added to your final game. Their dependencies might still get packaged if
 	 * referenced by something else
@@ -47,25 +53,11 @@ public:
 	 */
 	void BlacklistAssets(const TArray<FAssetData> Assets);
 	/**
-	 * Increases the space gained metric and saves config
-	 */
-	void IncreaseSpaceGained(int64 ExtraSpaceGained);
-	/**
-	 * Returns the space gained by using CleanProject
-	 */
-	int64 GetSpaceGained() const;
-	/**
 	 * Returns the asset path of the whitelisted assets as FName
 	 */
 	TSet<FAssetData> GetWhitelistAssetsPaths() const;
 
 private:
-	/**
-	 * How many bytes we've saved so far by deleting assets with this system
-	 */
-	UPROPERTY(config)
-	int64 SpaceGained = 0;
-
 	// Begin UDeveloperSettings interface
 	virtual void PostInitProperties() override;
 	virtual FName GetContainerName() const override;
@@ -77,21 +69,4 @@ private:
 	 * Saves the current values to the .ini file inside root Config folder
 	 */
 	void SaveToDefaultConfig();
-
-	// ***************************************************************************************************************************
-	// TOSOLVE: Backwards compatibility
-public:
-	UCPSettings();
-	/**
-	 * Columns to be hidden in the final report
-	 */
-	UPROPERTY(EditAnywhere, config, Category = "Report")
-	TArray<FString> ReportHiddenColumns;
-	/**
-	 * Old version for storing assets we want to whitelist
-	 */
-	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use WhitelistedAssets")
-	UPROPERTY(VisibleDefaultsOnly, config, Category = "Deprecated")
-	TArray<FString> WhitelistAssetsPaths;
-	// ***************************************************************************************************************************
 };
