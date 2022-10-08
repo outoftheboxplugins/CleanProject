@@ -26,6 +26,10 @@ private:
 
 	TArray<FAssetData> GetAssetsForAction() const;
 	TSharedRef<SWidget> CreateAssetPickerWidget();
+	
+	int64 GetAssetDiskSize(const FAssetData& Asset);
+
+	int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList);
 
 	FReply OnDeleteClicked();
 	FReply OnMoreInfoClicked();

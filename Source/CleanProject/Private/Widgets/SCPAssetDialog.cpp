@@ -3,8 +3,8 @@
 #include "SCPAssetDialog.h"
 
 #include "AssetManagerEditorModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "CPLog.h"
-#include "CPOperations.h"
 #include "CPSettings.h"
 #include "ContentBrowserModule.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
@@ -232,9 +232,6 @@ void SCPAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
 		ObjectsToDelete.Add(AssetData.GetAsset());
 	}
 
-	const int64 SizeGained = CPOperations::GetAssetsDiskSize(AssetsToDelete);
-	GetMutableDefault<UCPSettings>()->IncreaseSpaceGained(SizeGained);
-
 	ObjectTools::DeleteObjects(ObjectsToDelete);
 	RemoveFromList(AssetsToDelete);
 }
@@ -353,6 +350,30 @@ TSharedRef<SWidget> SCPAssetDialog::CreateAssetPickerWidget()
 		FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
 	TSharedRef<SWidget> AssetPickerWidget = ContentBrowserModule.Get().CreateAssetPicker(Config);
 	return AssetPickerWidget;
+}
+
+int64 SCPAssetDialog::GetAssetDiskSize(const FAssetData& Asset)
+{
+	const FName PackageName = FName(*Asset.GetPackage()->GetName());
+	TOptional<FAssetPackageData> PackageData = FAssetRegistryModule::GetRegistry().GetAssetPackageDataCopy(PackageName);
+	if (PackageData.IsSet())
+	{
+		return PackageData.GetValue().DiskSize;
+	}
+	return -1;
+}
+
+int64 SCPAssetDialog::GetAssetsDiskSize(const TArray<FAssetData>& AssetsList)
+{
+	int64 TotalDiskSize = 0;
+	for (const FAssetData& AssetDataReported : AssetsList)
+	{
+		const FText CurrentAssetName = FText::FromName(AssetDataReported.PackageName);
+		const FText CurrentAssetText = FText::Format(LOCTEXT("CurrentAsset", "Current Asset: {0}"), CurrentAssetName);
+		TotalDiskSize += GetAssetDiskSize(AssetDataReported);
+	}
+
+	return TotalDiskSize;
 }
 
 #undef LOCTEXT_NAMESPACE

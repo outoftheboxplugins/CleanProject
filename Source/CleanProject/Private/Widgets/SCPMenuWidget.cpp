@@ -51,17 +51,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 				.DefaultLabel(LOCTEXT("UnusedAssetsList", "Unused assets - not directly whitelisted or referenced by any actively used asset"))
 			)
 		]
-		
-		+SVerticalBox::Slot()
-		.AutoHeight()
-		[
-			CreateInfoWidget(LOCTEXT("ProjectSpaceGained", "Space gained in project"), 
-			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([]()
-					{
-						return FText::AsMemory(GetDefault<UCPSettings>()->GetSpaceGained());
-					})))
-		]
-		
+
 		+SVerticalBox::Slot()
 		.AutoHeight()
 		[

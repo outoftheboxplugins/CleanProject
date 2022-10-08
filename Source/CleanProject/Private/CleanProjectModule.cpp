@@ -5,7 +5,6 @@
 #include "CPDependencyWalkerSubsystem.h"
 #include "CPLog.h"
 #include "CPMenuExtensions.h"
-#include "CPOperations.h"
 #include "ContentBrowserModule.h"
 #include "LevelEditor.h"
 #include "Shared/OutOfTheBoxHelpers.h"

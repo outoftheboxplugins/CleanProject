@@ -5,7 +5,6 @@
 #include "AssetRegistryModule.h"
 #include "CPDependencyWalkerSubsystem.h"
 #include "CPLog.h"
-#include "CPOperations.h"
 #include "CPSettings.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Framework/MultiBox/MultiBoxExtender.h"
