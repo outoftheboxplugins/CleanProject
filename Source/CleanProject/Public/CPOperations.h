@@ -64,9 +64,6 @@ FTreeAssetDependency GetAssetDependenciesTree(const TArray<FName>& AssetsNameLis
 // Recursively get all the dependencies of a certain package.
 void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependencies, FTreeAssetDependency& ResultTreeDependency);
 
-// Fix up the redirects in the whole project.
-void FixUpRedirectsInProject();
-
 // Delete all the empty folders of the project.
 void DeleteEmptyProjectFolders();
 void DeleteEmptyProjectFolders(TArray<FString> SelectedFolders);

@@ -10,6 +10,7 @@ public class CleanProject : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
+				"AssetTools",
 				"AssetManagerEditor",
 				"Core",
 				"CoreUObject",

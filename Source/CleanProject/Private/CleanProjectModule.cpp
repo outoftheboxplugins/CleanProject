@@ -111,7 +111,7 @@ void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
 			[]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects* from menu."));
-				CPOperations::FixUpRedirectsInProject();
+				UCPDependencyWalkerSubsystem::Get()->FixUpRedirectsInProject();
 			}))));
 
 	Section.AddEntry(

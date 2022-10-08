@@ -3,6 +3,8 @@
 #include "CPDependencyWalkerSubsystem.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetToolsModule.h"
+#include "AssetViewUtils.h"
 #include "CPLog.h"
 #include "CPSettings.h"
 #include "EditorAssetLibrary.h"
@@ -136,6 +138,30 @@ void UCPDependencyWalkerSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& 
 	}
 }
 
+void UCPDependencyWalkerSubsystem::FixUpRedirectsInProject()
+{
+	const TSet<FAssetData> RedirectorAssets = GetAllGameAssetsOfType<UObjectRedirector>();
+
+	TArray<FString> ObjectPaths;
+	for (const FAssetData& Asset : RedirectorAssets)
+	{
+		ObjectPaths.Add(Asset.ObjectPath.ToString());
+	}
+
+	TArray<UObject*> Objects;
+	if (AssetViewUtils::LoadAssetsIfNeeded(ObjectPaths, Objects, true, true))
+	{
+		TArray<UObjectRedirector*> Redirectors;
+		for (UObject* Object : Objects)
+		{
+			UObjectRedirector* Redirector = CastChecked<UObjectRedirector>(Object);
+			Redirectors.Add(Redirector);
+		}
+
+		FAssetToolsModule::GetModule().Get().FixupReferencers(Redirectors);
+	}
+}
+
 TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAllUnusedAssets(EScanType ScanType) const
 {
 	const TArray<FAssetData> AllAssets = GetAllGameAssets().Array();
@@ -203,13 +229,18 @@ TSet<FAssetData> UCPDependencyWalkerSubsystem::GetWhitelistedAssets() const
 	return TSet(Result);
 }
 
-TSet<FAssetData> UCPDependencyWalkerSubsystem::GetAllGameAssets() const
+TSet<FAssetData> UCPDependencyWalkerSubsystem::GetAllGameAssets(TOptional<FName> ClassFilter) const
 {
 	TArray<FAssetData> AllAssetData;
 
 	FARFilter Filter;
 	Filter.PackagePaths.Add(TEXT("/Game"));
 	Filter.bRecursivePaths = true;
+
+	if (ClassFilter.IsSet())
+	{
+		Filter.ClassNames.Add(ClassFilter.GetValue());
+	}
 
 	FAssetRegistryModule::GetRegistry().GetAssets(Filter, AllAssetData);
 	return TSet(AllAssetData);

@@ -220,22 +220,6 @@ void RecursiveGetDependencies(const FName& PackageName, TSet<FName>& AllDependen
 	}
 }
 
-void FixUpRedirectsInProject()
-{
-	const TArray<FAssetData> RedirectAssetList = GetAllGameAssets<UObjectRedirector>();
-	TArray<UObjectRedirector*> AssetsToRedirect;
-	const bool bLoadSuccess = OperationsHelpers::LoadRedirectAssetsInProject(RedirectAssetList, AssetsToRedirect);
-	if (bLoadSuccess)
-	{
-		FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>(TEXT("AssetTools"));
-		AssetToolsModule.Get().FixupReferencers(AssetsToRedirect);
-	}
-	else
-	{
-		UE_LOG(LogCleanProject, Warning, TEXT("Fixup redirects will not be attempted, at least one failed."));
-	}
-}
-
 void DeleteEmptyProjectFolders()
 {
 	const FString& ContentDirectory = FPaths::ProjectContentDir();
@@ -257,7 +241,8 @@ void DeleteEmptyProjectFolders(TArray<FString> SelectedFolders)
 
 void DeleteFolderByPath(const FString& FolderPath)
 {
-	FixUpRedirectsInProject();
+	UCPDependencyWalkerSubsystem::Get()->FixUpRedirectsInProject();
+
 	TArray<FString> EmptyFoldersFound;
 	OperationsHelpers::GetEmptyFolderInPath(FolderPath, EmptyFoldersFound);
 	for (const FString& FolderToDelete : EmptyFoldersFound)

@@ -38,11 +38,22 @@ public:
 	void DeleteUnusedAssets(const TArray<FString>& InFolders, EScanType ScanType);
 	void DeleteUnusedAssets(const TArray<FAssetData>& InAssets, EScanType ScanType);
 
+	void FixUpRedirectsInProject();
+
 	TArray<FAssetData> GetAllUnusedAssets(EScanType ScanType) const;
 	TArray<FAssetData> GetUnusedAssets(const TArray<FAssetData>& AssetsToCheck, EScanType ScanType) const;
 	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths) const;
 
 private:
 	TSet<FAssetData> GetWhitelistedAssets() const;
-	TSet<FAssetData> GetAllGameAssets() const;
+	TSet<FAssetData> GetAllGameAssets(TOptional<FName> ClassFilter = {}) const;
+
+	template <typename T>
+	TSet<FAssetData> GetAllGameAssetsOfType() const;
 };
+
+template <typename T>
+TSet<FAssetData> UCPDependencyWalkerSubsystem::GetAllGameAssetsOfType() const
+{
+	return GetAllGameAssets(T::StaticClass()->GetFName());
+}
