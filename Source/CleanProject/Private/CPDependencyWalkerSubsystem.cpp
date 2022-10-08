@@ -125,6 +125,12 @@ void UCPDependencyWalkerSubsystem::CheckDependenciesOf(const TArray<FString>& In
 
 void UCPDependencyWalkerSubsystem::CheckDependenciesOf(const TArray<FAssetData>& InAssets, EScanType ScanType)
 {
+	if (ScanType == EScanType::Complex)
+	{
+		UE_LOG(LogCleanProject, Error,
+			TEXT("Complex scan is currently not available due to a crash while unloading in "
+				 "UEditorAssetLibrary::FindPackageReferencersForAsset"))
+	}
 	const TSet<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
 
 	FAssetDependenciesTable DependenciesTable = FAssetDependenciesTable(GetAllGameAssets(), ScanType);

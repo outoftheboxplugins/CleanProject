@@ -40,11 +40,12 @@ void CPMenuExtensions::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder
 			"!WARNING: VERY SLOW! Loads all assets to determine unused assets in the selected assets."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
-			[SelectedAssets]()
-			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected assets."));
-				UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedAssets, EScanType::Complex);
-			})));
+					  [SelectedAssets]()
+					  {
+						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected assets."));
+						  UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedAssets, EScanType::Complex);
+					  }),
+			FCanExecuteAction::CreateLambda([]() { return false; })));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsWhitelistAssets", "Whitelist selected assets"),
 		LOCTEXT("AssetsWhitelistAssetsTooltip", "Add the selected assets to the Whitelist."), FSlateIcon(),
@@ -96,11 +97,12 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 			"!WARNING: VERY SLOW! Loads all assets to determine unused assets in the selected folders."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
-			[SelectedFolders]()
-			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected folders."));
-				UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedFolders, EScanType::Complex);
-			})));
+					  [SelectedFolders]()
+					  {
+						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected folders."));
+						  UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedFolders, EScanType::Complex);
+					  }),
+			FCanExecuteAction::CreateLambda([]() { return false; })));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersWhitelistAssets", "Whitelist assets from selected folders"),
 		LOCTEXT("FoldersWhitelistAssetsTooltip", "Add the assets from the selected folders to the Whitelist."), FSlateIcon(),

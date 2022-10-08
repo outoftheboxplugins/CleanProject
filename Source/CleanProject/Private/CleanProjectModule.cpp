@@ -98,11 +98,12 @@ void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
 			"!WARNING: VERY SLOW! Loads all assets to determine unused assets in your project."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
-			[]()
-			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Complex* from menu."));
-				UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Complex);
-			}))));
+					  []()
+					  {
+						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Complex* from menu."));
+						  UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Complex);
+					  }),
+			FCanExecuteAction::CreateLambda([]() { return false; }))));
 
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry("MenuCleanupRedirects", LOCTEXT("MenuCleanupRedirects", "Cleanup redirects"),
 		LOCTEXT("MenuCleanupRedirectsTooltip", "Fix redirects in your whole project."), FSlateIcon(),

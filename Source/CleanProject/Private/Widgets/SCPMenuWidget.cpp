@@ -99,6 +99,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 				.Text(LOCTEXT("ComplexCleanupNow", "Complex Cleanup"))
 				.ToolTipText(LOCTEXT("ComplexCleanupNowTip", "!WARNING: VERY SLOW! Loads all assets to determine unused assets in your project."))
 				.OnClicked(this, &SCPMenuWidget::OnRunCleanupComplex)
+				.IsEnabled(false)
 			]
 			+SHorizontalBox::Slot()
 			[
