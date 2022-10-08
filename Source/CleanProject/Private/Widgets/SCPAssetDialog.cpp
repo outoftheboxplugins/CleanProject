@@ -20,7 +20,7 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 {
 	ReportAssets = AssetsToReport;
 
-	const int64 TotalDiskSize = CPOperations::GetAssetsDiskSize(ReportAssets);
+	const int64 TotalDiskSize = GetAssetsDiskSize(ReportAssets);
 
 	// clang-format off
 	ChildSlot
