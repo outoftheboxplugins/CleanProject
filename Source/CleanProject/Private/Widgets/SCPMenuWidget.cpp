@@ -167,7 +167,7 @@ void SCPMenuWidget::OnFilesLoaded()
 	AssetRegistryModule.Get().OnAssetAdded().AddSP(this, &SCPMenuWidget::OnAssetAdded);
 	AssetRegistryModule.Get().OnAssetRemoved().AddSP(this, &SCPMenuWidget::OnAssetRemoved);
 	AssetRegistryModule.Get().OnAssetRenamed().AddSP(this, &SCPMenuWidget::OnAssetRenamed);
-	AssetRegistryModule.Get().OnAssetUpdated().AddSP(this, &SCPMenuWidget::OnAssetUpdated);
+	AssetRegistryModule.Get().OnAssetUpdatedOnDisk().AddSP(this, &SCPMenuWidget::OnAssetUpdated);
 }
 
 void SCPMenuWidget::OnAssetAdded(const FAssetData& AssetData)
@@ -210,10 +210,12 @@ int64 SCPMenuWidget::GetUnusedAssetsCount() const
 void SCPMenuWidget::RefreshUnusedAssets()
 {
 	const TArray<FAssetData> UnusedAssets = UCPDependencyWalkerSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
+	UnusedAssetsList.Empty(UnusedAssets.Num());
 	Algo::Transform(UnusedAssets, UnusedAssetsList, [](const FAssetData& AssetData) { return MakeShared<FAssetData>(AssetData); });
 	UnusedAssetsListView->RebuildList();
 
 	const TArray<FAssetData> InuseAssets = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets().Array();
+	InuseAssetsList.Empty(InuseAssets.Num());
 	Algo::Transform(InuseAssets, InuseAssetsList, [](const FAssetData& AssetData) { return MakeShared<FAssetData>(AssetData); });
 	InuseAssetsListView->RebuildList();
 }
