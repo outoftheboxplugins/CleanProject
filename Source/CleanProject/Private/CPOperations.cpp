@@ -146,20 +146,6 @@ TArray<FAssetData> CheckForUnusedAssets(TArray<FAssetData> AssetsToTest)
 	return AssetsToTest;
 }
 
-void CheckDependenciesOf(const TArray<FAssetData> SelectedAssets)
-{
-	const TArray<FAssetData> UnusedAssets = CheckForUnusedAssets(SelectedAssets);
-	// Open dialogs based on the results.
-	if (UnusedAssets.Num() == 0)
-	{
-		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("NoFilesToDelete", "No unused assets found."));
-	}
-	else
-	{
-		SCPAssetDialog::OpenAssetDialog(UnusedAssets);
-	}
-}
-
 int64 GetAssetDiskSize(const FAssetData& Asset)
 {
 	const FName PackageName = FName(*Asset.GetPackage()->GetName());

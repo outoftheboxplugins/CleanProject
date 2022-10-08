@@ -4,12 +4,12 @@
 
 #include "AssetRegistryModule.h"
 #include "CPDependencyWalkerSubsystem.h"
+#include "CPLog.h"
 #include "CPSettings.h"
 #include "CleanProjectModule.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
 #include "SCPMenuAssetRow.h"
-#include "Settings/ProjectPackagingSettings.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SSeparator.h"
 
@@ -244,12 +244,16 @@ bool SCPMenuWidget::IsGameAsset(const FAssetData& AssetData) const
 
 FReply SCPMenuWidget::OnRunCleanupFast()
 {
+	UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Fast* from widget menu."));
+
 	UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Fast);
 	return FReply::Handled();
 }
 
 FReply SCPMenuWidget::OnRunCleanupComplex()
 {
+	UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Complex* from widget menu."));
+
 	UCPDependencyWalkerSubsystem::Get()->CheckAllDependencies(EScanType::Complex);
 	return FReply::Handled();
 }

@@ -113,13 +113,18 @@ UCPDependencyWalkerSubsystem* UCPDependencyWalkerSubsystem::Get()
 
 void UCPDependencyWalkerSubsystem::CheckAllDependencies(EScanType ScanType)
 {
-	const TSet<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
-	const TSet<FAssetData> AllGameAssets = GetAllGameAssets();
+	const TArray<FAssetData> AssetsToCheck = GetAllGameAssets().Array();
+	CheckDependenciesOf(AssetsToCheck, ScanType);
+}
 
-	FAssetDependenciesTable DependenciesTable = FAssetDependenciesTable(AllGameAssets, ScanType);
+void UCPDependencyWalkerSubsystem::CheckDependenciesOf(const TArray<FAssetData>& InAssets, EScanType ScanType)
+{
+	const TSet<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
+
+	FAssetDependenciesTable DependenciesTable = FAssetDependenciesTable(GetAllGameAssets(), ScanType);
 	const TSet<FAssetData> AssetsToKeep = DependenciesTable.CompileReferences(WhitelistedAssets);
 
-	TArray<FAssetData> AssetsToRemove = AllGameAssets.Array();
+	TArray<FAssetData> AssetsToRemove = InAssets;
 	AssetsToRemove.RemoveAll([=](const FAssetData& AssetData) { return AssetsToKeep.Contains(AssetData); });
 
 	if (AssetsToRemove.Num() == 0)
@@ -130,6 +135,12 @@ void UCPDependencyWalkerSubsystem::CheckAllDependencies(EScanType ScanType)
 	{
 		SCPAssetDialog::OpenAssetDialog(AssetsToRemove);
 	}
+}
+
+void UCPDependencyWalkerSubsystem::CheckDependenciesOf(const TArray<FString>& InFolders, EScanType ScanType)
+{
+	const TArray<FAssetData> AssetsInSelectedFolders = GetAssetsInPaths(InFolders);
+	CheckDependenciesOf(AssetsInSelectedFolders, ScanType);
 }
 
 TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString> FolderPaths) const

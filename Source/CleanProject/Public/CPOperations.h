@@ -10,13 +10,6 @@ using FAssetDataPtr = TSharedPtr<FName>;
 
 namespace CPOperations
 {
-/*
- * Shows all all the selected assets which are not used by any other asset in the content browser.
- * Assets to test: selected assets
- * Dependencies of: all game assets
- */
-void CheckDependenciesOf(TArray<FAssetData> SelectedAssets);
-
 // Return which of the assets are unused based on the selected one.
 TArray<FAssetData> CheckForUnusedAssets();
 TArray<FAssetData> CheckForUnusedAssets(TArray<FAssetData> AssetsToTest);

@@ -25,13 +25,25 @@ void CPMenuExtensions::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder
 {
 	MenuBuilder.BeginSection("CleanProject", LOCTEXT("ContentBrowserAssetSection", "Clean Project"));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsCheckUnused", "Check if selected assets are unused"),
-		LOCTEXT("AssetsCheckUnusedTooltip", "Checks if the selected assets are not used based on your settings."), FSlateIcon(),
+	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsCheckUnusedFast", "Fast Check if selected assets are unused"),
+		LOCTEXT("AssetsCheckUnusedFastTooltip", "Uses cached data to determine unused assets in the selected assets."),
+		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedAssets]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets* from selected assets."));
-				CPOperations::CheckDependenciesOf(SelectedAssets);
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Fast* from selected assets."));
+				UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedAssets, EScanType::Fast);
+			})));
+
+	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsCheckUnusedComplex", "Complex Check if selected assets are unused"),
+		LOCTEXT("AssetsCheckUnusedComplexTooltip",
+			"!WARNING: VERY SLOW! Loads all assets to determine unused assets in the selected assets."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateLambda(
+			[SelectedAssets]()
+			{
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected assets."));
+				UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedAssets, EScanType::Complex);
 			})));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsWhitelistAssets", "Whitelist selected assets"),
@@ -69,16 +81,25 @@ TSharedRef<FExtender> CPMenuExtensions::CreateContentBrowserFoldersExtender(cons
 void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilder, TArray<FString> SelectedFolders)
 {
 	MenuBuilder.BeginSection("CleanProject", LOCTEXT("ContentBrowserFolderSection", "Clean Project"));
-	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCheckUnused", "Check if assets from the selected folders are unused"),
-		LOCTEXT("FoldersCheckUnusedTooltip", "Checks if the assets from the selected folders are not used based on your settings."),
+	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCheckUnusedFast", "Fast Check if assets from the selected folders are unused"),
+		LOCTEXT("FoldersCheckUnusedFastTooltip", "Uses cached data to determine unused assets in the selected folders."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets* from selected folders."));
-				const TArray<FAssetData> AssetsInSelectedFolders =
-					UCPDependencyWalkerSubsystem::Get()->GetAssetsInPaths(SelectedFolders);
-				CPOperations::CheckDependenciesOf(AssetsInSelectedFolders);
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Fast* from selected folders."));
+				UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedFolders, EScanType::Fast);
+			})));
+
+	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCheckUnusedComplex", "Complex Check if assets from the selected folders are unused"),
+		LOCTEXT("FoldersCheckUnusedComplexTooltip",
+			"!WARNING: VERY SLOW! Loads all assets to determine unused assets in the selected folders."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateLambda(
+			[SelectedFolders]()
+			{
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected folders."));
+				UCPDependencyWalkerSubsystem::Get()->CheckDependenciesOf(SelectedFolders, EScanType::Complex);
 			})));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersWhitelistAssets", "Whitelist assets from selected folders"),
