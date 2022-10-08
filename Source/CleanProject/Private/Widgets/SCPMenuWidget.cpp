@@ -239,7 +239,7 @@ void SCPMenuWidget::RefreshUnusedAssets()
 
 bool SCPMenuWidget::IsGameAsset(const FAssetData& AssetData) const
 {
-	const TArray<FAssetData>& GameAssets = CPOperations::GetAllGameAssets();
+	const TArray<FAssetData>& GameAssets = UCPDependencyWalkerSubsystem::Get()->GetAllGameAssets().Array();
 	return GameAssets.Contains(AssetData);
 }
 

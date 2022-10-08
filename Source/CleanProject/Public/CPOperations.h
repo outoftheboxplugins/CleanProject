@@ -4,7 +4,6 @@
 
 #include "AssetData.h"
 #include "CoreMinimal.h"
-#include "Engine/World.h"
 
 using FAssetDataPtr = TSharedPtr<FName>;
 
@@ -69,18 +68,4 @@ void DeleteEmptyProjectFolders();
 void DeleteEmptyProjectFolders(TArray<FString> SelectedFolders);
 
 void DeleteFolderByPath(const FString& FolderPath);
-
-// Returns all the assets from the project (Game folder).
-template <typename T>
-TArray<FAssetData> GetAllGameAssets();
-TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes = TArray<FName>());
 };	  // namespace CPOperations
-
-template <typename T>
-TArray<FAssetData> CPOperations::GetAllGameAssets()
-{
-	TArray<FName> MapsClassFilter;
-	MapsClassFilter.Add(T::StaticClass()->GetFName());
-
-	return CPOperations::GetAllGameAssets(MapsClassFilter);
-}

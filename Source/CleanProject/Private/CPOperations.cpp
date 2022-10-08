@@ -251,26 +251,6 @@ void DeleteFolderByPath(const FString& FolderPath)
 	}
 }
 
-TArray<FAssetData> GetAllGameAssets(TArray<FName> ClassTypes /* = TArray<FName>()*/)
-{
-	TArray<FAssetData> AllAssetData;
-
-	FARFilter Filter;
-	Filter.PackagePaths.Add(TEXT("/Game"));
-	Filter.bRecursivePaths = true;
-	Filter.ClassNames.Reserve(ClassTypes.Num());
-	for (const auto& classType : ClassTypes)
-	{
-		Filter.ClassNames.Add(classType);
-	}
-
-	FAssetRegistryModule& AssetRegistryModule =
-		FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
-
-	return AllAssetData;
-}
-
 bool FChildDependency::operator!=(const FChildDependency& Other) const
 {
 	return !GetAssetName().IsEqual(Other.GetAssetName());
