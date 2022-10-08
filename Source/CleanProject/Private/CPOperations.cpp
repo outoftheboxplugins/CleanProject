@@ -174,18 +174,6 @@ int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList)
 	return TotalDiskSize;
 }
 
-int64 GetUnusedAssetsDiskSize(TArray<FAssetData> AssetsToTest)
-{
-	const TArray<FAssetData> UnusedAssets = CheckForUnusedAssets(AssetsToTest);
-	return GetAssetsDiskSize(UnusedAssets);
-}
-
-int64 GetUnusedAssetsDiskSize()
-{
-	const TArray<FAssetData> AllAssets = CPOperations::GetAllGameAssets();
-	return GetUnusedAssetsDiskSize(AllAssets);
-}
-
 FTreeAssetDependency GetAssetDependenciesTree(const TArray<FAssetDataPtr>& AssetsNameList)
 {
 	TArray<FName> AssetsNames;

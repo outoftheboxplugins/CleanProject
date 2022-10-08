@@ -16,9 +16,6 @@ TArray<FAssetData> CheckForUnusedAssets(TArray<FAssetData> AssetsToTest);
 int64 GetAssetDiskSize(const FAssetData& Asset);
 int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList);
 
-int64 GetUnusedAssetsDiskSize();
-int64 GetUnusedAssetsDiskSize(TArray<FAssetData> AssetsToTest);
-
 struct FChildDependency
 {
 	explicit FChildDependency(const FName& InAssetName);
