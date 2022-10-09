@@ -8,5 +8,3 @@ on:
 jobs:
   plugin-cd:
     uses:  outoftheboxplugins/BuildMachines/.github/workflows/package-plugin.yml@master
-    with:
-      folderId: ${{ secrets.GDRIVE_FOLDER }}
