@@ -193,6 +193,8 @@ void UCPDependencyWalkerSubsystem::DeleteEmptyPackageFoldersIn(const TArray<FStr
 
 void UCPDependencyWalkerSubsystem::DeleteEmptyPackageFoldersIn(const FString& InPath)
 {
+	FixUpRedirectsInProject();
+
 	const FString& FullPathFolder = FPackageName::LongPackageNameToFilename(InPath);
 	if (FullPathFolder.IsEmpty())
 	{
