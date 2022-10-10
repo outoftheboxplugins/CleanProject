@@ -248,6 +248,8 @@ TArray<FAssetData> UCPDependencyWalkerSubsystem::GetUnusedAssets(const TArray<FA
 		UE_LOG(LogCleanProject, Error,
 			TEXT("Complex scan is currently not available due to a crash while unloading in "
 				 "UEditorAssetLibrary::FindPackageReferencersForAsset"));
+
+		return;
 	}
 	const TSet<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
 
