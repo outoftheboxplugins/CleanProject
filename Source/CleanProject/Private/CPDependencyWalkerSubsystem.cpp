@@ -249,7 +249,7 @@ TArray<FAssetData> UCPDependencyWalkerSubsystem::GetUnusedAssets(const TArray<FA
 			TEXT("Complex scan is currently not available due to a crash while unloading in "
 				 "UEditorAssetLibrary::FindPackageReferencersForAsset"));
 
-		return;
+		return {};
 	}
 	const TSet<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
 
