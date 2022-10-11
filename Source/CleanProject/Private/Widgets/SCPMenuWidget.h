@@ -33,8 +33,6 @@ private:
 	FReply OnOpenSettings();
 
 	bool ShouldReactToAssetChange(const FAssetData& AssetData) const;
-	int64 GetUnusedAssetsCount() const;
-
 	void RefreshUnusedAssets();
 
 private:

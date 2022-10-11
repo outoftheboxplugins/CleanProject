@@ -54,44 +54,34 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 
 		+SVerticalBox::Slot()
 		.AutoHeight()
+		.Padding(4)
 		[
-			SNew(SBorder)
-			.BorderImage( FAppStyle::Get().GetBrush("Brushes.Header") )
-			.Padding(FMargin(4.0f, 0.0f, 4.0f, 0.0f))
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
 			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot()
-				.AutoWidth()
-				[
-					SNew(STextBlock)
-					.Text(TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
-					{
-						return FText::Format(LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets: {0}"), UnusedAssetsList.Num());
-					})))
-				]
-
-				+ SHorizontalBox::Slot()
-				.AutoWidth()
-				.HAlign(HAlign_Center)
-				.VAlign(VAlign_Center)
-				[
-					SNew(SImage)
-					.Image(FEditorStyle::Get().GetBrush("Icons.Warning"))
-					.Visibility_Lambda([this]()
-					{
-						return bIsIndexOutdated ? EVisibility::Visible : EVisibility::Hidden;
-					})
-					.ToolTipText(LOCTEXT("ProjectUnusuedAssetsOutdated", "Your project has changed since the last automatic indexing."
-						"Use the Refresh button to start re-indexing now or adjust refresh parameters inside the plugin settings."))
-				]
+				SNew(STextBlock)
+				.Text(TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
+				{
+					return FText::Format(LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets: {0}"), UnusedAssetsList.Num());
+				})))
 			]
-		]
 
-		+SVerticalBox::Slot()
-		.AutoHeight()
-		.Padding(0, 5, 0, 5)
-		[
-			SNew(SSeparator)
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.Padding(2, 0)
+			.HAlign(HAlign_Center)
+			.VAlign(VAlign_Center)
+			[
+				SNew(SImage)
+				.Image(FEditorStyle::Get().GetBrush("Icons.Warning"))
+				.Visibility_Lambda([this]()
+				{
+					return bIsIndexOutdated ? EVisibility::Visible : EVisibility::Hidden;
+				})
+				.ToolTipText(LOCTEXT("ProjectUnusuedAssetsOutdated", "Your project has changed since the last automatic indexing."
+					"Use the Refresh button to start re-indexing now or adjust refresh parameters inside the plugin settings."))
+			]
 		]
 
 		+SVerticalBox::Slot()
@@ -207,11 +197,6 @@ void SCPMenuWidget::OnAssetUpdated(const FAssetData& AssetData)
 	{
 		bIsIndexOutdated = true;
 	}
-}
-
-int64 SCPMenuWidget::GetUnusedAssetsCount() const
-{
-	return UnusedAssetsList.Num();
 }
 
 void SCPMenuWidget::RefreshUnusedAssets()
