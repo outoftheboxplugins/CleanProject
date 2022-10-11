@@ -20,28 +20,22 @@ public:
 	void Construct(const FArguments& InArgs);
 
 private:
-	TSharedRef<SWidget> CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute);
-
-	// Refreshing
-private:
 	void OnFilesLoaded();
 	void OnAssetAdded(const FAssetData& AssetData);
 	void OnAssetRemoved(const FAssetData& AssetData);
 	void OnAssetRenamed(const FAssetData& AssetData, const FString& Name);
 	void OnAssetUpdated(const FAssetData& AssetData);
 
-	int64 GetUnusedAssetsCount() const;
-	void RefreshUnusedAssets();
-
-	bool ShouldReactToAssetChange(const FAssetData& AssetData) const;
-
-	// Buttons
-private:
 	FReply OnRunCleanupFast();
 	FReply OnRunCleanupComplex();
 	FReply OnRefreshUnused();
 	FReply OnGoToDocumentation();
 	FReply OnOpenSettings();
+
+	bool ShouldReactToAssetChange(const FAssetData& AssetData) const;
+	int64 GetUnusedAssetsCount() const;
+
+	void RefreshUnusedAssets();
 
 private:
 	TSharedPtr<SListView<TSharedPtr<FAssetData>>> InuseAssetsListView;

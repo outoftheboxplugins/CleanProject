@@ -55,11 +55,57 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 		+SVerticalBox::Slot()
 		.AutoHeight()
 		[
-			CreateInfoWidget(LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets"), 
-			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
-				{
-					return FText::AsNumber(UnusedAssetsList.Num());
-				})))
+			SNew(SBorder)
+			.BorderImage( FAppStyle::Get().GetBrush("Brushes.Header") )
+			.Padding(FMargin(4.0f, 0.0f, 4.0f, 0.0f))
+			[
+				SNew(SSplitter)
+				.Style(FEditorStyle::Get(), "DetailsView.Splitter")
+				.PhysicalSplitterHandleSize(1.0f)
+				.HitDetectionSplitterHandleSize(5.0f)
+				
+				+SSplitter::Slot()
+				.Value(0.5f)
+				.Resizable(false)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets"))
+					.Justification(ETextJustify::Left)
+				]
+				
+				+SSplitter::Slot()
+				.Value(0.5f)
+				.Resizable(false)
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.AutoWidth()
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Center)
+					.Padding(2)
+					[
+						SNew(SImage)
+						.Image(FEditorStyle::Get().GetBrush("Icons.Warning"))
+						.Visibility_Lambda([this]()
+						{
+							return bIsIndexOutdated ? EVisibility::Visible : EVisibility::Hidden;
+						})
+						.ToolTipText(LOCTEXT("ProjectUnusuedAssetsOutdated", "Your project has changed since the last automatic refresh."
+							"Use the Refresh button to start re-indexing or adjust refresh parameters inside the plugin settings."))
+					]
+
+					+ SHorizontalBox::Slot()
+					.VAlign(VAlign_Center)
+					.Padding(2)
+					[
+						SNew(STextBlock)
+						.Text(TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
+						{
+							return FText::AsNumber(UnusedAssetsList.Num());
+						})))
+					]
+				]
+			]
 		]
 
 		+SVerticalBox::Slot()
@@ -123,39 +169,6 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 	{
 		OnFilesLoaded();
 	}
-}
-
-TSharedRef<SWidget> SCPMenuWidget::CreateInfoWidget(FText Title, TAttribute<FText> MetricValueAttribute)
-{
-	// clang-format off
-	return SNew(SBorder)
-		.BorderImage( FAppStyle::Get().GetBrush("Brushes.Header") )
-		.Padding(FMargin(0.0f, 0.0f, 16.0f, 0.0f))
-		[
-			SNew(SSplitter)
-			.Style(FEditorStyle::Get(), "DetailsView.Splitter")
-			.PhysicalSplitterHandleSize(1.0f)
-			.HitDetectionSplitterHandleSize(5.0f)
-			
-			+SSplitter::Slot()
-			.Value(0.5f)
-			.Resizable(false)
-			[
-				SNew(STextBlock)
-				.Text(Title)
-				.Justification(ETextJustify::Left)
-			]
-			
-			+SSplitter::Slot()
-			.Value(0.5f)
-			.Resizable(false)
-			[
-				SNew(STextBlock)
-				.Text(MetricValueAttribute)
-				.Justification(ETextJustify::Center)
-			]
-		];
-	// clang-format on
 }
 
 void SCPMenuWidget::OnFilesLoaded()
