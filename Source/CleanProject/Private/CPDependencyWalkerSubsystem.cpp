@@ -11,7 +11,7 @@
 #include "Misc/ScopedSlowTask.h"
 #include "ProfilingDebugging/ScopedTimers.h"
 #include "Settings/ProjectPackagingSettings.h"
-#include "Widgets/SCPAssetDialog.h"
+#include "Widgets/SCPUnusedAssetsReport.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -174,7 +174,7 @@ void UCPDependencyWalkerSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& 
 	}
 	else
 	{
-		SCPAssetDialog::OpenAssetDialog(AssetsToRemove);
+		SCPUnusedAssetsReport::OpenAssetDialog(AssetsToRemove);
 	}
 }
 

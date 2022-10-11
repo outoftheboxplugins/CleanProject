@@ -1,6 +1,6 @@
 // Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
 
-#include "SCPAssetDialog.h"
+#include "SCPUnusedAssetsReport.h"
 
 #include "AssetManagerEditorModule.h"
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -16,7 +16,7 @@
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
+void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
 	ReportAssets = AssetsToReport;
 
@@ -74,7 +74,7 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCPAssetDialog::OnDeleteClicked)
+				.OnClicked(this, &SCPUnusedAssetsReport::OnDeleteClicked)
 				.Text(LOCTEXT("DeleteButton", "Delete"))
 			]
 			+SUniformGridPanel::Slot(1, 0)
@@ -82,7 +82,7 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCPAssetDialog::OnMoreInfoClicked)
+				.OnClicked(this, &SCPUnusedAssetsReport::OnMoreInfoClicked)
 				.Text(LOCTEXT("MoreInfoButton", "More Info"))
 			]
 			+SUniformGridPanel::Slot(2, 0)
@@ -90,7 +90,7 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCPAssetDialog::OnWhitelistClicked)
+				.OnClicked(this, &SCPUnusedAssetsReport::OnWhitelistClicked)
 				.Text(LOCTEXT("WhitelistButton", "Whitelist"))
 			]
 			+SUniformGridPanel::Slot(3, 0)
@@ -98,7 +98,7 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCPAssetDialog::OnBlacklistClicked)
+				.OnClicked(this, &SCPUnusedAssetsReport::OnBlacklistClicked)
 				.Text(LOCTEXT("BlacklistButton", "Blacklist"))
 			]
 			+SUniformGridPanel::Slot(4, 0)
@@ -106,7 +106,7 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCPAssetDialog::OnCancelClicked)
+				.OnClicked(this, &SCPUnusedAssetsReport::OnCancelClicked)
 				.Text(LOCTEXT("CancelButton", "Cancel"))
 			]
 		]
@@ -117,23 +117,23 @@ void SCPAssetDialog::Construct(const FArguments& InArgs, const TArray<FAssetData
 //////////////////////////////////////////////////////////////////////////
 // Window commands
 
-void SCPAssetDialog::OpenAssetDialog(const TArray<FAssetData>& AssetsToReport)
+void SCPUnusedAssetsReport::OpenAssetDialog(const TArray<FAssetData>& AssetsToReport)
 {
 	// clang-format off
 	const TSharedRef<SWindow> ReportWindow = SNew(SWindow)
-		.Title(LOCTEXT("AssetDialogTitle", "Clean Project Analyzer"))
+		.Title(LOCTEXT("AssetDialogTitle", "Clean Project - Delete Preview"))
 		.ClientSize(FVector2D(600, 500))
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
 		[
-			SNew(SCPAssetDialog, AssetsToReport)
+			SNew(SCPUnusedAssetsReport, AssetsToReport)
 		];
 	// clang-format on
 
 	FSlateApplication::Get().AddWindow(ReportWindow);
 }
 
-void SCPAssetDialog::CloseAssetDialog()
+void SCPUnusedAssetsReport::CloseAssetDialog()
 {
 	TSharedPtr<SWindow> Window = FSlateApplication::Get().FindWidgetWindow(AsShared());
 
@@ -146,37 +146,37 @@ void SCPAssetDialog::CloseAssetDialog()
 //////////////////////////////////////////////////////////////////////////
 // Slate Delegates
 
-TSharedPtr<SWidget> SCPAssetDialog::OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets)
+TSharedPtr<SWidget> SCPUnusedAssetsReport::OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets)
 {
-	FMenuBuilder MenuBuilder(/*bInShouldCloseWindowAfterMenuSelection=*/true, nullptr);
+	FMenuBuilder MenuBuilder(true, nullptr);
 
 	MenuBuilder.BeginSection(TEXT("ReportContextMenu"), LOCTEXT("ReportConextMenuCategory", "Cleanup actions"));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("RemoveAction", "Remove"),
 		LOCTEXT("RemoveActionTooltip", "Remove selected assets from the report, so they won't get deleted."), FSlateIcon(),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPAssetDialog::RemoveFromList, SelectedAssets)));
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::RemoveFromList, SelectedAssets)));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("MoreInfoAction", "More Info"),
 		LOCTEXT("MoreInfoTooltip", "Get more information about the selected assets."), FSlateIcon(),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPAssetDialog::MoreInfoAsset, SelectedAssets)));
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::MoreInfoAsset, SelectedAssets)));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("WhitelistAction", "Whitelist"),
 		LOCTEXT("WhitelistActionTooltip", "Whitelist only selected assets and remove from report."), FSlateIcon(),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPAssetDialog::WhiteListAssets, SelectedAssets)));
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::WhiteListAssets, SelectedAssets)));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("BlacklistAction", "Blacklist"),
 		LOCTEXT("BlacklistActionTooltip", "Blacklist only selected assets and remove from report."), FSlateIcon(),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPAssetDialog::BlackListAssets, SelectedAssets)));
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::BlackListAssets, SelectedAssets)));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("DeleteAction", "Delete"), LOCTEXT("DeleteActionTooltip", "Delete only selected assets."),
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "ContentBrowser.AssetActions.Delete"),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPAssetDialog::DeleteAssets, SelectedAssets)));
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::DeleteAssets, SelectedAssets)));
 
 	MenuBuilder.EndSection();
 	return MenuBuilder.MakeWidget();
 }
 
-void SCPAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData)
+void SCPUnusedAssetsReport::OnRequestOpenAsset(const FAssetData& AssetData)
 {
 	TArray<FName> AssetNames;
 	AssetNames.Add(AssetData.PackageName);
@@ -188,32 +188,32 @@ void SCPAssetDialog::OnRequestOpenAsset(const FAssetData& AssetData)
 //////////////////////////////////////////////////////////////////////////
 // Buttons Actions
 
-FReply SCPAssetDialog::OnDeleteClicked()
+FReply SCPUnusedAssetsReport::OnDeleteClicked()
 {
 	DeleteAssets(GetAssetsForAction());
 	return FReply::Handled();
 }
 
-FReply SCPAssetDialog::OnMoreInfoClicked()
+FReply SCPUnusedAssetsReport::OnMoreInfoClicked()
 {
 	MoreInfoAsset(GetAssetsForAction());
 	return FReply::Handled();
 }
 
-FReply SCPAssetDialog::OnWhitelistClicked()
+FReply SCPUnusedAssetsReport::OnWhitelistClicked()
 {
 	UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 	Settings->WhitelistAssets(GetAssetsForAction());
 	return FReply::Handled();
 }
 
-FReply SCPAssetDialog::OnBlacklistClicked()
+FReply SCPUnusedAssetsReport::OnBlacklistClicked()
 {
 	BlackListAssets(GetAssetsForAction());
 	return FReply::Handled();
 }
 
-FReply SCPAssetDialog::OnCancelClicked()
+FReply SCPUnusedAssetsReport::OnCancelClicked()
 {
 	CloseAssetDialog();
 	return FReply::Handled();
@@ -222,7 +222,7 @@ FReply SCPAssetDialog::OnCancelClicked()
 //////////////////////////////////////////////////////////////////////////
 // Functionality
 
-void SCPAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
+void SCPUnusedAssetsReport::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
 {
 	LOG_TRACE();
 
@@ -236,7 +236,7 @@ void SCPAssetDialog::DeleteAssets(const TArray<FAssetData> AssetsToDelete)
 	RemoveFromList(AssetsToDelete);
 }
 
-void SCPAssetDialog::MoreInfoAsset(const TArray<FAssetData> AssetsToGetInfo)
+void SCPUnusedAssetsReport::MoreInfoAsset(const TArray<FAssetData> AssetsToGetInfo)
 {
 	LOG_TRACE();
 
@@ -254,7 +254,7 @@ void SCPAssetDialog::MoreInfoAsset(const TArray<FAssetData> AssetsToGetInfo)
 	}
 }
 
-void SCPAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
+void SCPUnusedAssetsReport::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 {
 	LOG_TRACE();
 
@@ -264,7 +264,7 @@ void SCPAssetDialog::BlackListAssets(const TArray<FAssetData> AssetsToBlacklist)
 	RemoveFromList(AssetsToBlacklist);
 }
 
-void SCPAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)
+void SCPUnusedAssetsReport::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)
 {
 	LOG_TRACE();
 
@@ -274,7 +274,7 @@ void SCPAssetDialog::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)
 	RemoveFromList(AssetsToWhitelist);
 }
 
-void SCPAssetDialog::RemoveFromList(const TArray<FAssetData> AssetsToRemove)
+void SCPUnusedAssetsReport::RemoveFromList(const TArray<FAssetData> AssetsToRemove)
 {
 	LOG_TRACE();
 
@@ -301,7 +301,7 @@ void SCPAssetDialog::RemoveFromList(const TArray<FAssetData> AssetsToRemove)
 	}
 }
 
-TArray<FAssetData> SCPAssetDialog::GetAssetsForAction() const
+TArray<FAssetData> SCPUnusedAssetsReport::GetAssetsForAction() const
 {
 	TArray<FAssetData> SelectedAssets = GetCurrentSelectionDelegate.Execute();
 
@@ -315,26 +315,14 @@ TArray<FAssetData> SCPAssetDialog::GetAssetsForAction() const
 	}
 }
 
-TSharedRef<SWidget> SCPAssetDialog::CreateAssetPickerWidget()
+TSharedRef<SWidget> SCPUnusedAssetsReport::CreateAssetPickerWidget()
 {
 	FAssetPickerConfig Config;
-	{
-		Config.InitialAssetViewType = EAssetViewType::List;
-
-		// Configure response to double-click and context-menu
-		Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateStatic(OnRequestOpenAsset);
-		Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SCPAssetDialog::OnGetAssetContextMenu);
-		Config.SetFilterDelegates.Add(&SetFilterDelegate);
-		Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
-
-		/*
-		// Add custom columns
-		Config.CustomColumns.Emplace(IAssetManagerEditorModule::DiskSizeName, LOCTEXT("SizeColumn", "Disk Size"),
-			LOCTEXT("SizeColumnTooltip", "Size of saved file on disk for only this asset"),
-			UObject::FAssetRegistryTag::TT_Numerical, FOnGetCustomAssetColumnData::CreateSP(this, &SCPAssetDialog::GetDiskSizeData),
-			FOnGetCustomAssetColumnDisplayText::CreateSP(this, &SCPAssetDialog::GetDiskSizeDisplayText));
-		*/
-	}
+	Config.InitialAssetViewType = EAssetViewType::List;
+	Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateStatic(OnRequestOpenAsset);
+	Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SCPUnusedAssetsReport::OnGetAssetContextMenu);
+	Config.SetFilterDelegates.Add(&SetFilterDelegate);
+	Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
 
 	TArray<FName>& ReportObjectsPaths = ReportAssetsFilter.ObjectPaths;
 	ReportObjectsPaths.Reserve(ReportAssets.Num());
@@ -352,7 +340,7 @@ TSharedRef<SWidget> SCPAssetDialog::CreateAssetPickerWidget()
 	return AssetPickerWidget;
 }
 
-int64 SCPAssetDialog::GetAssetDiskSize(const FAssetData& Asset)
+int64 SCPUnusedAssetsReport::GetAssetDiskSize(const FAssetData& Asset)
 {
 	const FName PackageName = FName(*Asset.GetPackage()->GetName());
 	TOptional<FAssetPackageData> PackageData = FAssetRegistryModule::GetRegistry().GetAssetPackageDataCopy(PackageName);
@@ -363,7 +351,7 @@ int64 SCPAssetDialog::GetAssetDiskSize(const FAssetData& Asset)
 	return -1;
 }
 
-int64 SCPAssetDialog::GetAssetsDiskSize(const TArray<FAssetData>& AssetsList)
+int64 SCPUnusedAssetsReport::GetAssetsDiskSize(const TArray<FAssetData>& AssetsList)
 {
 	int64 TotalDiskSize = 0;
 	for (const FAssetData& AssetDataReported : AssetsList)

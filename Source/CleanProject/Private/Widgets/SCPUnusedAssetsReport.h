@@ -7,12 +7,12 @@
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
 
-class SCPAssetDialog : public SCompoundWidget
+class SCPUnusedAssetsReport : public SCompoundWidget
 {
 public:
 	static void OpenAssetDialog(const TArray<FAssetData>& AssetsToReport);
 
-	SLATE_BEGIN_ARGS(SCPAssetDialog)
+	SLATE_BEGIN_ARGS(SCPUnusedAssetsReport)
 	{
 	}
 	SLATE_END_ARGS()
@@ -26,7 +26,7 @@ private:
 
 	TArray<FAssetData> GetAssetsForAction() const;
 	TSharedRef<SWidget> CreateAssetPickerWidget();
-	
+
 	int64 GetAssetDiskSize(const FAssetData& Asset);
 
 	int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList);
