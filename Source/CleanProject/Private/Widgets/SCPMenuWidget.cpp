@@ -59,51 +59,30 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			.BorderImage( FAppStyle::Get().GetBrush("Brushes.Header") )
 			.Padding(FMargin(4.0f, 0.0f, 4.0f, 0.0f))
 			[
-				SNew(SSplitter)
-				.Style(FEditorStyle::Get(), "DetailsView.Splitter")
-				.PhysicalSplitterHandleSize(1.0f)
-				.HitDetectionSplitterHandleSize(5.0f)
-				
-				+SSplitter::Slot()
-				.Value(0.5f)
-				.Resizable(false)
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets"))
-					.Justification(ETextJustify::Left)
+					.Text(TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
+					{
+						return FText::Format(LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets: {0}"), UnusedAssetsList.Num());
+					})))
 				]
-				
-				+SSplitter::Slot()
-				.Value(0.5f)
-				.Resizable(false)
-				[
-					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot()
-					.AutoWidth()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Center)
-					.Padding(2)
-					[
-						SNew(SImage)
-						.Image(FEditorStyle::Get().GetBrush("Icons.Warning"))
-						.Visibility_Lambda([this]()
-						{
-							return bIsIndexOutdated ? EVisibility::Visible : EVisibility::Hidden;
-						})
-						.ToolTipText(LOCTEXT("ProjectUnusuedAssetsOutdated", "Your project has changed since the last automatic refresh."
-							"Use the Refresh button to start re-indexing or adjust refresh parameters inside the plugin settings."))
-					]
 
-					+ SHorizontalBox::Slot()
-					.VAlign(VAlign_Center)
-					.Padding(2)
-					[
-						SNew(STextBlock)
-						.Text(TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
-						{
-							return FText::AsNumber(UnusedAssetsList.Num());
-						})))
-					]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				[
+					SNew(SImage)
+					.Image(FEditorStyle::Get().GetBrush("Icons.Warning"))
+					.Visibility_Lambda([this]()
+					{
+						return bIsIndexOutdated ? EVisibility::Visible : EVisibility::Hidden;
+					})
+					.ToolTipText(LOCTEXT("ProjectUnusuedAssetsOutdated", "Your project has changed since the last automatic indexing."
+						"Use the Refresh button to start re-indexing now or adjust refresh parameters inside the plugin settings."))
 				]
 			]
 		]
