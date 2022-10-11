@@ -39,11 +39,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
 	TSet<FSoftObjectPath> BlacklistedAssets;
 	/**
-	 * Should we use treat the explicitly cooked/packaged maps as whitelisted?
-	 * TODO: Should we handle the special Game/Maps folder ?
+	 * Should the Clean Project Dashboard automatically refresh itself every time an asset is updated. (Unless time since last
+	 * refresh is lower than AutoRefreshInterval)
 	 */
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
-	bool bWhitelistMapsToPackage = true;
+	bool bAutoRefreshDashboard = true;
+	/**
+	 * How much time we should wait in between Clean Project Dashboard refresh requests
+	 * @note measured in seconds
+	 * @note use -1 to refresh every time
+	 */
+	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
+	float AutoRefreshInterval = 30.0f;
 	/**
 	 * Convenience function to programatically add assets to the whitelisted set and saving config
 	 */

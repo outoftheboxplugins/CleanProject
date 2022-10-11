@@ -75,7 +75,7 @@ FAssetDependenciesTable::FAssetDependenciesTable(const TSet<FAssetData>& InAsset
 
 void FAssetDependenciesTable::BuildDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
 {
-	UE_LOG(LogCleanProject, Log, TEXT("*************** START BuildDependenciesTable ***************"));
+	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** START BuildDependenciesTable ***************"));
 	FAutoScopedDurationTimer TotalTimer;
 
 	FScopedSlowTask SlowTask(InAssets.Num(), LOCTEXT("BuildDependenciesTable", "Build Dependencies Table"));
@@ -85,7 +85,7 @@ void FAssetDependenciesTable::BuildDependenciesTable(const TSet<FAssetData>& InA
 	{
 		const FString& AssetPath = Asset.ToSoftObjectPath().GetAssetPathString();
 
-		UE_LOG(LogCleanProject, Log, TEXT("Inspecting: %s started"), *AssetPath);
+		UE_LOG(LogCleanProject, VeryVerbose, TEXT("Inspecting: %s started"), *AssetPath);
 		FAutoScopedDurationTimer AssetTimer;
 
 		SlowTask.EnterProgressFrame(1, FText::FromString(AssetPath));
@@ -101,16 +101,17 @@ void FAssetDependenciesTable::BuildDependenciesTable(const TSet<FAssetData>& InA
 		}
 		Table.Emplace(Asset, DependencyAssets);
 
-		UE_LOG(LogCleanProject, Log, TEXT("Inspecting: %s took %s seconds"), *AssetPath, *LexToString(AssetTimer.GetTime()));
+		UE_LOG(
+			LogCleanProject, VeryVerbose, TEXT("Inspecting: %s took %s seconds"), *AssetPath, *LexToString(AssetTimer.GetTime()));
 	}
 
-	UE_LOG(LogCleanProject, Log, TEXT("Building dependencies took: %s"), *LexToString(TotalTimer.GetTime()));
-	UE_LOG(LogCleanProject, Log, TEXT("*************** STOP BuildDependenciesTable ***************"));
+	UE_LOG(LogCleanProject, VeryVerbose, TEXT("Building dependencies took: %s"), *LexToString(TotalTimer.GetTime()));
+	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** STOP BuildDependenciesTable ***************"));
 }
 
 TSet<FAssetData> FAssetDependenciesTable::CompileReferences(const TSet<FAssetData>& Assets)
 {
-	UE_LOG(LogCleanProject, Log, TEXT("*************** START CompileReferences ***************"));
+	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** START CompileReferences ***************"));
 	FAutoScopedDurationTimer TotalTimer;
 
 	FScopedSlowTask SlowTask(1, LOCTEXT("RecursiveDependencies", "Recursive Dependencies"));
@@ -119,8 +120,8 @@ TSet<FAssetData> FAssetDependenciesTable::CompileReferences(const TSet<FAssetDat
 	TSet<FAssetData> OutReferences;
 	CompileReferencesRecursive(Assets.Array(), OutReferences);
 
-	UE_LOG(LogCleanProject, Log, TEXT("Compiling references took: %s"), *LexToString(TotalTimer.GetTime()));
-	UE_LOG(LogCleanProject, Log, TEXT("*************** END CompileReferences ***************"));
+	UE_LOG(LogCleanProject, VeryVerbose, TEXT("Compiling references took: %s"), *LexToString(TotalTimer.GetTime()));
+	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** END CompileReferences ***************"));
 
 	return OutReferences;
 }
@@ -130,7 +131,7 @@ void FAssetDependenciesTable::CompileReferencesRecursive(
 {
 	for (const FAssetData& Asset : Assets)
 	{
-		UE_LOG(LogCleanProject, Log, TEXT("%s%s"), *GetTabSpaces(RecursionLevel), *Asset.ObjectPath.ToString());
+		UE_LOG(LogCleanProject, VeryVerbose, TEXT("%s%s"), *GetTabSpaces(RecursionLevel), *Asset.ObjectPath.ToString());
 		OutReferences.Add(Asset);
 
 		TArray<FAssetData> AssetDependencies;

@@ -58,7 +58,6 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 			CreateInfoWidget(LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets"), 
 			TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
 				{
-					//TODO: Check if this updates properly
 					return FText::AsNumber(UnusedAssetsList.Num());
 				})))
 		]
@@ -172,33 +171,49 @@ void SCPMenuWidget::OnFilesLoaded()
 
 void SCPMenuWidget::OnAssetAdded(const FAssetData& AssetData)
 {
-	if (IsGameAsset(AssetData))
+	if (ShouldReactToAssetChange(AssetData))
 	{
 		RefreshUnusedAssets();
+	}
+	else
+	{
+		bIsIndexOutdated = true;
 	}
 }
 
 void SCPMenuWidget::OnAssetRemoved(const FAssetData& AssetData)
 {
-	if (IsGameAsset(AssetData))
+	if (ShouldReactToAssetChange(AssetData))
 	{
 		RefreshUnusedAssets();
+	}
+	else
+	{
+		bIsIndexOutdated = true;
 	}
 }
 
 void SCPMenuWidget::OnAssetRenamed(const FAssetData& AssetData, const FString& Name)
 {
-	if (IsGameAsset(AssetData))
+	if (ShouldReactToAssetChange(AssetData))
 	{
 		RefreshUnusedAssets();
+	}
+	else
+	{
+		bIsIndexOutdated = true;
 	}
 }
 
 void SCPMenuWidget::OnAssetUpdated(const FAssetData& AssetData)
 {
-	if (IsGameAsset(AssetData))
+	if (ShouldReactToAssetChange(AssetData))
 	{
 		RefreshUnusedAssets();
+	}
+	else
+	{
+		bIsIndexOutdated = true;
 	}
 }
 
@@ -209,6 +224,9 @@ int64 SCPMenuWidget::GetUnusedAssetsCount() const
 
 void SCPMenuWidget::RefreshUnusedAssets()
 {
+	LastRefreshTime = FDateTime::Now();
+	bIsIndexOutdated = false;
+
 	const TArray<FAssetData> UnusedAssets = UCPDependencyWalkerSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
 	UnusedAssetsList.Empty(UnusedAssets.Num());
 	Algo::Transform(UnusedAssets, UnusedAssetsList, [](const FAssetData& AssetData) { return MakeShared<FAssetData>(AssetData); });
@@ -220,10 +238,37 @@ void SCPMenuWidget::RefreshUnusedAssets()
 	InuseAssetsListView->RebuildList();
 }
 
-bool SCPMenuWidget::IsGameAsset(const FAssetData& AssetData) const
+bool SCPMenuWidget::ShouldReactToAssetChange(const FAssetData& AssetData) const
 {
+	const bool bIgnoreAssetUpdates = !GetDefault<UCPSettings>()->bAutoRefreshDashboard;
+	if (bIgnoreAssetUpdates)
+	{
+		UE_LOG(LogCleanProject, Verbose, TEXT("Ignoring Asset change: %s based on plugin settings."), *AssetData.GetFullName())
+		return false;
+	}
+
 	const TArray<FAssetData>& GameAssets = UCPDependencyWalkerSubsystem::Get()->GetAllGameAssets().Array();
-	return GameAssets.Contains(AssetData);
+	const bool bIsGameAsset = GameAssets.Contains(AssetData);
+
+	if (!bIsGameAsset)
+	{
+		UE_LOG(LogCleanProject, Verbose, TEXT("Ignoring Asset change: %s since it's not part of game assets."),
+			*AssetData.GetFullName())
+		return false;
+	}
+
+	const FTimespan TimeSinceLastRefresh = FDateTime::Now() - LastRefreshTime;
+	const double SecondsSinceLastRefresh = TimeSinceLastRefresh.GetTotalSeconds();
+	const double RefreshInterval = GetDefault<UCPSettings>()->AutoRefreshInterval;
+	if (SecondsSinceLastRefresh < RefreshInterval)
+	{
+		UE_LOG(LogCleanProject, Verbose,
+			TEXT("Skipping Unused assets refresh, only %s seconds passed, lower than refresh interval (%s seconds)"),
+			*LexToString(SecondsSinceLastRefresh), *LexToString(RefreshInterval))
+		return false;
+	}
+
+	return true;
 }
 
 FReply SCPMenuWidget::OnRunCleanupFast()

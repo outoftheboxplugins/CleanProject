@@ -33,7 +33,7 @@ private:
 	int64 GetUnusedAssetsCount() const;
 	void RefreshUnusedAssets();
 
-	bool IsGameAsset(const FAssetData& AssetData) const;
+	bool ShouldReactToAssetChange(const FAssetData& AssetData) const;
 
 	// Buttons
 private:
@@ -49,4 +49,7 @@ private:
 
 	TSharedPtr<SListView<TSharedPtr<FAssetData>>> UnusedAssetsListView;
 	TArray<TSharedPtr<FAssetData>> UnusedAssetsList;
+
+	FDateTime LastRefreshTime;
+	bool bIsIndexOutdated = true;
 };
