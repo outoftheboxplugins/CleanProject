@@ -1,6 +1,6 @@
 // Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
 
-#include "SCPMenuWidget.h"
+#include "SCPDashboardWidget.h"
 
 #include "AssetRegistryModule.h"
 #include "CPDependencyWalkerSubsystem.h"
@@ -15,7 +15,7 @@
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-void SCPMenuWidget::Construct(const FArguments& InArgs)
+void SCPDashboardWidget::Construct(const FArguments& InArgs)
 {
 	// clang-format off
 	ChildSlot
@@ -94,14 +94,14 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 				SNew(SButton)
 				.Text(LOCTEXT("FastCleanupNow", "Fast Cleanup"))
 				.ToolTipText(LOCTEXT("FastCleanupNowTip", "Uses cached data to determine unused assets in your project."))
-				.OnClicked(this, &SCPMenuWidget::OnRunCleanupFast)
+				.OnClicked(this, &SCPDashboardWidget::OnRunCleanupFast)
 			]
 			+SHorizontalBox::Slot()
 			[
 				SNew(SButton)
 				.Text(LOCTEXT("ComplexCleanupNow", "Complex Cleanup"))
 				.ToolTipText(LOCTEXT("ComplexCleanupNowTip", "!WARNING: VERY SLOW! Loads all assets to determine unused assets in your project."))
-				.OnClicked(this, &SCPMenuWidget::OnRunCleanupComplex)
+				.OnClicked(this, &SCPDashboardWidget::OnRunCleanupComplex)
 				.IsEnabled(false)
 			]
 			+SHorizontalBox::Slot()
@@ -109,21 +109,21 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 				SNew(SButton)
 				.Text(LOCTEXT("OpenSettings", "Open Settings"))
 				.ToolTipText(LOCTEXT("OpenSettingsTip", "Open plugin settings to configure the Cleanup parameters."))
-				.OnClicked(this, &SCPMenuWidget::OnOpenSettings)
+				.OnClicked(this, &SCPDashboardWidget::OnOpenSettings)
 			]
 			+SHorizontalBox::Slot()
 			[
 				SNew(SButton)
 				.Text(LOCTEXT("GoToDocs", "Documentation"))
 				.ToolTipText(LOCTEXT("GoToDocsTip", "Open our documentation to get a better understand of the plugin."))
-				.OnClicked(this, &SCPMenuWidget::OnGoToDocumentation)
+				.OnClicked(this, &SCPDashboardWidget::OnGoToDocumentation)
 			]
 			+SHorizontalBox::Slot()
 			[
 				SNew(SButton)
 				.Text(LOCTEXT("Refresh", "Refresh"))
 				.ToolTipText(LOCTEXT("RefreshTip", "Refresh the stats right now."))
-				.OnClicked(this, &SCPMenuWidget::OnRefreshUnused)
+				.OnClicked(this, &SCPDashboardWidget::OnRefreshUnused)
 			]
 		]
 	];
@@ -132,7 +132,7 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 	if (AssetRegistryModule.Get().IsLoadingAssets())
 	{
-		AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SCPMenuWidget::OnFilesLoaded);
+		AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SCPDashboardWidget::OnFilesLoaded);
 	}
 	else
 	{
@@ -140,18 +140,18 @@ void SCPMenuWidget::Construct(const FArguments& InArgs)
 	}
 }
 
-void SCPMenuWidget::OnFilesLoaded()
+void SCPDashboardWidget::OnFilesLoaded()
 {
 	RefreshUnusedAssets();
 
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	AssetRegistryModule.Get().OnAssetAdded().AddSP(this, &SCPMenuWidget::OnAssetAdded);
-	AssetRegistryModule.Get().OnAssetRemoved().AddSP(this, &SCPMenuWidget::OnAssetRemoved);
-	AssetRegistryModule.Get().OnAssetRenamed().AddSP(this, &SCPMenuWidget::OnAssetRenamed);
-	AssetRegistryModule.Get().OnAssetUpdatedOnDisk().AddSP(this, &SCPMenuWidget::OnAssetUpdated);
+	AssetRegistryModule.Get().OnAssetAdded().AddSP(this, &SCPDashboardWidget::OnAssetAdded);
+	AssetRegistryModule.Get().OnAssetRemoved().AddSP(this, &SCPDashboardWidget::OnAssetRemoved);
+	AssetRegistryModule.Get().OnAssetRenamed().AddSP(this, &SCPDashboardWidget::OnAssetRenamed);
+	AssetRegistryModule.Get().OnAssetUpdatedOnDisk().AddSP(this, &SCPDashboardWidget::OnAssetUpdated);
 }
 
-void SCPMenuWidget::OnAssetAdded(const FAssetData& AssetData)
+void SCPDashboardWidget::OnAssetAdded(const FAssetData& AssetData)
 {
 	if (ShouldReactToAssetChange(AssetData))
 	{
@@ -163,7 +163,7 @@ void SCPMenuWidget::OnAssetAdded(const FAssetData& AssetData)
 	}
 }
 
-void SCPMenuWidget::OnAssetRemoved(const FAssetData& AssetData)
+void SCPDashboardWidget::OnAssetRemoved(const FAssetData& AssetData)
 {
 	if (ShouldReactToAssetChange(AssetData))
 	{
@@ -175,7 +175,7 @@ void SCPMenuWidget::OnAssetRemoved(const FAssetData& AssetData)
 	}
 }
 
-void SCPMenuWidget::OnAssetRenamed(const FAssetData& AssetData, const FString& Name)
+void SCPDashboardWidget::OnAssetRenamed(const FAssetData& AssetData, const FString& Name)
 {
 	if (ShouldReactToAssetChange(AssetData))
 	{
@@ -187,7 +187,7 @@ void SCPMenuWidget::OnAssetRenamed(const FAssetData& AssetData, const FString& N
 	}
 }
 
-void SCPMenuWidget::OnAssetUpdated(const FAssetData& AssetData)
+void SCPDashboardWidget::OnAssetUpdated(const FAssetData& AssetData)
 {
 	if (ShouldReactToAssetChange(AssetData))
 	{
@@ -199,7 +199,7 @@ void SCPMenuWidget::OnAssetUpdated(const FAssetData& AssetData)
 	}
 }
 
-void SCPMenuWidget::RefreshUnusedAssets()
+void SCPDashboardWidget::RefreshUnusedAssets()
 {
 	LastRefreshTime = FDateTime::Now();
 	bIsIndexOutdated = false;
@@ -215,7 +215,7 @@ void SCPMenuWidget::RefreshUnusedAssets()
 	InuseAssetsListView->RebuildList();
 }
 
-bool SCPMenuWidget::ShouldReactToAssetChange(const FAssetData& AssetData) const
+bool SCPDashboardWidget::ShouldReactToAssetChange(const FAssetData& AssetData) const
 {
 	const bool bIgnoreAssetUpdates = !GetDefault<UCPSettings>()->bAutoRefreshDashboard;
 	if (bIgnoreAssetUpdates)
@@ -248,7 +248,7 @@ bool SCPMenuWidget::ShouldReactToAssetChange(const FAssetData& AssetData) const
 	return true;
 }
 
-FReply SCPMenuWidget::OnRunCleanupFast()
+FReply SCPDashboardWidget::OnRunCleanupFast()
 {
 	UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Fast* from widget menu."));
 
@@ -256,7 +256,7 @@ FReply SCPMenuWidget::OnRunCleanupFast()
 	return FReply::Handled();
 }
 
-FReply SCPMenuWidget::OnRunCleanupComplex()
+FReply SCPDashboardWidget::OnRunCleanupComplex()
 {
 	UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Complex* from widget menu."));
 
@@ -264,13 +264,13 @@ FReply SCPMenuWidget::OnRunCleanupComplex()
 	return FReply::Handled();
 }
 
-FReply SCPMenuWidget::OnRefreshUnused()
+FReply SCPDashboardWidget::OnRefreshUnused()
 {
 	RefreshUnusedAssets();
 	return FReply::Handled();
 }
 
-FReply SCPMenuWidget::OnGoToDocumentation()
+FReply SCPDashboardWidget::OnGoToDocumentation()
 {
 	const TSharedPtr<IPlugin> CleanProjectPlugin = IPluginManager::Get().FindPlugin("CleanProject");
 	const FString DocsURL = CleanProjectPlugin->GetDescriptor().DocsURL;
@@ -279,7 +279,7 @@ FReply SCPMenuWidget::OnGoToDocumentation()
 	return FReply::Handled();
 }
 
-FReply SCPMenuWidget::OnOpenSettings()
+FReply SCPDashboardWidget::OnOpenSettings()
 {
 	UCPSettings::OpenSettings();
 

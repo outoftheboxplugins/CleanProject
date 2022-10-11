@@ -9,7 +9,7 @@
 #include "LevelEditor.h"
 #include "Shared/OutOfTheBoxHelpers.h"
 #include "ToolMenus.h"
-#include "Widgets/SCPMenuWidget.h"
+#include "Widgets/SCPDashboardWidget.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
@@ -61,7 +61,7 @@ void FCleanProjectModule::RegisterToolWindows()
 	TSharedRef<FWorkspaceItem> const CleanProjectCategory = OutOfTheBoxHelpers::GetSharedWindowsCategory();
 	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName,
 		FOnSpawnTab::CreateLambda(
-			[](const FSpawnTabArgs& Args) { return SNew(SDockTab).TabRole(ETabRole::NomadTab)[SNew(SCPMenuWidget)]; }));
+			[](const FSpawnTabArgs& Args) { return SNew(SDockTab).TabRole(ETabRole::NomadTab)[SNew(SCPDashboardWidget)]; }));
 
 	CPMenuTab.SetDisplayName(LOCTEXT("MenuTabDisplayName", "Clean Project Dashboard"))
 		.SetTooltipText(LOCTEXT("MenuTabTooltip", "Organize your project and visualize the data behind the process."))

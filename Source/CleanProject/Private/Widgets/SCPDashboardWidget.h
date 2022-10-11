@@ -9,10 +9,10 @@
 /**
  * Menu Widget containing a UI interface for the developer to interact with the Clean Project.
  */
-class SCPMenuWidget : public SCompoundWidget
+class SCPDashboardWidget : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SCPMenuWidget)
+	SLATE_BEGIN_ARGS(SCPDashboardWidget)
 	{
 	}
 	SLATE_END_ARGS()
