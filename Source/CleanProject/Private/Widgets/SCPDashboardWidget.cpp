@@ -15,30 +15,6 @@
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-void SCPDashboardAssetRow::Construct(
-	const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FCPAssetPtr InListItem)
-{
-	// Cache the list item so we can get information about the current Item when required
-	Item = InListItem;
-
-	FSuperRowType::Construct(InArgs, InOwnerTable);
-}
-
-TSharedRef<SWidget> SCPDashboardAssetRow::GenerateWidgetForColumn(const FName& ColumnName)
-{
-	// clang-format off
-	TSharedPtr<SWidget> HorizontalBox;
-	SAssignNew(HorizontalBox, SHorizontalBox)
-		+SHorizontalBox::Slot()
-		[
-			SNew(STextBlock)
-			.Text(FText::FromName(Item->PackageName))
-		];
-	// clang-format on
-
-	return HorizontalBox.ToSharedRef();
-}
-
 void SCPDashboardWidget::Construct(const FArguments& InArgs)
 {
 	if (const UAssetManager* AssetManager = UAssetManager::GetIfValid())

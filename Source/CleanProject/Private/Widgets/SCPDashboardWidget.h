@@ -7,23 +7,6 @@
 #include "Templates/SharedPointer.h"
 #include "Widgets/SCompoundWidget.h"
 
-using FCPAssetPtr = TSharedPtr<FAssetData>;
-
-/**
- * Widget that represents an asset entry in the dashboard.
- */
-class SCPDashboardAssetRow final : public SMultiColumnTableRow<TSharedPtr<FName>>
-{
-public:
-	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FCPAssetPtr InListItem);
-
-private:
-	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
-
-private:
-	FCPAssetPtr Item;
-};
-
 /**
  * NomadTab containing an overview of the current project state.
  * Displays: list whitelisted assets and list of unused assets

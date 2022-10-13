@@ -22,30 +22,32 @@ public:
 
 private:
 	TSharedPtr<SWidget> OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets);
-	static void OnRequestOpenAsset(const FAssetData& AssetData);
 
-	TArray<FAssetData> GetAssetsForAction() const;
 	TSharedRef<SWidget> CreateAssetPickerWidget();
-
-	int64 GetAssetDiskSize(const FAssetData& Asset);
-
-	int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList);
-
-	FReply OnDeleteClicked();
-	FReply OnMoreInfoClicked();
-	FReply OnWhitelistClicked();
-	FReply OnBlacklistClicked();
-	FReply OnCancelClicked();
-
-	void DeleteAssets(const TArray<FAssetData> AssetsToDelete);
-	void MoreInfoAsset(const TArray<FAssetData> AssetsToGetInfo);
-	void BlackListAssets(const TArray<FAssetData> AssetsToBlacklist);
-	void WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist);
-	void RemoveFromList(const TArray<FAssetData> AssetsToRemove);
 
 	FGetCurrentSelectionDelegate GetCurrentSelectionDelegate;
 	FSetARFilterDelegate SetFilterDelegate;
 
 	TArray<FAssetData> ReportAssets;
 	FARFilter ReportAssetsFilter;
+
+	void OnAssetDoubleClicked(const FAssetData& AssetData);
+	FReply OnReferenceViewerClicked();
+	FReply OnAuditClicked();
+	FReply OnDeleteClicked();
+	FReply OnWhitelistClicked();
+	FReply OnBlacklistClicked();
+	FReply OnCancelClicked();
+
+	void ReferenceViewerAssets(const TArray<FAssetData> AssetsToViewReferences);
+	void AuditAssets(const TArray<FAssetData> AssetsToAudit);
+	void DeleteAssets(const TArray<FAssetData> AssetsToDelete);
+	void WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist);
+	void BlackListAssets(const TArray<FAssetData> AssetsToBlacklist);
+
+	void RemoveFromList(const TArray<FAssetData> AssetsToRemove);
+
+	TArray<FAssetData> GetAssetsForAction() const;
+	int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList) const;
+	int64 GetAssetDiskSize(const FAssetData& Asset) const;
 };
