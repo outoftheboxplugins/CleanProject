@@ -19,7 +19,6 @@
 void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
 	ReportAssets = AssetsToReport;
-
 	const int64 TotalDiskSize = GetAssetsDiskSize(ReportAssets);
 
 	// clang-format off
@@ -30,7 +29,7 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 		// Titlebar
 		+SVerticalBox::Slot()
 		.AutoHeight()
-		.Padding(4, 4)
+		.Padding(4)
 		[
 			SNew(STextBlock)
 			.Text( FText::Format(LOCTEXT("ReportDiskSize", "Total disk size: {0}"), FText::AsMemory(TotalDiskSize)))
@@ -39,10 +38,10 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 
 		+ SVerticalBox::Slot()
 		.AutoHeight()
-		.Padding(4, 4)
+		.Padding(4)
 		[
 			SNew(STextBlock)
-			.Text(LOCTEXT("ReportSubtitle", "The following assets were found unused:"))
+			.Text(LOCTEXT("ReportSubtitle", "The following assets were found unreferenced:"))
 			.TextStyle(FEditorStyle::Get(), "PackageMigration.DialogTitle")
 		]
 
@@ -51,7 +50,7 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 		.FillHeight(1.f)
 		[
 			SNew(SBorder)
-			.Padding(FMargin(3))
+			.Padding(4)
 			.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
 			[
 				CreateAssetPickerWidget()
@@ -62,7 +61,7 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 		+SVerticalBox::Slot()
 		.AutoHeight()
 		.HAlign(HAlign_Right)
-		.Padding(4, 4)
+		.Padding(4)
 		[
 			SNew(SUniformGridPanel)
 			.SlotPadding(FEditorStyle::GetMargin("StandardDialog.SlotPadding"))
@@ -146,6 +145,22 @@ void SCPUnusedAssetsReport::CloseAssetDialog()
 	}
 }
 
+TSharedRef<SWidget> SCPUnusedAssetsReport::CreateAssetPickerWidget()
+{
+	FAssetPickerConfig Config;
+	Config.InitialAssetViewType = EAssetViewType::List;
+	Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateSP(this, &SCPUnusedAssetsReport::OnAssetDoubleClicked);
+	Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SCPUnusedAssetsReport::OnGetAssetContextMenu);
+	Config.SetFilterDelegates.Add(&SetFilterDelegate);
+	Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
+
+	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+	TSharedRef<SWidget> AssetPickerWidget = ContentBrowserModule.Get().CreateAssetPicker(Config);
+	RefreshAssetList();
+
+	return AssetPickerWidget;
+}
+
 TSharedPtr<SWidget> SCPUnusedAssetsReport::OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets)
 {
 	FMenuBuilder MenuBuilder(true, nullptr);
@@ -178,31 +193,6 @@ TSharedPtr<SWidget> SCPUnusedAssetsReport::OnGetAssetContextMenu(const TArray<FA
 
 	MenuBuilder.EndSection();
 	return MenuBuilder.MakeWidget();
-}
-
-TSharedRef<SWidget> SCPUnusedAssetsReport::CreateAssetPickerWidget()
-{
-	FAssetPickerConfig Config;
-	Config.InitialAssetViewType = EAssetViewType::List;
-	Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateSP(this, &SCPUnusedAssetsReport::OnAssetDoubleClicked);
-	Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SCPUnusedAssetsReport::OnGetAssetContextMenu);
-	Config.SetFilterDelegates.Add(&SetFilterDelegate);
-	Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
-
-	TArray<FName>& ReportObjectsPaths = ReportAssetsFilter.ObjectPaths;
-	ReportObjectsPaths.Reserve(ReportAssets.Num());
-
-	for (auto PackageIt = ReportAssets.CreateConstIterator(); PackageIt; ++PackageIt)
-	{
-		ReportObjectsPaths.Add(PackageIt->ObjectPath);
-	}
-
-	Config.Filter = ReportAssetsFilter;
-
-	FContentBrowserModule& ContentBrowserModule =
-		FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
-	TSharedRef<SWidget> AssetPickerWidget = ContentBrowserModule.Get().CreateAssetPicker(Config);
-	return AssetPickerWidget;
 }
 
 void SCPUnusedAssetsReport::OnAssetDoubleClicked(const FAssetData& AssetData)
@@ -296,8 +286,6 @@ void SCPUnusedAssetsReport::WhiteListAssets(const TArray<FAssetData> AssetsToWhi
 
 void SCPUnusedAssetsReport::RemoveFromList(const TArray<FAssetData> AssetsToRemove)
 {
-	LOG_TRACE();
-
 	ReportAssets.RemoveAllSwap([&AssetsToRemove](const FAssetData& AssetData) { return AssetsToRemove.Contains(AssetData); });
 
 	if (ReportAssets.Num() == 0)
@@ -306,19 +294,17 @@ void SCPUnusedAssetsReport::RemoveFromList(const TArray<FAssetData> AssetsToRemo
 	}
 	else
 	{
-		TArray<FName> AssetObjectPaths;
-		AssetObjectPaths.Reserve(AssetsToRemove.Num());
-
-		for (const FAssetData& AssetData : AssetsToRemove)
-		{
-			AssetObjectPaths.Add(AssetData.ObjectPath);
-		}
-
-		ReportAssetsFilter.ObjectPaths.RemoveAllSwap(
-			[&AssetObjectPaths](const FName& objectPath) { return AssetObjectPaths.Contains(objectPath); });
-
-		SetFilterDelegate.Execute(ReportAssetsFilter);
+		RefreshAssetList();
 	}
+}
+
+void SCPUnusedAssetsReport::RefreshAssetList()
+{
+	FARFilter ReportAssetsFilter;
+	TArray<FName>& ReportObjectsPaths = ReportAssetsFilter.ObjectPaths;
+	Algo::Transform(ReportAssets, ReportAssetsFilter.ObjectPaths, [](const FAssetData& AssetData) { return AssetData.ObjectPath; });
+
+	SetFilterDelegate.Execute(ReportAssetsFilter);
 }
 
 TArray<FAssetData> SCPUnusedAssetsReport::GetAssetsForAction() const

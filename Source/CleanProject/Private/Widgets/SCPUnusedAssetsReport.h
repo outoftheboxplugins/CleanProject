@@ -21,15 +21,8 @@ public:
 	void CloseAssetDialog();
 
 private:
-	TSharedPtr<SWidget> OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets);
-
 	TSharedRef<SWidget> CreateAssetPickerWidget();
-
-	FGetCurrentSelectionDelegate GetCurrentSelectionDelegate;
-	FSetARFilterDelegate SetFilterDelegate;
-
-	TArray<FAssetData> ReportAssets;
-	FARFilter ReportAssetsFilter;
+	TSharedPtr<SWidget> OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets);
 
 	void OnAssetDoubleClicked(const FAssetData& AssetData);
 	FReply OnReferenceViewerClicked();
@@ -46,8 +39,13 @@ private:
 	void BlackListAssets(const TArray<FAssetData> AssetsToBlacklist);
 
 	void RemoveFromList(const TArray<FAssetData> AssetsToRemove);
+	void RefreshAssetList();
 
 	TArray<FAssetData> GetAssetsForAction() const;
 	int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList) const;
 	int64 GetAssetDiskSize(const FAssetData& Asset) const;
+
+	TArray<FAssetData> ReportAssets;
+	FSetARFilterDelegate SetFilterDelegate;
+	FGetCurrentSelectionDelegate GetCurrentSelectionDelegate;
 };
