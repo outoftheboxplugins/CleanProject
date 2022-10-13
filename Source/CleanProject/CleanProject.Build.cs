@@ -14,6 +14,7 @@ public class CleanProject : ModuleRules
 				"AssetManagerEditor",
 				"Core",
 				"CoreUObject",
+				"ContentBrowser",
 				"DeveloperSettings",
 				"DeveloperToolSettings",
 				"EditorSubsystem",

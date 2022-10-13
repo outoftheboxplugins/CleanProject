@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SAssetView.h"
 #include "Templates/SharedPointer.h"
 #include "Widgets/SCompoundWidget.h"
 
@@ -55,11 +56,8 @@ private:
 	void RefreshUnusedAssets();
 
 private:
-	TSharedPtr<SListView<FCPAssetPtr>> InuseAssetsListView;
-	TArray<FCPAssetPtr> InuseAssetsList;
-
-	TSharedPtr<SListView<FCPAssetPtr>> UnusedAssetsListView;
-	TArray<FCPAssetPtr> UnusedAssetsList;
+	TSharedPtr<SAssetView> InuseAssetView;
+	TSharedPtr<SAssetView> UnusedAssetView;
 
 	FDateTime LastRefreshTime;
 	bool bIsIndexOutdated = true;

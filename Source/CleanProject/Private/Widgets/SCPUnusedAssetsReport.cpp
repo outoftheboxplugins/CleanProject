@@ -148,6 +148,9 @@ void SCPUnusedAssetsReport::CloseAssetDialog()
 
 TSharedPtr<SWidget> SCPUnusedAssetsReport::OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets)
 {
+	// TODO: Add reference viewer
+	// TODO: Add show in content browser
+
 	FMenuBuilder MenuBuilder(true, nullptr);
 
 	MenuBuilder.BeginSection(TEXT("ReportContextMenu"), LOCTEXT("ReportConextMenuCategory", "Cleanup actions"));

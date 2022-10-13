@@ -9,6 +9,7 @@
 #include "Engine/AssetManager.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
+#include "SAssetView.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SSeparator.h"
 
@@ -50,39 +51,49 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 		UE_LOG(LogCleanProject, Warning, TEXT("There is no AssetManager! Initial refresh will be skipped"));
 	}
 
+	// TODO: Refresh when settings change as well
+
 	// clang-format off
 	ChildSlot
 	[
 		SNew(SVerticalBox)
 
 		+SVerticalBox::Slot()
+		.AutoHeight()
 		[
-			SAssignNew(InuseAssetsListView, SListView<FCPAssetPtr>)
-			.ListItemsSource(&InuseAssetsList)
-			.OnGenerateRow_Lambda([](FCPAssetPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
-				{
-					return SNew(SCPDashboardAssetRow, OwnerTable, InInfo);
-				})
-			.HeaderRow(
-				SNew(SHeaderRow)
-				+SHeaderRow::Column("InuseAssetsList")
-				.DefaultLabel(LOCTEXT("InuseAssetsList", "In use assets - whitelisted assets and explicitly cooked/packaged maps"))
-			)
+			SNew(SHeaderRow)
+			+SHeaderRow::Column("InuseAssetsList")
+			.DefaultLabel(LOCTEXT("InuseAssetsList", "In use assets - whitelisted assets and explicitly cooked/packaged maps"))
 		]
 
 		+SVerticalBox::Slot()
 		[
-			SAssignNew(UnusedAssetsListView, SListView<FCPAssetPtr>)
-			.ListItemsSource(&UnusedAssetsList)
-			.OnGenerateRow_Lambda([](FCPAssetPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
-				{
-					return SNew(SCPDashboardAssetRow, OwnerTable, InInfo);
-				})
-			.HeaderRow(
-				SNew(SHeaderRow)
-				+ SHeaderRow::Column("UnusedAssetsList")
-				.DefaultLabel(LOCTEXT("UnusedAssetsList", "Unused assets - not directly whitelisted or referenced by any actively used asset"))
-			)
+			SAssignNew(InuseAssetView, SAssetView)
+			.InitialCategoryFilter(EContentBrowserItemCategoryFilter::IncludeAssets)
+			.InitialThumbnailSize(EThumbnailSize::Small)
+			.InitialViewType(EAssetViewType::List)
+			.ShowTypeInTileView(true)
+			.ShowBottomToolbar(true)
+			.ShowViewOptions(true)
+		]
+		
+		+SVerticalBox::Slot()
+		.AutoHeight()
+		[
+			SNew(SHeaderRow)
+			+ SHeaderRow::Column("UnusedAssetsList")
+			.DefaultLabel(LOCTEXT("UnusedAssetsList", "Unused assets - not directly whitelisted or referenced by any actively used asset"))
+		]
+		
+		+SVerticalBox::Slot()
+		[
+			SAssignNew(UnusedAssetView, SAssetView)
+			.InitialCategoryFilter(EContentBrowserItemCategoryFilter::IncludeAssets)
+			.InitialThumbnailSize(EThumbnailSize::Small)
+			.InitialViewType(EAssetViewType::List)
+			.ShowTypeInTileView(true)
+			.ShowBottomToolbar(true)
+			.ShowViewOptions(true)
 		]
 
 		+SVerticalBox::Slot()
@@ -96,7 +107,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 				SNew(STextBlock)
 				.Text(TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
 				{
-					return FText::Format(LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets: {0}"), UnusedAssetsList.Num());
+					return LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets");
 				})))
 			]
 
@@ -227,15 +238,15 @@ void SCPDashboardWidget::RefreshUnusedAssets()
 	LastRefreshTime = FDateTime::Now();
 	bIsIndexOutdated = false;
 
-	const TArray<FAssetData> UnusedAssets = UCPDependencyWalkerSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
-	UnusedAssetsList.Empty(UnusedAssets.Num());
-	Algo::Transform(UnusedAssets, UnusedAssetsList, [](const FAssetData& AssetData) { return MakeShared<FAssetData>(AssetData); });
-	UnusedAssetsListView->RebuildList();
+	const TArray<FAssetData> UnusedAssetsList = UCPDependencyWalkerSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
+	FARFilter UnusedFilter;
+	Algo::Transform(UnusedAssetsList, UnusedFilter.ObjectPaths, [](const FAssetData& AssetData) { return AssetData.ObjectPath; });
+	UnusedAssetView->SetBackendFilter(UnusedFilter);
 
-	const TArray<FAssetData> InuseAssets = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets().Array();
-	InuseAssetsList.Empty(InuseAssets.Num());
-	Algo::Transform(InuseAssets, InuseAssetsList, [](const FAssetData& AssetData) { return MakeShared<FAssetData>(AssetData); });
-	InuseAssetsListView->RebuildList();
+	const TArray<FAssetData> InuseAssetsList = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets().Array();
+	FARFilter InuseFilter;
+	Algo::Transform(InuseAssetsList, InuseFilter.ObjectPaths, [](const FAssetData& AssetData) { return AssetData.ObjectPath; });
+	InuseAssetView->SetBackendFilter(InuseFilter);
 }
 
 bool SCPDashboardWidget::ShouldReactToAssetChange(const FAssetData& AssetData) const
