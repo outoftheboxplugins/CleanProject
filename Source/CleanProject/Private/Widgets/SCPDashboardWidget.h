@@ -6,8 +6,27 @@
 #include "Templates/SharedPointer.h"
 #include "Widgets/SCompoundWidget.h"
 
+using FCPAssetPtr = TSharedPtr<FAssetData>;
+
 /**
- * Menu Widget containing a UI interface for the developer to interact with the Clean Project.
+ * Widget that represents an asset entry in the dashboard.
+ */
+class SCPDashboardAssetRow final : public SMultiColumnTableRow<TSharedPtr<FName>>
+{
+public:
+	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FCPAssetPtr InListItem);
+
+private:
+	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
+
+private:
+	FCPAssetPtr Item;
+};
+
+/**
+ * NomadTab containing an overview of the current project state.
+ * Displays: list whitelisted assets and list of unused assets
+ * Shortcut buttons to different actions: running cleanups, refreshing, opening settings
  */
 class SCPDashboardWidget : public SCompoundWidget
 {
@@ -36,11 +55,11 @@ private:
 	void RefreshUnusedAssets();
 
 private:
-	TSharedPtr<SListView<TSharedPtr<FAssetData>>> InuseAssetsListView;
-	TArray<TSharedPtr<FAssetData>> InuseAssetsList;
+	TSharedPtr<SListView<FCPAssetPtr>> InuseAssetsListView;
+	TArray<FCPAssetPtr> InuseAssetsList;
 
-	TSharedPtr<SListView<TSharedPtr<FAssetData>>> UnusedAssetsListView;
-	TArray<TSharedPtr<FAssetData>> UnusedAssetsList;
+	TSharedPtr<SListView<FCPAssetPtr>> UnusedAssetsListView;
+	TArray<FCPAssetPtr> UnusedAssetsList;
 
 	FDateTime LastRefreshTime;
 	bool bIsIndexOutdated = true;

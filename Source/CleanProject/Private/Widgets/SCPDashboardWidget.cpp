@@ -6,14 +6,44 @@
 #include "CPDependencyWalkerSubsystem.h"
 #include "CPLog.h"
 #include "CPSettings.h"
-#include "CleanProjectModule.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
-#include "SCPMenuAssetRow.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SSeparator.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
+
+void SCPDashboardAssetRow::Construct(
+	const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable, FCPAssetPtr InListItem)
+{
+	// Cache the list item so we can get information about the current Item when required
+	Item = InListItem;
+
+	FSuperRowType::Construct(InArgs, InOwnerTable);
+}
+
+TSharedRef<SWidget> SCPDashboardAssetRow::GenerateWidgetForColumn(const FName& ColumnName)
+{
+	// clang-format off
+	TSharedPtr<SWidget> HorizontalBox;
+	SAssignNew(HorizontalBox, SHorizontalBox)
+		+SHorizontalBox::Slot()
+		.AutoWidth()
+		.Padding(6, 0, 0, 0)
+		[
+			SNew(SExpanderArrow, SharedThis(this)).IndentAmount(12)
+		]
+		
+		+SHorizontalBox::Slot()
+		.FillWidth(1.0f)
+		[
+			SNew(STextBlock)
+			.Text(FText::FromName(Item->PackageName))
+		];
+	// clang-format on
+
+	return HorizontalBox.ToSharedRef();
+}
 
 void SCPDashboardWidget::Construct(const FArguments& InArgs)
 {
@@ -24,11 +54,11 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 
 		+SVerticalBox::Slot()
 		[
-			SAssignNew(InuseAssetsListView, SListView<TSharedPtr<FAssetData>>)
+			SAssignNew(InuseAssetsListView, SListView<FCPAssetPtr>)
 			.ListItemsSource(&InuseAssetsList)
-			.OnGenerateRow_Lambda([](TSharedPtr<FAssetData> InInfo, const TSharedRef<STableViewBase>& OwnerTable)
+			.OnGenerateRow_Lambda([](FCPAssetPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
 				{
-					return SNew(SCPMenuAssetRow, OwnerTable, InInfo);
+					return SNew(SCPDashboardAssetRow, OwnerTable, InInfo);
 				})
 			.HeaderRow(
 				SNew(SHeaderRow)
@@ -39,11 +69,11 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 
 		+SVerticalBox::Slot()
 		[
-			SAssignNew(UnusedAssetsListView, SListView<TSharedPtr<FAssetData>>)
+			SAssignNew(UnusedAssetsListView, SListView<FCPAssetPtr>)
 			.ListItemsSource(&UnusedAssetsList)
-			.OnGenerateRow_Lambda([](TSharedPtr<FAssetData> InInfo, const TSharedRef<STableViewBase>& OwnerTable)
+			.OnGenerateRow_Lambda([](FCPAssetPtr InInfo, const TSharedRef<STableViewBase>& OwnerTable)
 				{
-					return SNew(SCPMenuAssetRow, OwnerTable, InInfo);
+					return SNew(SCPDashboardAssetRow, OwnerTable, InInfo);
 				})
 			.HeaderRow(
 				SNew(SHeaderRow)

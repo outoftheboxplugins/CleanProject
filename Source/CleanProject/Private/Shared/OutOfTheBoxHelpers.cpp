@@ -6,10 +6,12 @@
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
-namespace OutOfTheBoxHelpersInternal
+namespace OutOfTheBoxHelpers
 {
-TSharedRef<FWorkspaceItem> FindOrAdd(TSharedRef<FWorkspaceItem> Parent, FText const& Name)
+TSharedRef<FWorkspaceItem> GetSharedWindowsCategory()
 {
+	const TSharedRef<FWorkspaceItem> Parent = WorkspaceMenu::GetMenuStructure().GetStructureRoot();
+	const FText& Name = OutOfTheBoxCategoryText;
 	TSharedPtr<FWorkspaceItem> FoundCategory;
 
 	TArray<TSharedRef<FWorkspaceItem>> ExistingCategories = Parent->GetChildItems();
@@ -26,14 +28,6 @@ TSharedRef<FWorkspaceItem> FindOrAdd(TSharedRef<FWorkspaceItem> Parent, FText co
 	}
 
 	return FoundCategory.ToSharedRef();
-}
-}	 // namespace OutOfTheBoxHelpersInternal
-
-namespace OutOfTheBoxHelpers
-{
-TSharedRef<FWorkspaceItem> GetSharedWindowsCategory()
-{
-	return OutOfTheBoxHelpersInternal::FindOrAdd(WorkspaceMenu::GetMenuStructure().GetStructureRoot(), OutOfTheBoxCategoryText);
 }
 
 FToolMenuSection& GetSharedActionsCategory()
