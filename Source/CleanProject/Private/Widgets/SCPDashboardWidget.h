@@ -39,7 +39,7 @@ public:
 	void Construct(const FArguments& InArgs);
 
 private:
-	void OnFilesLoaded();
+	void OnInitialScanComplete();
 	void OnAssetAdded(const FAssetData& AssetData);
 	void OnAssetRemoved(const FAssetData& AssetData);
 	void OnAssetRenamed(const FAssetData& AssetData, const FString& Name);

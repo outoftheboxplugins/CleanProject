@@ -6,6 +6,7 @@
 #include "CPDependencyWalkerSubsystem.h"
 #include "CPLog.h"
 #include "CPSettings.h"
+#include "Engine/AssetManager.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/ScopedSlowTask.h"
 #include "Widgets/Input/SButton.h"
@@ -28,14 +29,6 @@ TSharedRef<SWidget> SCPDashboardAssetRow::GenerateWidgetForColumn(const FName& C
 	TSharedPtr<SWidget> HorizontalBox;
 	SAssignNew(HorizontalBox, SHorizontalBox)
 		+SHorizontalBox::Slot()
-		.AutoWidth()
-		.Padding(6, 0, 0, 0)
-		[
-			SNew(SExpanderArrow, SharedThis(this)).IndentAmount(12)
-		]
-		
-		+SHorizontalBox::Slot()
-		.FillWidth(1.0f)
 		[
 			SNew(STextBlock)
 			.Text(FText::FromName(Item->PackageName))
@@ -47,6 +40,16 @@ TSharedRef<SWidget> SCPDashboardAssetRow::GenerateWidgetForColumn(const FName& C
 
 void SCPDashboardWidget::Construct(const FArguments& InArgs)
 {
+	if (const UAssetManager* AssetManager = UAssetManager::GetIfValid())
+	{
+		AssetManager->CallOrRegister_OnCompletedInitialScan(
+			FSimpleMulticastDelegate::FDelegate::CreateSP(this, &SCPDashboardWidget::OnInitialScanComplete));
+	}
+	else
+	{
+		UE_LOG(LogCleanProject, Warning, TEXT("There is no AssetManager! Initial refresh will be skipped"));
+	}
+
 	// clang-format off
 	ChildSlot
 	[
@@ -158,27 +161,17 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 		]
 	];
 	// clang-format on
-
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	if (AssetRegistryModule.Get().IsLoadingAssets())
-	{
-		AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SCPDashboardWidget::OnFilesLoaded);
-	}
-	else
-	{
-		OnFilesLoaded();
-	}
 }
 
-void SCPDashboardWidget::OnFilesLoaded()
+void SCPDashboardWidget::OnInitialScanComplete()
 {
 	RefreshUnusedAssets();
 
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	AssetRegistryModule.Get().OnAssetAdded().AddSP(this, &SCPDashboardWidget::OnAssetAdded);
-	AssetRegistryModule.Get().OnAssetRemoved().AddSP(this, &SCPDashboardWidget::OnAssetRemoved);
-	AssetRegistryModule.Get().OnAssetRenamed().AddSP(this, &SCPDashboardWidget::OnAssetRenamed);
-	AssetRegistryModule.Get().OnAssetUpdatedOnDisk().AddSP(this, &SCPDashboardWidget::OnAssetUpdated);
+	IAssetRegistry& AssetRegistry = FAssetRegistryModule::GetRegistry();
+	AssetRegistry.OnAssetAdded().AddSP(this, &SCPDashboardWidget::OnAssetAdded);
+	AssetRegistry.OnAssetRemoved().AddSP(this, &SCPDashboardWidget::OnAssetRemoved);
+	AssetRegistry.OnAssetRenamed().AddSP(this, &SCPDashboardWidget::OnAssetRenamed);
+	AssetRegistry.OnAssetUpdatedOnDisk().AddSP(this, &SCPDashboardWidget::OnAssetUpdated);
 }
 
 void SCPDashboardWidget::OnAssetAdded(const FAssetData& AssetData)
