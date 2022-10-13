@@ -60,15 +60,13 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 		// Buttons
 		+SVerticalBox::Slot()
 		.AutoHeight()
-		.HAlign(HAlign_Right)
+		.HAlign(HAlign_Fill)
 		.Padding(4)
 		[
-			SNew(SUniformGridPanel)
-			.SlotPadding(FEditorStyle::GetMargin("StandardDialog.SlotPadding"))
-			.MinDesiredSlotWidth(FEditorStyle::GetFloat("StandardDialog.MinDesiredSlotWidth"))
-			.MinDesiredSlotHeight(FEditorStyle::GetFloat("StandardDialog.MinDesiredSlotHeight"))
-			
-			+SUniformGridPanel::Slot(0, 0)
+			SNew(SHorizontalBox)
+
+			+SHorizontalBox::Slot()
+			.FillWidth(1.0f)
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
@@ -76,15 +74,17 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 				.OnClicked(this, &SCPUnusedAssetsReport::OnDeleteClicked)
 				.Text(LOCTEXT("DeleteButton", "Delete"))
 			]
-			+SUniformGridPanel::Slot(1, 0)
+			+SHorizontalBox::Slot()
+			.FillWidth(1.0f)
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
 				.OnClicked(this, &SCPUnusedAssetsReport::OnReferenceViewerClicked)
-				.Text(LOCTEXT("ReferenceViewerButton", "Reference Viewer"))
+				.Text(LOCTEXT("ReferenceViewerButton", "References"))
 			]
-			+SUniformGridPanel::Slot(2, 0)
+			+SHorizontalBox::Slot()
+			.FillWidth(1.0f)
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
@@ -92,7 +92,8 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 				.OnClicked(this, &SCPUnusedAssetsReport::OnAuditClicked)
 				.Text(LOCTEXT("AuditButton", "Audit"))
 			]
-			+SUniformGridPanel::Slot(3, 0)
+			+SHorizontalBox::Slot()
+			.FillWidth(1.0f)
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
@@ -100,7 +101,8 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 				.OnClicked(this, &SCPUnusedAssetsReport::OnWhitelistClicked)
 				.Text(LOCTEXT("WhitelistButton", "Whitelist"))
 			]
-			+SUniformGridPanel::Slot(4, 0)
+			+SHorizontalBox::Slot()
+			.FillWidth(1.0f)
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
@@ -108,7 +110,8 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 				.OnClicked(this, &SCPUnusedAssetsReport::OnBlacklistClicked)
 				.Text(LOCTEXT("BlacklistButton", "Blacklist"))
 			]
-			+SUniformGridPanel::Slot(5, 0)
+			+SHorizontalBox::Slot()
+			.FillWidth(1.0f)
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
@@ -126,7 +129,7 @@ void SCPUnusedAssetsReport::OpenAssetDialog(const TArray<FAssetData>& AssetsToRe
 	// clang-format off
 	const TSharedRef<SWindow> ReportWindow = SNew(SWindow)
 		.Title(LOCTEXT("UnusedAssetsReportTitle", "Unused Assets Report"))
-		.ClientSize(FVector2D(600, 500))
+		.ClientSize(FVector2D(720, 600))
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
 		[
@@ -171,7 +174,7 @@ TSharedPtr<SWidget> SCPUnusedAssetsReport::OnGetAssetContextMenu(const TArray<FA
 		LOCTEXT("RemoveActionTooltip", "Remove selected assets from the report, so they won't get deleted."), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::RemoveFromList, SelectedAssets)));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("ReferenceViewerAction", "Open Reference Viewer"),
+	MenuBuilder.AddMenuEntry(LOCTEXT("ReferenceViewerAction", "Reference Viewer"),
 		LOCTEXT("ReferenceViewerTooltip", "Get more information about the selected assets."), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::ReferenceViewerAssets, SelectedAssets)));
 
@@ -188,8 +191,7 @@ TSharedPtr<SWidget> SCPUnusedAssetsReport::OnGetAssetContextMenu(const TArray<FA
 		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::BlackListAssets, SelectedAssets)));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("DeleteAction", "Delete"), LOCTEXT("DeleteActionTooltip", "Delete only selected assets."),
-		FSlateIcon(FEditorStyle::GetStyleSetName(), "ContentBrowser.AssetActions.Delete"),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::DeleteAssets, SelectedAssets)));
+		FSlateIcon(), FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::DeleteAssets, SelectedAssets)));
 
 	MenuBuilder.EndSection();
 	return MenuBuilder.MakeWidget();
