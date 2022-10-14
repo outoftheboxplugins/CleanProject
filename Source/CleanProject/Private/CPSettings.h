@@ -20,6 +20,10 @@ public:
 	 */
 	static void OpenSettings();
 	/**
+	 * Called after this settings object has been changed
+	 */
+	FSimpleMulticastDelegate OnSettingsChanged;
+	/**
 	 * List of assets we always consider actively referenced.
 	 * Add assets (including their dependencies) you want to prevent our system from deleting here
 	 */
@@ -76,4 +80,6 @@ private:
 	 * Saves the current values to the .ini file inside root Config folder
 	 */
 	void SaveToDefaultConfig();
+
+	void OnAnyConfigSaved(const TCHAR* IniFilename, const FString& ContentsToSave, int32& SavedCount);
 };

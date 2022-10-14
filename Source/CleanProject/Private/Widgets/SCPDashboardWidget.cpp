@@ -162,6 +162,8 @@ void SCPDashboardWidget::OnInitialScanComplete()
 	AssetRegistry.OnAssetRemoved().AddSP(this, &SCPDashboardWidget::OnAssetRemoved);
 	AssetRegistry.OnAssetRenamed().AddSP(this, &SCPDashboardWidget::OnAssetRenamed);
 	AssetRegistry.OnAssetUpdatedOnDisk().AddSP(this, &SCPDashboardWidget::OnAssetUpdated);
+
+	GetMutableDefault<UCPSettings>()->OnSettingsChanged.AddSP(this, &SCPDashboardWidget::OnSettingsChanged);
 }
 
 void SCPDashboardWidget::OnAssetAdded(const FAssetData& AssetData)
@@ -210,6 +212,11 @@ void SCPDashboardWidget::OnAssetUpdated(const FAssetData& AssetData)
 	{
 		bIsIndexOutdated = true;
 	}
+}
+
+void SCPDashboardWidget::OnSettingsChanged()
+{
+	RefreshUnusedAssets();
 }
 
 void SCPDashboardWidget::RefreshUnusedAssets()

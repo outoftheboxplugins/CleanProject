@@ -26,6 +26,8 @@ void UCPSettings::PostInitProperties()
 		WhitelistedAssets.Emplace(FSoftObjectPath(OldWhitelistPath));
 	}
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
+
+	FCoreDelegates::PreSaveConfigFileDelegate.AddUObject(this, &UCPSettings::OnAnyConfigSaved);
 }
 
 FName UCPSettings::GetContainerName() const
@@ -80,4 +82,13 @@ TSet<FAssetData> UCPSettings::GetWhitelistAssetsPaths() const
 void UCPSettings::SaveToDefaultConfig()
 {
 	SaveConfig(CPF_Config, *GetDefaultConfigFilename());
+}
+
+void UCPSettings::OnAnyConfigSaved(const TCHAR* IniFilename, const FString& ContentsToSave, int32& SavedCount)
+{
+	FString IniFile = FString(IniFilename);
+	if (IniFile == GetDefaultConfigFilename())
+	{
+		OnSettingsChanged.Broadcast();
+	}
 }

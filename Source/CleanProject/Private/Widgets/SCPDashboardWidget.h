@@ -28,6 +28,7 @@ private:
 	void OnAssetRemoved(const FAssetData& AssetData);
 	void OnAssetRenamed(const FAssetData& AssetData, const FString& Name);
 	void OnAssetUpdated(const FAssetData& AssetData);
+	void OnSettingsChanged();
 
 	FReply OnRunCleanupFast();
 	FReply OnRunCleanupComplex();
