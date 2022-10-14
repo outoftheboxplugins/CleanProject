@@ -38,8 +38,14 @@ private:
 	bool ShouldReactToAssetChange(const FAssetData& AssetData) const;
 	void RefreshUnusedAssets();
 
+	bool FilterInuseAsset(const FAssetData& AssetData) const;
+	bool FilterUnusedAsset(const FAssetData& AssetData) const;
+
 private:
+	TArray<FAssetData> InuseAssets;
 	TSharedPtr<SAssetView> InuseAssetView;
+
+	TArray<FAssetData> UnusedAssets;
 	TSharedPtr<SAssetView> UnusedAssetView;
 
 	FDateTime LastRefreshTime;

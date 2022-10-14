@@ -51,6 +51,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 			.ShowTypeInTileView(true)
 			.ShowBottomToolbar(true)
 			.ShowViewOptions(true)
+			.OnShouldFilterAsset_Raw(this, &SCPDashboardWidget::FilterInuseAsset)
 		]
 		
 		+SVerticalBox::Slot()
@@ -70,6 +71,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 			.ShowTypeInTileView(true)
 			.ShowBottomToolbar(true)
 			.ShowViewOptions(true)
+			.OnShouldFilterAsset_Raw(this, &SCPDashboardWidget::FilterUnusedAsset)
 		]
 
 		+SVerticalBox::Slot()
@@ -83,7 +85,8 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 				SNew(STextBlock)
 				.Text(TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
 				{
-					return LOCTEXT("ProjectUnusuedAssetsCount", "Identified unused assets");
+					return bIsIndexOutdated ? LOCTEXT("UnusuedAssetsOutdated", "Index is NOT up to date")
+											: LOCTEXT("UnusuedAssetsUpdated", "Index is up to date");
 				})))
 			]
 
@@ -99,7 +102,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 				{
 					return bIsIndexOutdated ? EVisibility::Visible : EVisibility::Hidden;
 				})
-				.ToolTipText(LOCTEXT("ProjectUnusuedAssetsOutdated", "Your project has changed since the last automatic indexing."
+				.ToolTipText(LOCTEXT("UnusuedAssetsOutdatedTooltip", "Your project has changed since the last automatic indexing."
 					"Use the Refresh button to start re-indexing now or adjust refresh parameters inside the plugin settings."))
 			]
 		]
@@ -213,16 +216,21 @@ void SCPDashboardWidget::RefreshUnusedAssets()
 {
 	LastRefreshTime = FDateTime::Now();
 	bIsIndexOutdated = false;
+	InuseAssets = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets().Array();
+	InuseAssetView->RequestSlowFullListRefresh();
 
-	const TArray<FAssetData> UnusedAssetsList = UCPDependencyWalkerSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
-	FARFilter UnusedFilter;
-	Algo::Transform(UnusedAssetsList, UnusedFilter.ObjectPaths, [](const FAssetData& AssetData) { return AssetData.ObjectPath; });
-	UnusedAssetView->SetBackendFilter(UnusedFilter);
+	UnusedAssets = UCPDependencyWalkerSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
+	UnusedAssetView->RequestSlowFullListRefresh();
+}
 
-	const TArray<FAssetData> InuseAssetsList = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets().Array();
-	FARFilter InuseFilter;
-	Algo::Transform(InuseAssetsList, InuseFilter.ObjectPaths, [](const FAssetData& AssetData) { return AssetData.ObjectPath; });
-	InuseAssetView->SetBackendFilter(InuseFilter);
+bool SCPDashboardWidget::FilterInuseAsset(const FAssetData& AssetData) const
+{
+	return !InuseAssets.Contains(AssetData);
+}
+
+bool SCPDashboardWidget::FilterUnusedAsset(const FAssetData& AssetData) const
+{
+	return !UnusedAssets.Contains(AssetData);
 }
 
 bool SCPDashboardWidget::ShouldReactToAssetChange(const FAssetData& AssetData) const
