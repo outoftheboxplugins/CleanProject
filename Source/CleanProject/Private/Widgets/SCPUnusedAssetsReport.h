@@ -2,10 +2,7 @@
 
 #pragma once
 
-#include "ARFilter.h"
-#include "ContentBrowserDelegates.h"
-#include "CoreMinimal.h"
-#include "Widgets/SCompoundWidget.h"
+#include <Widgets/SCompoundWidget.h>
 
 class SCPUnusedAssetsReport : public SCompoundWidget
 {

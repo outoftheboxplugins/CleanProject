@@ -2,17 +2,13 @@
 
 #include "SCPUnusedAssetsReport.h"
 
-#include "AssetManagerEditorModule.h"
-#include "AssetRegistry/AssetRegistryModule.h"
-#include "CPLog.h"
 #include "CPSettings.h"
-#include "ContentBrowserModule.h"
-#include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "IContentBrowserSingleton.h"
-#include "Interfaces/IMainFrameModule.h"
-#include "ObjectTools.h"
-#include "Widgets/Input/SButton.h"
-#include "Widgets/Layout/SUniformGridPanel.h"
+
+#include <AssetManagerEditorModule.h>
+#include <AssetRegistry/AssetRegistryModule.h>
+#include <ContentBrowserModule.h>
+#include <ObjectTools.h>
+#include <Widgets/Input/SButton.h>
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 

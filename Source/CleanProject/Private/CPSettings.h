@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Engine/DeveloperSettings.h"
+#include <Engine/DeveloperSettings.h>
 
 #include "CPSettings.generated.h"
 

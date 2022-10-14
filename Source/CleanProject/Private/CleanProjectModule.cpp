@@ -5,13 +5,11 @@
 #include "CPDependencyWalkerSubsystem.h"
 #include "CPLog.h"
 #include "CPMenuExtensions.h"
-#include "ContentBrowserModule.h"
-#include "LevelEditor.h"
 #include "Shared/OutOfTheBoxHelpers.h"
-#include "ToolMenus.h"
 #include "Widgets/SCPDashboardWidget.h"
-#include "WorkspaceMenuStructure.h"
-#include "WorkspaceMenuStructureModule.h"
+
+#include <ContentBrowserModule.h>
+#include <ToolMenus.h>
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 

@@ -2,9 +2,9 @@
 
 #include "OutOfTheBoxHelpers.h"
 
-#include "ToolMenus.h"
-#include "WorkspaceMenuStructure.h"
-#include "WorkspaceMenuStructureModule.h"
+#include <ToolMenus.h>
+#include <WorkspaceMenuStructure.h>
+#include <WorkspaceMenuStructureModule.h>
 
 namespace OutOfTheBoxHelpers
 {

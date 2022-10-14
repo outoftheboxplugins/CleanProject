@@ -2,10 +2,9 @@
 
 #include "CPSettings.h"
 
-#include "AssetData.h"
-#include "AssetRegistry/AssetRegistryModule.h"
-#include "EditorAssetLibrary.h"
-#include "ISettingsModule.h"
+#include <AssetData.h>
+#include <EditorAssetLibrary.h>
+#include <ISettingsModule.h>
 
 void UCPSettings::OpenSettings()
 {

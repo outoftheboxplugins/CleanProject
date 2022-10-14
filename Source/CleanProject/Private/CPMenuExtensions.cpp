@@ -2,12 +2,9 @@
 
 #include "CPMenuExtensions.h"
 
-#include "AssetRegistryModule.h"
 #include "CPDependencyWalkerSubsystem.h"
 #include "CPLog.h"
 #include "CPSettings.h"
-#include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "Framework/MultiBox/MultiBoxExtender.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 

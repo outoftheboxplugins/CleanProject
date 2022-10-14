@@ -2,10 +2,9 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "SAssetView.h"
-#include "Templates/SharedPointer.h"
-#include "Widgets/SCompoundWidget.h"
+#include <Widgets/SCompoundWidget.h>
+
+class SAssetView;
 
 /**
  * NomadTab containing an overview of the current project state.

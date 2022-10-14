@@ -6,7 +6,6 @@ public class CleanProject : ModuleRules
 {
 	public CleanProject(ReadOnlyTargetRules Target) : base(Target)
 	{
-		//TOSOLVE: Check if all of these are needed
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
@@ -20,8 +19,6 @@ public class CleanProject : ModuleRules
 				"EditorSubsystem",
 				"EditorStyle",
 				"Engine",
-				"InputCore",
-				"MainFrame",
 				"Projects",
 				"Slate",
 				"SlateCore",

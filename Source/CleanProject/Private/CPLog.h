@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Logging/LogMacros.h"
+#include <Logging/LogMacros.h>
 
 DECLARE_LOG_CATEGORY_EXTERN(LogCleanProject, Log, All)
 

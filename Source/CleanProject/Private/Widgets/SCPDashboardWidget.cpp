@@ -2,16 +2,15 @@
 
 #include "SCPDashboardWidget.h"
 
-#include "AssetRegistryModule.h"
 #include "CPDependencyWalkerSubsystem.h"
 #include "CPLog.h"
 #include "CPSettings.h"
-#include "Engine/AssetManager.h"
-#include "Interfaces/IPluginManager.h"
-#include "Misc/ScopedSlowTask.h"
-#include "SAssetView.h"
-#include "Widgets/Input/SButton.h"
-#include "Widgets/Layout/SSeparator.h"
+
+#include <AssetRegistryModule.h>
+#include <Engine/AssetManager.h>
+#include <Interfaces/IPluginManager.h>
+#include <SAssetView.h>
+#include <Widgets/Input/SButton.h>
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -26,8 +25,6 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 	{
 		UE_LOG(LogCleanProject, Warning, TEXT("There is no AssetManager! Initial refresh will be skipped"));
 	}
-
-	// TODO: Refresh when settings change as well
 
 	// clang-format off
 	ChildSlot

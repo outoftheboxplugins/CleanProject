@@ -2,16 +2,17 @@
 
 #include "CPDependencyWalkerSubsystem.h"
 
-#include "AssetRegistry/AssetRegistryModule.h"
-#include "AssetToolsModule.h"
-#include "AssetViewUtils.h"
 #include "CPLog.h"
 #include "CPSettings.h"
-#include "EditorAssetLibrary.h"
-#include "Misc/ScopedSlowTask.h"
-#include "ProfilingDebugging/ScopedTimers.h"
-#include "Settings/ProjectPackagingSettings.h"
 #include "Widgets/SCPUnusedAssetsReport.h"
+
+#include <AssetRegistry/AssetRegistryModule.h>
+#include <AssetToolsModule.h>
+#include <AssetViewUtils.h>
+#include <EditorAssetLibrary.h>
+#include <Misc/ScopedSlowTask.h>
+#include <ProfilingDebugging/ScopedTimers.h>
+#include <Settings/ProjectPackagingSettings.h>
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -272,9 +273,7 @@ TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString
 		Filter.PackagePaths.Add(FName(FolderPath));
 	}
 	TArray<FAssetData> AllAssetData;
-	FAssetRegistryModule& AssetRegistryModule =
-		FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	AssetRegistryModule.Get().GetAssets(Filter, AllAssetData);
+	FAssetRegistryModule::GetRegistry().GetAssets(Filter, AllAssetData);
 
 	return AllAssetData;
 }
