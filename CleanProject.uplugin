@@ -1,7 +1,6 @@
 {
 	"FileVersion": 3,
 	"VersionName": "4.0",
-	"EngineVersion": "5.0",
 	"FriendlyName": "Clean Project",
 	"Description": "Keep your project organized all the time while improving productivity and reduce packing size.",
 	"Category": "Editor",
