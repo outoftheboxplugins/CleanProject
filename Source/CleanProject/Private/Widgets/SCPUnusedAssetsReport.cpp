@@ -108,15 +108,6 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 				.OnClicked(this, &SCPUnusedAssetsReport::OnBlacklistClicked)
 				.Text(LOCTEXT("BlacklistButton", "Blacklist"))
 			]
-			+SHorizontalBox::Slot()
-			.FillWidth(1.0f)
-			[
-				SNew(SButton)
-				.HAlign(HAlign_Center)
-				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCPUnusedAssetsReport::OnCancelClicked)
-				.Text(LOCTEXT("CancelButton", "Cancel"))
-			]
 		]
 	];
 	// clang-format on
@@ -152,8 +143,9 @@ TSharedRef<SWidget> SCPUnusedAssetsReport::CreateAssetPickerWidget()
 	Config.InitialAssetViewType = EAssetViewType::List;
 	Config.OnAssetDoubleClicked = FOnAssetDoubleClicked::CreateSP(this, &SCPUnusedAssetsReport::OnAssetDoubleClicked);
 	Config.OnGetAssetContextMenu = FOnGetAssetContextMenu::CreateSP(this, &SCPUnusedAssetsReport::OnGetAssetContextMenu);
-	Config.SetFilterDelegates.Add(&SetFilterDelegate);
+	Config.OnShouldFilterAsset = FOnShouldFilterAsset::CreateSP(this, &SCPUnusedAssetsReport::FilterDisplayedAsset);
 	Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
+	Config.RefreshAssetViewDelegates.Add(&RefreshAssetViewDelegate);
 
 	IContentBrowserSingleton& ContentBrowserSingleton =
 		FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>("ContentBrowser").Get();
@@ -231,12 +223,6 @@ FReply SCPUnusedAssetsReport::OnBlacklistClicked()
 	return FReply::Handled();
 }
 
-FReply SCPUnusedAssetsReport::OnCancelClicked()
-{
-	CloseAssetDialog();
-	return FReply::Handled();
-}
-
 void SCPUnusedAssetsReport::ReferenceViewerAssets(const TArray<FAssetData> AssetsToViewReferences)
 {
 	LOG_TRACE();
@@ -285,6 +271,11 @@ void SCPUnusedAssetsReport::WhiteListAssets(const TArray<FAssetData> AssetsToWhi
 	RemoveFromList(AssetsToWhitelist);
 }
 
+bool SCPUnusedAssetsReport::FilterDisplayedAsset(const FAssetData& AssetData) const
+{
+	return !ReportAssets.Contains(AssetData);
+}
+
 void SCPUnusedAssetsReport::RemoveFromList(const TArray<FAssetData> AssetsToRemove)
 {
 	ReportAssets.RemoveAllSwap([&AssetsToRemove](const FAssetData& AssetData) { return AssetsToRemove.Contains(AssetData); });
@@ -301,10 +292,8 @@ void SCPUnusedAssetsReport::RemoveFromList(const TArray<FAssetData> AssetsToRemo
 
 void SCPUnusedAssetsReport::RefreshAssetList()
 {
-	FARFilter ReportAssetsFilter;
-	Algo::Transform(ReportAssets, ReportAssetsFilter.ObjectPaths, [](const FAssetData& AssetData) { return AssetData.ObjectPath; });
-
-	SetFilterDelegate.Execute(ReportAssetsFilter);
+	constexpr bool bUpdateSource = false;
+	RefreshAssetViewDelegate.Execute(bUpdateSource);
 }
 
 TArray<FAssetData> SCPUnusedAssetsReport::GetAssetsForAction() const

@@ -62,6 +62,7 @@ public:
 	/**
 	 * @brief Convenience function to programatically add assets to the blacklisted set and saving config
 	 */
+	// TODO: Blacklist assets should be added to the newly blacklisting mechanic
 	void BlacklistAssets(const TArray<FAssetData> Assets);
 	/**
 	 * @brief Returns the asset path of the whitelisted assets as FName
