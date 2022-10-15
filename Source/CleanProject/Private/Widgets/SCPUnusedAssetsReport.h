@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <ContentBrowserDelegates.h>
 #include <Widgets/SCompoundWidget.h>
 
 class SCPUnusedAssetsReport : public SCompoundWidget

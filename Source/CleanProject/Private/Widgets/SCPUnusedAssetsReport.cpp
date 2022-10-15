@@ -2,11 +2,13 @@
 
 #include "SCPUnusedAssetsReport.h"
 
+#include "CPLog.h"
 #include "CPSettings.h"
 
 #include <AssetManagerEditorModule.h>
 #include <AssetRegistry/AssetRegistryModule.h>
 #include <ContentBrowserModule.h>
+#include <IContentBrowserSingleton.h>
 #include <ObjectTools.h>
 #include <Widgets/Input/SButton.h>
 
@@ -153,8 +155,9 @@ TSharedRef<SWidget> SCPUnusedAssetsReport::CreateAssetPickerWidget()
 	Config.SetFilterDelegates.Add(&SetFilterDelegate);
 	Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
 
-	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
-	TSharedRef<SWidget> AssetPickerWidget = ContentBrowserModule.Get().CreateAssetPicker(Config);
+	IContentBrowserSingleton& ContentBrowserSingleton =
+		FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>("ContentBrowser").Get();
+	TSharedRef<SWidget> AssetPickerWidget = ContentBrowserSingleton.CreateAssetPicker(Config);
 	RefreshAssetList();
 
 	return AssetPickerWidget;
@@ -299,7 +302,6 @@ void SCPUnusedAssetsReport::RemoveFromList(const TArray<FAssetData> AssetsToRemo
 void SCPUnusedAssetsReport::RefreshAssetList()
 {
 	FARFilter ReportAssetsFilter;
-	TArray<FName>& ReportObjectsPaths = ReportAssetsFilter.ObjectPaths;
 	Algo::Transform(ReportAssets, ReportAssetsFilter.ObjectPaths, [](const FAssetData& AssetData) { return AssetData.ObjectPath; });
 
 	SetFilterDelegate.Execute(ReportAssetsFilter);

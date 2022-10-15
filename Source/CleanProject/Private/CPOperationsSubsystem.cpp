@@ -69,7 +69,7 @@ void GetEmptyFolderInPath(const FString& BaseDirectory, TArray<FString>& OutEmpt
 }
 }	 // namespace
 
-FCPAssetDependenciesTable::FAssetDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
+FCPAssetDependenciesTable::FCPAssetDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
 {
 	BuildDependenciesTable(InAssets, ScanType);
 }
@@ -215,10 +215,10 @@ void UCPOperationsSubsystem::DeleteEmptyPackageFoldersIn(const FString& InPath)
 
 void UCPOperationsSubsystem::FixUpRedirectsInProject()
 {
-	const TSet<FAssetData> RedirectorAssets = GetAllGameAssetsOfType<UObjectRedirector>();
+	const TSet<FAssetData> RedirectsAssets = GetAllGameAssetsOfType<UObjectRedirector>();
 
 	TArray<FString> ObjectPaths;
-	for (const FAssetData& Asset : RedirectorAssets)
+	for (const FAssetData& Asset : RedirectsAssets)
 	{
 		ObjectPaths.Add(Asset.ObjectPath.ToString());
 	}
@@ -226,14 +226,14 @@ void UCPOperationsSubsystem::FixUpRedirectsInProject()
 	TArray<UObject*> Objects;
 	if (AssetViewUtils::LoadAssetsIfNeeded(ObjectPaths, Objects, true, true))
 	{
-		TArray<UObjectRedirector*> Redirectors;
+		TArray<UObjectRedirector*> Redirects;
 		for (UObject* Object : Objects)
 		{
-			UObjectRedirector* Redirector = CastChecked<UObjectRedirector>(Object);
-			Redirectors.Add(Redirector);
+			UObjectRedirector* Redirect = CastChecked<UObjectRedirector>(Object);
+			Redirects.Add(Redirect);
 		}
 
-		FAssetToolsModule::GetModule().Get().FixupReferencers(Redirectors);
+		FAssetToolsModule::GetModule().Get().FixupReferencers(Redirects);
 	}
 }
 
