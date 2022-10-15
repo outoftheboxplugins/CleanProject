@@ -129,14 +129,6 @@ void SCPUnusedAssetsReport::OpenAssetDialog(const TArray<FAssetData>& AssetsToRe
 	FSlateApplication::Get().AddWindow(ReportWindow);
 }
 
-void SCPUnusedAssetsReport::CloseAssetDialog()
-{
-	if (const TSharedPtr<SWindow> Window = FSlateApplication::Get().FindWidgetWindow(AsShared()))
-	{
-		Window->RequestDestroyWindow();
-	}
-}
-
 TSharedRef<SWidget> SCPUnusedAssetsReport::CreateAssetPickerWidget()
 {
 	FAssetPickerConfig Config;
@@ -150,7 +142,6 @@ TSharedRef<SWidget> SCPUnusedAssetsReport::CreateAssetPickerWidget()
 	IContentBrowserSingleton& ContentBrowserSingleton =
 		FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>("ContentBrowser").Get();
 	TSharedRef<SWidget> AssetPickerWidget = ContentBrowserSingleton.CreateAssetPicker(Config);
-	RefreshAssetList();
 
 	return AssetPickerWidget;
 }
@@ -280,18 +271,7 @@ void SCPUnusedAssetsReport::RemoveFromList(const TArray<FAssetData> AssetsToRemo
 {
 	ReportAssets.RemoveAllSwap([&AssetsToRemove](const FAssetData& AssetData) { return AssetsToRemove.Contains(AssetData); });
 
-	if (ReportAssets.Num() == 0)
-	{
-		CloseAssetDialog();
-	}
-	else
-	{
-		RefreshAssetList();
-	}
-}
-
-void SCPUnusedAssetsReport::RefreshAssetList()
-{
+	// Update list of assets displayed
 	constexpr bool bUpdateSource = false;
 	RefreshAssetViewDelegate.Execute(bUpdateSource);
 }

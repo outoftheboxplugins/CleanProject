@@ -29,9 +29,6 @@ public:
 	 */
 	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);
 
-	// TODO: Research if this is even needed and if opening other windows automatically close this one, e.g.: reference viewer
-	void CloseAssetDialog();
-
 private:
 	TSharedRef<SWidget> CreateAssetPickerWidget();
 	TSharedPtr<SWidget> OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets);
@@ -100,7 +97,6 @@ private:
 	 */
 	bool FilterDisplayedAsset(const FAssetData& AssetData) const;
 	void RemoveFromList(const TArray<FAssetData> AssetsToRemove);
-	void RefreshAssetList();
 
 	/**
 	 * @brief Determines what assets we want to perform the current operation on.
