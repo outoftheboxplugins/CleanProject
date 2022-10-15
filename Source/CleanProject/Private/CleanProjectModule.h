@@ -14,15 +14,31 @@ private:
 	// End IModuleInterface interface
 
 private:
+	/**
+	 * @brief Registers all the extensions for the Content Browser module
+	 */
+	void RegisterContentBrowserExtensions();
+	/**
+	 * @brief Unregisters all the extensions for the Content Browser module
+	 */
+	void UnregisterContentBrowserExtensions();
+	/**
+	 * @brief Registers all the extensions for the Window dropdown menu
+	 */
+	void RegisterWindowExtensions();
+	/**
+	 * @brief Unregisters all the extensions for the Window dropdown menu
+	 */
+	void UnregisterWindowExtensions();
+
 	void RegisterToolActions();
 	void CreateToolActionEntries(UToolMenu* InMenu);
 	void UnregisterToolActions();
 
-	void RegisterAssetActions();
-	void UnregisterAssetActions();
-
-	void RegisterToolWindows();
-	void UnregisterToolWindows();
+	/**
+	 * @brief Callback executed by the windows menu entry to spawn the Dashboard nomad tab
+	 */
+	TSharedRef<SDockTab> CreateDashboardNomadTab(const FSpawnTabArgs& Args);
 
 	TSharedRef<FExtender> CreateContentBrowserAssetsExtender(const TArray<FAssetData>& SelectedAssets);
 	void CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
@@ -31,6 +47,12 @@ private:
 	void CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilder, TArray<FString> SelectedFolders);
 
 private:
+	/**
+	 * @brief Callback handle for the assets context menu extension of the Content Browser
+	 */
 	FDelegateHandle CBAssetsExtenderDelegateHandle;
+	/**
+	 * @brief Callback handle for the folders context menu extension of the Content Browser
+	 */
 	FDelegateHandle CBFoldersExtenderDelegateHandle;
 };
