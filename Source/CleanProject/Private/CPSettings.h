@@ -7,7 +7,7 @@
 #include "CPSettings.generated.h"
 
 /**
- * Holds the configurable settings for the Clean Project plugin
+ * @brief Holds the configurable settings for the Clean Project plugin
  */
 UCLASS(config = Editor, defaultconfig)
 class UCPSettings : public UDeveloperSettings
@@ -16,55 +16,55 @@ class UCPSettings : public UDeveloperSettings
 
 public:
 	/**
-	 * Shortcut to open the project settings windows focused to this config
+	 * @brief Shortcut to open the project settings windows focused to this config
 	 */
 	static void OpenSettings();
 	/**
-	 * Called after this settings object has been changed
+	 * @brief Called after this settings object has been changed
 	 */
 	FSimpleMulticastDelegate OnSettingsChanged;
 	/**
-	 * List of assets we always consider actively referenced.
-	 * Add assets (including their dependencies) you want to prevent our system from deleting here
+	 * @brief List of assets we always consider actively referenced. Add assets (including their dependencies) you want to prevent
+	 * our system from deleting here
 	 */
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
 	TSet<FSoftObjectPath> WhitelistedAssets;
 	/**
-	 * Old version for storing assets we want to whitelist
+	 * @brief Old version for storing assets we want to whitelist
 	 */
 	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use WhitelistedAssets")
 	UPROPERTY(VisibleDefaultsOnly, config, Category = "Deprecated")
 	TArray<FString> WhitelistAssetsPaths;
 	/**
-	 * Assets we should actively exclude from the final pak
+	 * @brief Assets we should actively exclude from the final pak
 	 * Add assets you want to prevent from getting added to your final game. Their dependencies might still get packaged if
 	 * referenced by something else
 	 */
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
 	TSet<FSoftObjectPath> BlacklistedAssets;
 	/**
-	 * Should the Clean Project Dashboard automatically refresh itself every time an asset is updated. (Unless time since last
-	 * refresh is lower than AutoRefreshInterval)
+	 * @brief  Should the Clean Project Dashboard automatically refresh itself every time an asset is updated. (Unless time since
+	 * last refresh is lower than AutoRefreshInterval)
 	 */
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
 	bool bAutoRefreshDashboard = true;
 	/**
-	 * How much time we should wait in between Clean Project Dashboard refresh requests
+	 * @brief How much time we should wait in between Clean Project Dashboard refresh requests
 	 * @note measured in seconds
 	 * @note use -1 to refresh every time
 	 */
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
 	float AutoRefreshInterval = 30.0f;
 	/**
-	 * Convenience function to programatically add assets to the whitelisted set and saving config
+	 * @brief Convenience function to programatically add assets to the whitelisted set and saving config
 	 */
 	void WhitelistAssets(const TArray<FAssetData> Assets);
 	/**
-	 * Convenience function to programatically add assets to the blacklisted set and saving config
+	 * @brief Convenience function to programatically add assets to the blacklisted set and saving config
 	 */
 	void BlacklistAssets(const TArray<FAssetData> Assets);
 	/**
-	 * Returns the asset path of the whitelisted assets as FName
+	 * @brief Returns the asset path of the whitelisted assets as FName
 	 */
 	TSet<FAssetData> GetWhitelistAssetsPaths() const;
 
@@ -77,9 +77,11 @@ private:
 	// End UDeveloperSettings interface
 
 	/**
-	 * Saves the current values to the .ini file inside root Config folder
+	 * @brief Saves the current values to the .ini file inside root Config folder
 	 */
 	void SaveToDefaultConfig();
-
+	/**
+	 * @brief Callback executed when any config is saved so we can react to saves to this config
+	 */
 	void OnAnyConfigSaved(const TCHAR* IniFilename, const FString& ContentsToSave, int32& SavedCount);
 };

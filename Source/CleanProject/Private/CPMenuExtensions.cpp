@@ -2,7 +2,7 @@
 
 #include "CPMenuExtensions.h"
 
-#include "CPDependencyWalkerSubsystem.h"
+#include "CPOperationsSubsystem.h"
 #include "CPLog.h"
 #include "CPSettings.h"
 
@@ -28,7 +28,7 @@ void CPMenuExtensions::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder
 			[SelectedAssets]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Fast* from selected assets."));
-				UCPDependencyWalkerSubsystem::Get()->DeleteUnusedAssets(SelectedAssets, EScanType::Fast);
+				UCPOperationsSubsystem::Get()->DeleteUnusedAssets(SelectedAssets, EScanType::Fast);
 			})));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsCheckUnusedComplex", "Complex Check if selected assets are unused"),
@@ -39,7 +39,7 @@ void CPMenuExtensions::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder
 					  [SelectedAssets]()
 					  {
 						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected assets."));
-						  UCPDependencyWalkerSubsystem::Get()->DeleteUnusedAssets(SelectedAssets, EScanType::Complex);
+						  UCPOperationsSubsystem::Get()->DeleteUnusedAssets(SelectedAssets, EScanType::Complex);
 					  }),
 			FCanExecuteAction::CreateLambda([]() { return false; })));
 
@@ -85,7 +85,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 			[SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Fast* from selected folders."));
-				UCPDependencyWalkerSubsystem::Get()->DeleteUnusedAssets(SelectedFolders, EScanType::Fast);
+				UCPOperationsSubsystem::Get()->DeleteUnusedAssets(SelectedFolders, EScanType::Fast);
 			})));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCheckUnusedComplex", "Complex Check assets from the selected folders"),
@@ -96,7 +96,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 					  [SelectedFolders]()
 					  {
 						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected folders."));
-						  UCPDependencyWalkerSubsystem::Get()->DeleteUnusedAssets(SelectedFolders, EScanType::Complex);
+						  UCPOperationsSubsystem::Get()->DeleteUnusedAssets(SelectedFolders, EScanType::Complex);
 					  }),
 			FCanExecuteAction::CreateLambda([]() { return false; })));
 
@@ -107,7 +107,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Whitelist Assets* from selected folders."));
 				const TArray<FAssetData> AssetsInSelectedFolders =
-					UCPDependencyWalkerSubsystem::Get()->GetAssetsInPaths(SelectedFolders);
+					UCPOperationsSubsystem::Get()->GetAssetsInPaths(SelectedFolders);
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 				Settings->WhitelistAssets(AssetsInSelectedFolders);
 			})));
@@ -119,7 +119,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Blacklist Assets* from selected folders."));
 				const TArray<FAssetData> AssetsInSelectedFolders =
-					UCPDependencyWalkerSubsystem::Get()->GetAssetsInPaths(SelectedFolders);
+					UCPOperationsSubsystem::Get()->GetAssetsInPaths(SelectedFolders);
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 				Settings->BlacklistAssets(AssetsInSelectedFolders);
 			})));
@@ -130,7 +130,7 @@ void CPMenuExtensions::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilde
 			[SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from selected folders."));
-				UCPDependencyWalkerSubsystem::Get()->DeleteEmptyPackageFoldersIn(SelectedFolders);
+				UCPOperationsSubsystem::Get()->DeleteEmptyPackageFoldersIn(SelectedFolders);
 			})));
 
 	MenuBuilder.EndSection();

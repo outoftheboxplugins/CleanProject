@@ -1,6 +1,6 @@
 ﻿// Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
 
-#include "CPDependencyWalkerSubsystem.h"
+#include "CPOperationsSubsystem.h"
 
 #include "CPLog.h"
 #include "CPSettings.h"
@@ -69,12 +69,12 @@ void GetEmptyFolderInPath(const FString& BaseDirectory, TArray<FString>& OutEmpt
 }
 }	 // namespace
 
-FAssetDependenciesTable::FAssetDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
+FCPAssetDependenciesTable::FAssetDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
 {
 	BuildDependenciesTable(InAssets, ScanType);
 }
 
-void FAssetDependenciesTable::BuildDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
+void FCPAssetDependenciesTable::BuildDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
 {
 	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** START BuildDependenciesTable ***************"));
 	FAutoScopedDurationTimer TotalTimer;
@@ -110,7 +110,7 @@ void FAssetDependenciesTable::BuildDependenciesTable(const TSet<FAssetData>& InA
 	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** STOP BuildDependenciesTable ***************"));
 }
 
-TSet<FAssetData> FAssetDependenciesTable::CompileReferences(const TSet<FAssetData>& Assets)
+TSet<FAssetData> FCPAssetDependenciesTable::CompileReferences(const TSet<FAssetData>& Assets)
 {
 	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** START CompileReferences ***************"));
 	FAutoScopedDurationTimer TotalTimer;
@@ -127,7 +127,7 @@ TSet<FAssetData> FAssetDependenciesTable::CompileReferences(const TSet<FAssetDat
 	return OutReferences;
 }
 
-void FAssetDependenciesTable::CompileReferencesRecursive(
+void FCPAssetDependenciesTable::CompileReferencesRecursive(
 	const TArray<FAssetData>& Assets, TSet<FAssetData>& OutReferences, int RecursionLevel /* = 0 */)
 {
 	for (const FAssetData& Asset : Assets)
@@ -149,24 +149,24 @@ void FAssetDependenciesTable::CompileReferencesRecursive(
 	}
 }
 
-UCPDependencyWalkerSubsystem* UCPDependencyWalkerSubsystem::Get()
+UCPOperationsSubsystem* UCPOperationsSubsystem::Get()
 {
-	return GEditor->GetEditorSubsystem<UCPDependencyWalkerSubsystem>();
+	return GEditor->GetEditorSubsystem<UCPOperationsSubsystem>();
 }
 
-void UCPDependencyWalkerSubsystem::DeleteAllUnusedAssets(EScanType ScanType)
+void UCPOperationsSubsystem::DeleteAllUnusedAssets(EScanType ScanType)
 {
 	const TArray<FAssetData> AllAssets = GetAllGameAssets().Array();
 	DeleteUnusedAssets(AllAssets, ScanType);
 }
 
-void UCPDependencyWalkerSubsystem::DeleteUnusedAssets(const TArray<FString>& InFolders, EScanType ScanType)
+void UCPOperationsSubsystem::DeleteUnusedAssets(const TArray<FString>& InFolders, EScanType ScanType)
 {
 	const TArray<FAssetData> AssetsInSelectedFolders = GetAssetsInPaths(InFolders);
 	DeleteUnusedAssets(AssetsInSelectedFolders, ScanType);
 }
 
-void UCPDependencyWalkerSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& InAssets, EScanType ScanType)
+void UCPOperationsSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& InAssets, EScanType ScanType)
 {
 	const TArray<FAssetData> AssetsToRemove = GetUnusedAssets(InAssets, ScanType);
 	if (AssetsToRemove.Num() == 0)
@@ -179,13 +179,13 @@ void UCPDependencyWalkerSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& 
 	}
 }
 
-void UCPDependencyWalkerSubsystem::DeleteAllEmptyPackageFolders()
+void UCPOperationsSubsystem::DeleteAllEmptyPackageFolders()
 {
 	FString GameContentFolder = TEXT("/Game");
 	DeleteEmptyPackageFoldersIn({GameContentFolder});
 }
 
-void UCPDependencyWalkerSubsystem::DeleteEmptyPackageFoldersIn(const TArray<FString>& InPaths)
+void UCPOperationsSubsystem::DeleteEmptyPackageFoldersIn(const TArray<FString>& InPaths)
 {
 	for (const FString& Path : InPaths)
 	{
@@ -193,7 +193,7 @@ void UCPDependencyWalkerSubsystem::DeleteEmptyPackageFoldersIn(const TArray<FStr
 	}
 }
 
-void UCPDependencyWalkerSubsystem::DeleteEmptyPackageFoldersIn(const FString& InPath)
+void UCPOperationsSubsystem::DeleteEmptyPackageFoldersIn(const FString& InPath)
 {
 	FixUpRedirectsInProject();
 
@@ -213,7 +213,7 @@ void UCPDependencyWalkerSubsystem::DeleteEmptyPackageFoldersIn(const FString& In
 	}
 }
 
-void UCPDependencyWalkerSubsystem::FixUpRedirectsInProject()
+void UCPOperationsSubsystem::FixUpRedirectsInProject()
 {
 	const TSet<FAssetData> RedirectorAssets = GetAllGameAssetsOfType<UObjectRedirector>();
 
@@ -237,13 +237,13 @@ void UCPDependencyWalkerSubsystem::FixUpRedirectsInProject()
 	}
 }
 
-TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAllUnusedAssets(EScanType ScanType) const
+TArray<FAssetData> UCPOperationsSubsystem::GetAllUnusedAssets(EScanType ScanType) const
 {
 	const TArray<FAssetData> AllAssets = GetAllGameAssets().Array();
 	return GetUnusedAssets(AllAssets, ScanType);
 }
 
-TArray<FAssetData> UCPDependencyWalkerSubsystem::GetUnusedAssets(const TArray<FAssetData>& AssetsToCheck, EScanType ScanType) const
+TArray<FAssetData> UCPOperationsSubsystem::GetUnusedAssets(const TArray<FAssetData>& AssetsToCheck, EScanType ScanType) const
 {
 	if (ScanType == EScanType::Complex)
 	{
@@ -255,7 +255,7 @@ TArray<FAssetData> UCPDependencyWalkerSubsystem::GetUnusedAssets(const TArray<FA
 	}
 	const TSet<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
 
-	FAssetDependenciesTable DependenciesTable = FAssetDependenciesTable(GetAllGameAssets(), ScanType);
+	FCPAssetDependenciesTable DependenciesTable = FCPAssetDependenciesTable(GetAllGameAssets(), ScanType);
 	const TSet<FAssetData> AssetsToKeep = DependenciesTable.CompileReferences(WhitelistedAssets);
 
 	TArray<FAssetData> UnusedAssets = AssetsToCheck;
@@ -264,7 +264,7 @@ TArray<FAssetData> UCPDependencyWalkerSubsystem::GetUnusedAssets(const TArray<FA
 	return UnusedAssets;
 }
 
-TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString> FolderPaths) const
+TArray<FAssetData> UCPOperationsSubsystem::GetAssetsInPaths(TArray<FString> FolderPaths) const
 {
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;
@@ -278,7 +278,7 @@ TArray<FAssetData> UCPDependencyWalkerSubsystem::GetAssetsInPaths(TArray<FString
 	return AllAssetData;
 }
 
-TSet<FAssetData> UCPDependencyWalkerSubsystem::GetWhitelistedAssets() const
+TSet<FAssetData> UCPOperationsSubsystem::GetWhitelistedAssets() const
 {
 	TArray<FAssetData> Result;
 	const UProjectPackagingSettings* const PackagingSettings = GetDefault<UProjectPackagingSettings>();
@@ -304,7 +304,7 @@ TSet<FAssetData> UCPDependencyWalkerSubsystem::GetWhitelistedAssets() const
 	return TSet(Result);
 }
 
-TSet<FAssetData> UCPDependencyWalkerSubsystem::GetAllGameAssets(TOptional<FName> ClassFilter) const
+TSet<FAssetData> UCPOperationsSubsystem::GetAllGameAssets(TOptional<FName> ClassFilter) const
 {
 	TArray<FAssetData> AllAssetData;
 

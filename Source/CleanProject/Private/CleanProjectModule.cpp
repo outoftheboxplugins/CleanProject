@@ -2,7 +2,7 @@
 
 #include "CleanProjectModule.h"
 
-#include "CPDependencyWalkerSubsystem.h"
+#include "CPOperationsSubsystem.h"
 #include "CPLog.h"
 #include "CPMenuExtensions.h"
 #include "Shared/OutOfTheBoxHelpers.h"
@@ -86,7 +86,7 @@ void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
 			[]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Fast* from menu."));
-				UCPDependencyWalkerSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Fast);
+				UCPOperationsSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Fast);
 			}))));
 
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry("MenuCleanupUnusedAssetsComplex",
@@ -98,7 +98,7 @@ void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
 					  []()
 					  {
 						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Complex* from menu."));
-						  UCPDependencyWalkerSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Complex);
+						  UCPOperationsSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Complex);
 					  }),
 			FCanExecuteAction::CreateLambda([]() { return false; }))));
 
@@ -108,7 +108,7 @@ void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
 			[]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects* from menu."));
-				UCPDependencyWalkerSubsystem::Get()->FixUpRedirectsInProject();
+				UCPOperationsSubsystem::Get()->FixUpRedirectsInProject();
 			}))));
 
 	Section.AddEntry(
@@ -118,7 +118,7 @@ void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
 				[]()
 				{
 					UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from menu."));
-					UCPDependencyWalkerSubsystem::Get()->DeleteAllEmptyPackageFolders();
+					UCPOperationsSubsystem::Get()->DeleteAllEmptyPackageFolders();
 				}))));
 }
 

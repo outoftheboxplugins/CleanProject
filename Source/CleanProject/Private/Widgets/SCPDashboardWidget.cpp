@@ -2,7 +2,7 @@
 
 #include "SCPDashboardWidget.h"
 
-#include "CPDependencyWalkerSubsystem.h"
+#include "CPOperationsSubsystem.h"
 #include "CPLog.h"
 #include "CPSettings.h"
 
@@ -220,10 +220,10 @@ void SCPDashboardWidget::RefreshUnusedAssets()
 {
 	LastRefreshTime = FDateTime::Now();
 	bIsIndexOutdated = false;
-	InuseAssets = UCPDependencyWalkerSubsystem::Get()->GetWhitelistedAssets().Array();
+	InuseAssets = UCPOperationsSubsystem::Get()->GetWhitelistedAssets().Array();
 	InuseAssetView->RequestSlowFullListRefresh();
 
-	UnusedAssets = UCPDependencyWalkerSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
+	UnusedAssets = UCPOperationsSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
 	UnusedAssetView->RequestSlowFullListRefresh();
 }
 
@@ -246,7 +246,7 @@ bool SCPDashboardWidget::ShouldReactToAssetChange(const FAssetData& AssetData) c
 		return false;
 	}
 
-	const TArray<FAssetData>& GameAssets = UCPDependencyWalkerSubsystem::Get()->GetAllGameAssets().Array();
+	const TArray<FAssetData>& GameAssets = UCPOperationsSubsystem::Get()->GetAllGameAssets().Array();
 	const bool bIsGameAsset = GameAssets.Contains(AssetData);
 
 	if (!bIsGameAsset)
@@ -274,7 +274,7 @@ FReply SCPDashboardWidget::OnRunCleanupFast()
 {
 	UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Fast* from widget menu."));
 
-	UCPDependencyWalkerSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Fast);
+	UCPOperationsSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Fast);
 	return FReply::Handled();
 }
 
@@ -282,7 +282,7 @@ FReply SCPDashboardWidget::OnRunCleanupComplex()
 {
 	UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Complex* from widget menu."));
 
-	UCPDependencyWalkerSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Complex);
+	UCPOperationsSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Complex);
 	return FReply::Handled();
 }
 
