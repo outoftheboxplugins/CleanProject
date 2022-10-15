@@ -2,6 +2,9 @@
 
 #pragma once
 
+/**
+ * @brief Clean Project module responsible for registering menus & toolbar extensions
+ */
 class FCleanProjectModule : public IModuleInterface
 {
 private:
@@ -20,6 +23,12 @@ private:
 
 	void RegisterToolWindows();
 	void UnregisterToolWindows();
+
+	TSharedRef<FExtender> CreateContentBrowserAssetsExtender(const TArray<FAssetData>& SelectedAssets);
+	void CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
+
+	TSharedRef<FExtender> CreateContentBrowserFoldersExtender(const TArray<FString>& SelectedFolders);
+	void CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilder, TArray<FString> SelectedFolders);
 
 private:
 	FDelegateHandle CBAssetsExtenderDelegateHandle;

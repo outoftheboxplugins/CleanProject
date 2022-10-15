@@ -30,7 +30,16 @@ public:
 	void Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport);
 
 private:
+	/**
+	 * @brief Creates asset picker widget and binds delegates for future callbacks
+	 * @return Slate widget reference
+	 */
 	TSharedRef<SWidget> CreateAssetPickerWidget();
+	/**
+	 * @brief Callback executed to build the context menu for the selected asset(s)
+	 * @param SelectedAssets Current selection of assets we want to get available actions for
+	 * @return Widget to be displayed as context menu
+	 */
 	TSharedPtr<SWidget> OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets);
 
 	/**
@@ -96,6 +105,10 @@ private:
 	 * @return true to hide the asset, false to show the asset
 	 */
 	bool FilterDisplayedAsset(const FAssetData& AssetData) const;
+	/**
+	 * @brief Remove assets from the report for various reasons (removed from list by the user, already deleted)
+	 * @param AssetsToRemove Assets we want to remove from the report
+	 */
 	void RemoveFromList(const TArray<FAssetData> AssetsToRemove);
 
 	/**
@@ -124,6 +137,8 @@ private:
 	 * @brief Delegate bound to the asset picker's properties. Execute it to get the currently selected assets
 	 */
 	FGetCurrentSelectionDelegate GetCurrentSelectionDelegate;
-	
+	/**
+	 * @brief Delegate bound to the asset picker's properties. Execute it to refresh the assets displayed
+	 */
 	FRefreshAssetViewDelegate RefreshAssetViewDelegate;
 };
