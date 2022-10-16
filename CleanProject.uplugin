@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
-	"VersionName": "4.0",
+	"VersionName": "4.0.0",
 	"FriendlyName": "Clean Project",
-	"Description": "Keep your project organized all the time while improving productivity and reduce packing size.",
+	"Description": "Keep your project organized with fast and easy to use cleanup operations",
 	"Category": "Editor",
 	"CreatedBy": "Out-of-the-Box Plugins",
 	"CreatedByURL": "https://outofthebox-plugins.com",
