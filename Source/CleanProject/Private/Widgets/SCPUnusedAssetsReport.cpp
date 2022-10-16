@@ -156,7 +156,7 @@ TSharedPtr<SWidget> SCPUnusedAssetsReport::OnGetAssetContextMenu(const TArray<FA
 		LOCTEXT("RemoveActionTooltip", "Remove selected assets from the report, so they won't get deleted."), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::RemoveFromList, SelectedAssets)));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("ReferenceViewerAction", "Reference Viewer"),
+	MenuBuilder.AddMenuEntry(LOCTEXT("ReferenceViewerAction", "References"),
 		LOCTEXT("ReferenceViewerTooltip", "Get more information about the selected assets."), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::ReferenceViewerAssets, SelectedAssets)));
 
@@ -238,6 +238,7 @@ void SCPUnusedAssetsReport::DeleteAssets(const TArray<FAssetData> AssetsToDelete
 	TArray<UObject*> ObjectsToDelete;
 	Algo::Transform(AssetsToDelete, ObjectsToDelete, [](const FAssetData& AssetData) { return AssetData.GetAsset(); });
 
+	// TODO: react to asset deleted delegate because we have no control over what is actually getting deleted
 	ObjectTools::DeleteObjects(ObjectsToDelete);
 	RemoveFromList(AssetsToDelete);
 }
