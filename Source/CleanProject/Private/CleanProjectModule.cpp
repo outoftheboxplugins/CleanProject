@@ -24,7 +24,7 @@ void FCleanProjectModule::StartupModule()
 
 	RegisterContentBrowserExtensions();
 	RegisterWindowExtensions();
-	RegisterToolActions();
+	RegisterToolsExtensions();
 }
 
 void FCleanProjectModule::ShutdownModule()
@@ -33,7 +33,7 @@ void FCleanProjectModule::ShutdownModule()
 
 	UnregisterContentBrowserExtensions();
 	UnregisterWindowExtensions();
-	UnregisterToolActions();
+	UnregisterToolsExtensions();
 }
 
 void FCleanProjectModule::RegisterContentBrowserExtensions()
@@ -43,13 +43,13 @@ void FCleanProjectModule::RegisterContentBrowserExtensions()
 		TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuDelegates =
 			ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
 		CBAssetMenuDelegates.Add(
-			FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::CreateContentBrowserAssetsExtender));
+			FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::CreateCBAssetsExtender));
 		CBAssetsExtenderDelegateHandle = CBAssetMenuDelegates.Last().GetHandle();
 
 		TArray<FContentBrowserMenuExtender_SelectedPaths>& CBFolderMenuDelegates =
 			ContentBrowserModule->GetAllPathViewContextMenuExtenders();
 		CBFolderMenuDelegates.Add(
-			FContentBrowserMenuExtender_SelectedPaths::CreateRaw(this, &FCleanProjectModule::CreateContentBrowserFoldersExtender));
+			FContentBrowserMenuExtender_SelectedPaths::CreateRaw(this, &FCleanProjectModule::CreateCBFoldersExtender));
 		CBFoldersExtenderDelegateHandle = CBFolderMenuDelegates.Last().GetHandle();
 	}
 	else
@@ -97,15 +97,21 @@ void FCleanProjectModule::UnregisterWindowExtensions()
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(MenuTabName);
 }
 
-void FCleanProjectModule::RegisterToolActions()
+void FCleanProjectModule::RegisterToolsExtensions()
 {
 	FToolMenuSection& SharedSection = OutOfTheBoxHelpers::GetSharedActionsCategory();
-	SharedSection.AddSubMenu("CleanProject", LOCTEXT("MenuActionDisplayName", "Clean Project"), {},
-		FNewToolMenuDelegate::CreateRaw(this, &FCleanProjectModule::CreateToolActionEntries), false,
+	SharedSection.AddSubMenu("CleanProject", LOCTEXT("CleanProjectCategoryName", "Clean Project"),
+		LOCTEXT("CleanProjectCategoryTooltip", "Organise your projet quick and easy by using smart cleanup operations"),
+		FNewToolMenuDelegate::CreateRaw(this, &FCleanProjectModule::CreateToolsSubMenu), false,
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Search"));
 }
 
-void FCleanProjectModule::CreateToolActionEntries(UToolMenu* InMenu)
+void FCleanProjectModule::UnregisterToolsExtensions()
+{
+	UToolMenus::Get()->UnregisterOwner(this);
+}
+
+void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 {
 	FToolMenuOwnerScoped OwnerScoped(this);
 	FToolMenuSection& Section = InMenu->AddSection("Actions");
@@ -163,21 +169,16 @@ TSharedRef<SDockTab> FCleanProjectModule::CreateDashboardNomadTab(const FSpawnTa
 	// clang-format on
 }
 
-void FCleanProjectModule::UnregisterToolActions()
-{
-	UToolMenus::Get()->UnregisterOwner(this);
-}
-
-TSharedRef<FExtender> FCleanProjectModule::CreateContentBrowserAssetsExtender(const TArray<FAssetData>& SelectedAssets)
+TSharedRef<FExtender> FCleanProjectModule::CreateCBAssetsExtender(const TArray<FAssetData>& SelectedAssets)
 {
 	TSharedRef<FExtender> ContentBrowserExtender = MakeShareable(new FExtender);
 	ContentBrowserExtender->AddMenuExtension("AssetContextAdvancedActions", EExtensionHook::After, nullptr,
-		FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateContentBrowserAssetsEntry, SelectedAssets));
+		FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateCBAssetsEntry, SelectedAssets));
 
 	return ContentBrowserExtender;
 }
 
-void FCleanProjectModule::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets)
+void FCleanProjectModule::CreateCBAssetsEntry(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets)
 {
 	MenuBuilder.BeginSection("CleanProject", LOCTEXT("ContentBrowserAssetSection", "Clean Project"));
 
@@ -226,16 +227,16 @@ void FCleanProjectModule::CreateContentBrowserAssetsEntry(FMenuBuilder& MenuBuil
 	MenuBuilder.EndSection();
 }
 
-TSharedRef<FExtender> FCleanProjectModule::CreateContentBrowserFoldersExtender(const TArray<FString>& SelectedFolders)
+TSharedRef<FExtender> FCleanProjectModule::CreateCBFoldersExtender(const TArray<FString>& SelectedFolders)
 {
 	TSharedRef<FExtender> ContentBrowserExtender = MakeShareable(new FExtender);
 	ContentBrowserExtender->AddMenuExtension("PathContextBulkOperations", EExtensionHook::After, nullptr,
-		FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateContentBrowserFoldersEntry, SelectedFolders));
+		FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateCBFoldersEntry, SelectedFolders));
 
 	return ContentBrowserExtender;
 }
 
-void FCleanProjectModule::CreateContentBrowserFoldersEntry(FMenuBuilder& MenuBuilder, TArray<FString> SelectedFolders)
+void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray<FString> SelectedFolders)
 {
 	MenuBuilder.BeginSection("CleanProject", LOCTEXT("ContentBrowserFolderSection", "Clean Project"));
 	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCheckUnusedFast", "Fast Check assets from the selected folders"),
