@@ -24,6 +24,10 @@ public:
 	void Construct(const FArguments& InArgs);
 
 private:
+	// Begin SCompoundWidget interface
+	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
+	// End SCompoundWidget interface
+
 	/**
 	 * @brief Callback executed after the initial scan of the assets is completed (or on tab spawn if scan was already completed)
 	 */
@@ -83,12 +87,11 @@ private:
 	/**
 	 * @brief Checks if asset change should trigger a refresh. Takes into account:
 	 * 1. AutoRefresh setting - developers can opt out of automatic refreshes if they prefer to trigger them manually
-	 * 2. Asset location -  we only react to asset changes inside Game's content folder
+	 * 2. Outdated index -  we only update if a recent change has happened
 	 * 3. Refresh interval - to prevent batch operations from triggering multiple refreshes developers can set a maximum rate
-	 * @param AssetData Asset we are evaluating
-	 * @return true if we should refresh the list
+	 * @return true if we should refresh the list, false otherwise
 	 */
-	bool ShouldReactToAssetChange(const FAssetData& AssetData) const;
+	bool ShouldUpdateIndex() const;
 	/**
 	 * @brief Refreshes the cached state of the InUse & Unused assets
 	 */

@@ -150,6 +150,16 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 	// clang-format on
 }
 
+void SCPDashboardWidget::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
+{
+	SCompoundWidget::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
+
+	if (ShouldUpdateIndex())
+	{
+		RefreshUnusedAssets();
+	}
+}
+
 void SCPDashboardWidget::OnInitialScanComplete()
 {
 	RefreshUnusedAssets();
@@ -166,55 +176,55 @@ void SCPDashboardWidget::OnInitialScanComplete()
 
 void SCPDashboardWidget::OnAssetAdded(const FAssetData& AssetData)
 {
-	if (ShouldReactToAssetChange(AssetData))
+	const TArray<FAssetData>& GameAssets = UCPOperationsSubsystem::Get()->GetAllGameAssets().Array();
+	const bool bIsGameAsset = GameAssets.Contains(AssetData);
+	if (!bIsGameAsset)
 	{
-		RefreshUnusedAssets();
+		return;
 	}
-	else
-	{
-		bIsIndexOutdated = true;
-	}
+
+	bIsIndexOutdated = true;
 }
 
 void SCPDashboardWidget::OnAssetRemoved(const FAssetData& AssetData)
 {
-	if (ShouldReactToAssetChange(AssetData))
+	const TArray<FAssetData>& GameAssets = UCPOperationsSubsystem::Get()->GetAllGameAssets().Array();
+	const bool bIsGameAsset = GameAssets.Contains(AssetData);
+	if (!bIsGameAsset)
 	{
-		RefreshUnusedAssets();
+		return;
 	}
-	else
-	{
-		bIsIndexOutdated = true;
-	}
+
+	bIsIndexOutdated = true;
 }
 
 void SCPDashboardWidget::OnAssetRenamed(const FAssetData& AssetData, const FString& Name)
 {
-	if (ShouldReactToAssetChange(AssetData))
+	const TArray<FAssetData>& GameAssets = UCPOperationsSubsystem::Get()->GetAllGameAssets().Array();
+	const bool bIsGameAsset = GameAssets.Contains(AssetData);
+	if (!bIsGameAsset)
 	{
-		RefreshUnusedAssets();
+		return;
 	}
-	else
-	{
-		bIsIndexOutdated = true;
-	}
+
+	bIsIndexOutdated = true;
 }
 
 void SCPDashboardWidget::OnAssetUpdated(const FAssetData& AssetData)
 {
-	if (ShouldReactToAssetChange(AssetData))
+	const TArray<FAssetData>& GameAssets = UCPOperationsSubsystem::Get()->GetAllGameAssets().Array();
+	const bool bIsGameAsset = GameAssets.Contains(AssetData);
+	if (!bIsGameAsset)
 	{
-		RefreshUnusedAssets();
+		return;
 	}
-	else
-	{
-		bIsIndexOutdated = true;
-	}
+
+	bIsIndexOutdated = true;
 }
 
 void SCPDashboardWidget::OnSettingsChanged()
 {
-	RefreshUnusedAssets();
+	bIsIndexOutdated = true;
 }
 
 void SCPDashboardWidget::RefreshUnusedAssets()
@@ -238,22 +248,16 @@ bool SCPDashboardWidget::FilterUnusedAsset(const FAssetData& AssetData) const
 	return !UnusedAssets.Contains(AssetData);
 }
 
-bool SCPDashboardWidget::ShouldReactToAssetChange(const FAssetData& AssetData) const
+bool SCPDashboardWidget::ShouldUpdateIndex() const
 {
 	const bool bIgnoreAssetUpdates = !GetDefault<UCPSettings>()->bAutoRefreshDashboard;
 	if (bIgnoreAssetUpdates)
 	{
-		UE_LOG(LogCleanProject, Verbose, TEXT("Ignoring Asset change: %s based on plugin settings."), *AssetData.GetFullName())
 		return false;
 	}
 
-	const TArray<FAssetData>& GameAssets = UCPOperationsSubsystem::Get()->GetAllGameAssets().Array();
-	const bool bIsGameAsset = GameAssets.Contains(AssetData);
-
-	if (!bIsGameAsset)
+	if (!bIsIndexOutdated)
 	{
-		UE_LOG(LogCleanProject, Verbose, TEXT("Ignoring Asset change: %s since it's not part of game assets."),
-			*AssetData.GetFullName())
 		return false;
 	}
 
@@ -262,9 +266,6 @@ bool SCPDashboardWidget::ShouldReactToAssetChange(const FAssetData& AssetData) c
 	const double RefreshInterval = GetDefault<UCPSettings>()->AutoRefreshInterval;
 	if (SecondsSinceLastRefresh < RefreshInterval)
 	{
-		UE_LOG(LogCleanProject, Verbose,
-			TEXT("Skipping Unused assets refresh, only %s seconds passed, lower than refresh interval (%s seconds)"),
-			*LexToString(SecondsSinceLastRefresh), *LexToString(RefreshInterval))
 		return false;
 	}
 
