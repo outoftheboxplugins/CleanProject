@@ -256,7 +256,7 @@ bool SCPDashboardWidget::ShouldUpdateIndex() const
 		return false;
 	}
 
-	if (bIsIndexOutdated)
+	if (!bIsIndexOutdated)
 	{
 		return false;
 	}
