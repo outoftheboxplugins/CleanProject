@@ -170,7 +170,6 @@ void SCPDashboardWidget::OnInitialScanComplete()
 	AssetRegistry.OnAssetRenamed().AddSP(this, &SCPDashboardWidget::OnAssetRenamed);
 	AssetRegistry.OnAssetUpdatedOnDisk().AddSP(this, &SCPDashboardWidget::OnAssetUpdated);
 
-	// TODO: React to changes in MapsToCook & DirectoriesToAlwaysCook as well
 	GetMutableDefault<UCPSettings>()->OnSettingsChanged.AddSP(this, &SCPDashboardWidget::OnSettingsChanged);
 }
 

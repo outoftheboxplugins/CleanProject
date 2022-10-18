@@ -110,7 +110,6 @@ private:
 	bool FilterUnusedAsset(const FAssetData& AssetData) const;
 
 private:
-	// TODO: Move the result caching mechanism (InuseAssets, UnusedAssets, LastRefreshTime and bIsIndexOutdated) to subssytem
 	/**
 	 * @brief Cached in-use assets list at the time of the last refresh we performed
 	 */
