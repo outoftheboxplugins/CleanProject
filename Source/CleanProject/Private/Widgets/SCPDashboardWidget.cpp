@@ -16,16 +16,6 @@
 
 void SCPDashboardWidget::Construct(const FArguments& InArgs)
 {
-	if (const UAssetManager* AssetManager = UAssetManager::GetIfValid())
-	{
-		AssetManager->CallOrRegister_OnCompletedInitialScan(
-			FSimpleMulticastDelegate::FDelegate::CreateSP(this, &SCPDashboardWidget::OnInitialScanComplete));
-	}
-	else
-	{
-		UE_LOG(LogCleanProject, Warning, TEXT("There is no AssetManager! Initial refresh will be skipped"));
-	}
-
 	// clang-format off
 	ChildSlot
 	[
@@ -148,6 +138,17 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 		]
 	];
 	// clang-format on
+
+	// Callback is registered here because CallOrRegister might instantly execute it and we need to assign the slate properties
+	if (const UAssetManager* AssetManager = UAssetManager::GetIfValid())
+	{
+		AssetManager->CallOrRegister_OnCompletedInitialScan(
+			FSimpleMulticastDelegate::FDelegate::CreateSP(this, &SCPDashboardWidget::OnInitialScanComplete));
+	}
+	else
+	{
+		UE_LOG(LogCleanProject, Warning, TEXT("There is no AssetManager! Initial refresh will be skipped"));
+	}
 }
 
 void SCPDashboardWidget::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
