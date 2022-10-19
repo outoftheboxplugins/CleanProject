@@ -162,7 +162,7 @@ TSharedRef<SDockTab> FCleanProjectModule::CreateDashboardNomadTab(const FSpawnTa
 {
 	// clang-format off
 	return SNew(SDockTab)
-		.TabRole(ETabRole::PanelTab)
+		.TabRole(ETabRole::NomadTab)
 		[
 			SNew(SCPDashboardWidget)
 		];
