@@ -82,14 +82,14 @@ void FCleanProjectModule::UnregisterContentBrowserExtensions()
 
 void FCleanProjectModule::RegisterWindowExtensions()
 {
-	TSharedRef<FWorkspaceItem> const CleanProjectCategory = OutOfTheBoxHelpers::GetSharedWindowsCategory();
+	TSharedRef<FWorkspaceItem> const OutOfTheBoxCategory = OutOfTheBoxHelpers::GetSharedWindowsCategory();
 	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
 		MenuTabName, FOnSpawnTab::CreateRaw(this, &FCleanProjectModule::CreateDashboardNomadTab));
 
 	CPMenuTab.SetDisplayName(LOCTEXT("DashboardName", "Clean Project Dashboard"))
 		.SetTooltipText(LOCTEXT("DashboardTooltip", "Get an overview of your project state in a separate tab."))
 		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "DerivedData.ResourceUsage"))
-		.SetGroup(CleanProjectCategory);
+		.SetGroup(OutOfTheBoxCategory);
 }
 
 void FCleanProjectModule::UnregisterWindowExtensions()
@@ -162,7 +162,7 @@ TSharedRef<SDockTab> FCleanProjectModule::CreateDashboardNomadTab(const FSpawnTa
 {
 	// clang-format off
 	return SNew(SDockTab)
-		.TabRole(ETabRole::MajorTab)
+		.TabRole(ETabRole::PanelTab)
 		[
 			SNew(SCPDashboardWidget)
 		];
