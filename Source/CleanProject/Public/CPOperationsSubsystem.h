@@ -148,9 +148,13 @@ public:
 	 * @brief Computes a set of all the whitelisted assets, takes into account:
 	 * 1. Maps added in MapsToCook Project settings
 	 * 2. Directories added in DirectoriesToAlwaysCook Project settings
-	 * 3. Assets added inside Clean Project settings
+	 * 3. Default Game Objects inside Project settings
+	 * 4. Assets added inside Clean Project settings
 	 */
 	TSet<FAssetData> GetWhitelistedAssets() const;
+
+private:
+	FAssetData GetDefaultGameObject(const FName& PropertyName) const;
 };
 
 template <typename T>
