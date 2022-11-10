@@ -10,6 +10,7 @@
 #include <AssetToolsModule.h>
 #include <AssetViewUtils.h>
 #include <EditorAssetLibrary.h>
+#include <Engine/AssetManager.h>
 #include <Misc/ScopedSlowTask.h>
 #include <ProfilingDebugging/ScopedTimers.h>
 #include <Settings/ProjectPackagingSettings.h>
@@ -74,6 +75,23 @@ FCPAssetDependenciesTable::FCPAssetDependenciesTable(const TSet<FAssetData>& InA
 	BuildDependenciesTable(InAssets, ScanType);
 }
 
+TSet<FAssetData> FCPAssetDependenciesTable::CompileReferences(const TSet<FAssetData>& Assets)
+{
+	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** START CompileReferences ***************"));
+	FAutoScopedDurationTimer TotalTimer;
+
+	FScopedSlowTask SlowTask(1, LOCTEXT("RecursiveDependencies", "Recursive Dependencies"));
+	SlowTask.MakeDialog();
+
+	TSet<FAssetData> OutReferences;
+	CompileReferencesRecursive(Assets.Array(), OutReferences);
+
+	UE_LOG(LogCleanProject, VeryVerbose, TEXT("Compiling references took: %s"), *LexToString(TotalTimer.GetTime()));
+	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** END CompileReferences ***************"));
+
+	return OutReferences;
+}
+
 void FCPAssetDependenciesTable::BuildDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
 {
 	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** START BuildDependenciesTable ***************"));
@@ -108,23 +126,6 @@ void FCPAssetDependenciesTable::BuildDependenciesTable(const TSet<FAssetData>& I
 
 	UE_LOG(LogCleanProject, VeryVerbose, TEXT("Building dependencies took: %s"), *LexToString(TotalTimer.GetTime()));
 	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** STOP BuildDependenciesTable ***************"));
-}
-
-TSet<FAssetData> FCPAssetDependenciesTable::CompileReferences(const TSet<FAssetData>& Assets)
-{
-	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** START CompileReferences ***************"));
-	FAutoScopedDurationTimer TotalTimer;
-
-	FScopedSlowTask SlowTask(1, LOCTEXT("RecursiveDependencies", "Recursive Dependencies"));
-	SlowTask.MakeDialog();
-
-	TSet<FAssetData> OutReferences;
-	CompileReferencesRecursive(Assets.Array(), OutReferences);
-
-	UE_LOG(LogCleanProject, VeryVerbose, TEXT("Compiling references took: %s"), *LexToString(TotalTimer.GetTime()));
-	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** END CompileReferences ***************"));
-
-	return OutReferences;
 }
 
 void FCPAssetDependenciesTable::CompileReferencesRecursive(
@@ -278,6 +279,23 @@ TArray<FAssetData> UCPOperationsSubsystem::GetAssetsInPaths(TArray<FString> Fold
 	return AllAssetData;
 }
 
+TSet<FAssetData> UCPOperationsSubsystem::GetAllGameAssets(TOptional<FName> ClassFilter) const
+{
+	TArray<FAssetData> AllAssetData;
+
+	FARFilter Filter;
+	Filter.PackagePaths.Add(TEXT("/Game"));
+	Filter.bRecursivePaths = true;
+
+	if (ClassFilter.IsSet())
+	{
+		Filter.ClassNames.Add(ClassFilter.GetValue());
+	}
+
+	FAssetRegistryModule::GetRegistry().GetAssets(Filter, AllAssetData);
+	return TSet(AllAssetData);
+}
+
 TSet<FAssetData> UCPOperationsSubsystem::GetWhitelistedAssets() const
 {
 	TArray<FAssetData> Result;
@@ -294,7 +312,14 @@ TSet<FAssetData> UCPOperationsSubsystem::GetWhitelistedAssets() const
 	const TArray<FAssetData> AssetsToCook = GetAssetsInPaths(FoldersToCook);
 	Algo::Transform(AssetsToCook, Result, [](const FAssetData& AssetData) { return AssetData; });
 
-	// Third get the assets which were explicitly selected by the user in our plugin settings
+	// Third get all the default game objects
+	Result.Add(GetDefaultGameObject(FName(TEXT("GameDefaultMap"))));
+	Result.Add(GetDefaultGameObject(FName(TEXT("ServerDefaultMap"))));
+	Result.Add(GetDefaultGameObject(FName(TEXT("GlobalDefaultGameMode"))));
+	Result.Add(GetDefaultGameObject(FName(TEXT("GlobalDefaultServerGameMode"))));
+	Result.Add(GetDefaultGameObject(FName(TEXT("GameInstanceClass"))));
+
+	// Forth get the assets which were explicitly selected by the user in our plugin settings
 	const TSet<FAssetData> ExplicitlyWhitelisted = GetDefault<UCPSettings>()->GetWhitelistAssetsPaths();
 	Result.Append(ExplicitlyWhitelisted.Array());
 
@@ -304,21 +329,26 @@ TSet<FAssetData> UCPOperationsSubsystem::GetWhitelistedAssets() const
 	return TSet(Result);
 }
 
-TSet<FAssetData> UCPOperationsSubsystem::GetAllGameAssets(TOptional<FName> ClassFilter) const
+FAssetData UCPOperationsSubsystem::GetDefaultGameObject(const FName& PropertyName) const
 {
-	TArray<FAssetData> AllAssetData;
+	FConfigFile PlatformEngineIni;
+	FConfigCacheIni::LoadLocalIniFile(PlatformEngineIni, TEXT("Engine"), true);
 
-	FARFilter Filter;
-	Filter.PackagePaths.Add(TEXT("/Game"));
-	Filter.bRecursivePaths = true;
-
-	if (ClassFilter.IsSet())
+	FConfigSection* MapSettingsSection = PlatformEngineIni.Find(TEXT("/Script/EngineSettings.GameMapsSettings"));
+	if (MapSettingsSection == nullptr)
 	{
-		Filter.ClassNames.Add(ClassFilter.GetValue());
+		return {};
 	}
 
-	FAssetRegistryModule::GetRegistry().GetAssets(Filter, AllAssetData);
-	return TSet(AllAssetData);
+	const FConfigValue* PairString = MapSettingsSection->Find(PropertyName);
+	const FString ObjectPath = PairString ? PairString->GetValue() : TEXT("");
+	const FSoftClassPath Test = FSoftClassPath(ObjectPath);
+
+	FAssetData Result;
+	UAssetManager& AssetManager = UAssetManager::Get();
+	AssetManager.GetAssetDataForPath(ObjectPath, Result);
+
+	return Result;
 }
 
 #undef LOCTEXT_NAMESPACE
