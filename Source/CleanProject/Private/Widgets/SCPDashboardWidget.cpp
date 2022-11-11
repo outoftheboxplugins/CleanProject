@@ -124,6 +124,13 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 			+SHorizontalBox::Slot()
 			[
 				SNew(SButton)
+				.Text(LOCTEXT("GenerateBlacklist", "Generate Blacklist"))
+				.ToolTipText(LOCTEXT("GenerateBlacklistTip", "Generates an updated PakFileRules based on the blacklist settings."))
+				.OnClicked(this, &SCPDashboardWidget::OnGenerateBlacklist)
+			]
+			+SHorizontalBox::Slot()
+			[
+				SNew(SButton)
 				.Text(LOCTEXT("GoToDocs", "Documentation"))
 				.ToolTipText(LOCTEXT("GoToDocsTip", "Open our documentation to get a better understand of the plugin."))
 				.OnClicked(this, &SCPDashboardWidget::OnGoToDocumentation)
@@ -299,6 +306,13 @@ FReply SCPDashboardWidget::OnGoToDocumentation()
 	const TSharedPtr<IPlugin> CleanProjectPlugin = IPluginManager::Get().FindPlugin("CleanProject");
 	const FString DocsURL = CleanProjectPlugin->GetDescriptor().DocsURL;
 	FPlatformProcess::LaunchURL(*DocsURL, nullptr, nullptr);
+
+	return FReply::Handled();
+}
+
+FReply SCPDashboardWidget::OnGenerateBlacklist()
+{
+	
 
 	return FReply::Handled();
 }

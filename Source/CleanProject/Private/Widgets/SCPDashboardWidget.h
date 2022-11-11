@@ -79,6 +79,11 @@ private:
 	 */
 	FReply OnGoToDocumentation();
 	/**
+	 * @brief Callback executed when Blacklist button is pressed
+	 * @return if the operation was handled or not
+	 */
+	FReply OnGenerateBlacklist();
+	/**
 	 * @brief Callback executed when Settings button is pressed
 	 * @return if the operation was handled or not
 	 */
