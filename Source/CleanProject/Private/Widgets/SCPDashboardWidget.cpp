@@ -312,7 +312,10 @@ FReply SCPDashboardWidget::OnGoToDocumentation()
 
 FReply SCPDashboardWidget::OnGenerateBlacklist()
 {
-	
+	TArray<FString> ExampleBlacklistedFiles = {TEXT("MyFile"), TEXT("MyOtherFile")};
+	const FString GPakFileRulesIni = FString (TEXT("PakFileRules"));
+	FConfigFile* EngineConfigFile = GConfig->Find(GPakFileRulesIni);
+	EngineConfigFile->SetArray(TEXT("CleanProject"), TEXT("Files"), ExampleBlacklistedFiles);
 
 	return FReply::Handled();
 }
