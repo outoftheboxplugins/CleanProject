@@ -312,10 +312,22 @@ FReply SCPDashboardWidget::OnGoToDocumentation()
 
 FReply SCPDashboardWidget::OnGenerateBlacklist()
 {
-	TArray<FString> ExampleBlacklistedFiles = {TEXT("MyFile"), TEXT("MyOtherFile")};
-	const FString GPakFileRulesIni = FString (TEXT("PakFileRules"));
-	FConfigFile* EngineConfigFile = GConfig->Find(GPakFileRulesIni);
-	EngineConfigFile->SetArray(TEXT("CleanProject"), TEXT("Files"), ExampleBlacklistedFiles);
+	const FString PakFileRulesPath = FString(FPaths::GeneratedConfigDir()) / FString(TEXT("PakFileRules.ini"));
+	FConfigFile* PakFileRulesConfig = GConfig->Find(PakFileRulesPath);
+
+	PakFileRulesConfig->SetBool(TEXT("CleanProject"), TEXT("bOverrideChunkManifest"), true);
+	PakFileRulesConfig->SetBool(TEXT("CleanProject"), TEXT("bExcludeFromPaks"), true);
+
+	const TArray<FString> BlacklistedFilePaths = []()
+	{
+		const UCPSettings* Settings = GetDefault<UCPSettings>();
+		return TArray<FString>();
+	}();
+
+	PakFileRulesConfig->SetArray(TEXT("CleanProject"), TEXT("Files"), BlacklistedFilePaths);
+
+	PakFileRulesConfig->Dirty = true;
+	PakFileRulesConfig->Write(PakFileRulesPath);
 
 	return FReply::Handled();
 }
