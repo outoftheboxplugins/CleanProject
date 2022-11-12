@@ -5,6 +5,7 @@
 #include "CPLog.h"
 #include "CPOperationsSubsystem.h"
 #include "CPSettings.h"
+#include "EditorAssetLibrary.h"
 
 #include <AssetRegistryModule.h>
 #include <Engine/AssetManager.h>
@@ -318,11 +319,13 @@ FReply SCPDashboardWidget::OnGenerateBlacklist()
 	PakFileRulesConfig->SetBool(TEXT("CleanProject"), TEXT("bOverrideChunkManifest"), true);
 	PakFileRulesConfig->SetBool(TEXT("CleanProject"), TEXT("bExcludeFromPaks"), true);
 
-	const TArray<FString> BlacklistedFilePaths = []()
+	TArray<FString> BlacklistedFilePaths;
+	const UCPSettings* Settings = GetDefault<UCPSettings>();
+	for (const FSoftObjectPath& BlacklistedAsset : Settings->BlacklistedAssets)
 	{
-		const UCPSettings* Settings = GetDefault<UCPSettings>();
-		return TArray<FString>();
-	}();
+		const FString& AssetPath = FString(TEXT("...")) + BlacklistedAsset.GetAssetPathString();
+		BlacklistedFilePaths.Add(AssetPath);
+	}
 
 	PakFileRulesConfig->SetArray(TEXT("CleanProject"), TEXT("Files"), BlacklistedFilePaths);
 
