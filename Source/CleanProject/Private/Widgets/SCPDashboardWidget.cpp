@@ -100,7 +100,11 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 				]
 			]
 
-			//TODO: Add a spacer
+			+SHorizontalBox::Slot()
+			.FillWidth(1.f)
+			[
+				SNew(SSpacer)
+			]
 
 			+ SHorizontalBox::Slot()
 			.AutoWidth()
