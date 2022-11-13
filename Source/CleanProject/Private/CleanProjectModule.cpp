@@ -9,6 +9,7 @@
 #include "Widgets/SCPDashboardWidget.h"
 
 #include <ContentBrowserModule.h>
+#include <EditorStyleSet.h>
 #include <ToolMenus.h>
 
 #define LOCTEXT_NAMESPACE "CleanProject"

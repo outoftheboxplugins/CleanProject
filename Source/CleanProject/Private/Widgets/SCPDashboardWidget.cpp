@@ -8,6 +8,7 @@
 #include "EditorAssetLibrary.h"
 
 #include <AssetRegistryModule.h>
+#include <EditorStyleSet.h>
 #include <Engine/AssetManager.h>
 #include <Interfaces/IPluginManager.h>
 #include <SAssetView.h>
