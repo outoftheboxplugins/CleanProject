@@ -238,6 +238,13 @@ void SCPDashboardWidget::OnSettingsChanged()
 
 void SCPDashboardWidget::RefreshUnusedAssets()
 {
+	const UAssetManager* AssetManager = UAssetManager::GetIfValid();
+	if (!AssetManager || !AssetManager->HasInitialScanCompleted())
+	{
+		// Asset manager is not ready yet, delaying refresh
+		return;
+	}
+
 	LastRefreshTime = FDateTime::Now();
 	bIsIndexOutdated = false;
 	InuseAssets = UCPOperationsSubsystem::Get()->GetWhitelistedAssets().Array();
