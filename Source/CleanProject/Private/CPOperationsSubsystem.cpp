@@ -279,7 +279,7 @@ TArray<FAssetData> UCPOperationsSubsystem::GetAssetsInPaths(TArray<FString> Fold
 	return AllAssetData;
 }
 
-TSet<FAssetData> UCPOperationsSubsystem::GetAllGameAssets(TOptional<FName> ClassFilter) const
+TSet<FAssetData> UCPOperationsSubsystem::GetAllGameAssets(TOptional<FTopLevelAssetPath> ClassFilter) const
 {
 	TArray<FAssetData> AllAssetData;
 
@@ -289,7 +289,7 @@ TSet<FAssetData> UCPOperationsSubsystem::GetAllGameAssets(TOptional<FName> Class
 
 	if (ClassFilter.IsSet())
 	{
-		Filter.ClassNames.Add(ClassFilter.GetValue());
+		Filter.ClassPaths.Add(ClassFilter.GetValue());
 	}
 
 	FAssetRegistryModule::GetRegistry().GetAssets(Filter, AllAssetData);

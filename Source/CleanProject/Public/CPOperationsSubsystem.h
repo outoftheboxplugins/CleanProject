@@ -142,7 +142,7 @@ public:
 	 * @param ClassFilter Class we want to filter assets for. If unset no filtering will be done and assets will be returned
 	 * @return List of all the assets found
 	 */
-	TSet<FAssetData> GetAllGameAssets(TOptional<FName> ClassFilter = {}) const;
+	TSet<FAssetData> GetAllGameAssets(TOptional<FTopLevelAssetPath> ClassFilter = {}) const;
 
 	/**
 	 * @brief Computes a set of all the whitelisted assets, takes into account:
@@ -160,5 +160,5 @@ private:
 template <typename T>
 TSet<FAssetData> UCPOperationsSubsystem::GetAllGameAssetsOfType() const
 {
-	return GetAllGameAssets(T::StaticClass()->GetFName());
+	return GetAllGameAssets(T::StaticClass()->GetClassPathName());
 }
