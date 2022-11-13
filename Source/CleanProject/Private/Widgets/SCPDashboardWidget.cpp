@@ -70,6 +70,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
 			.AutoWidth()
+			.VAlign(VAlign_Center)
 			[
 				SNew(STextBlock)
 				.Text(TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
@@ -82,17 +83,51 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 			+ SHorizontalBox::Slot()
 			.AutoWidth()
 			.Padding(2, 0)
-			.HAlign(HAlign_Center)
 			.VAlign(VAlign_Center)
 			[
-				SNew(SImage)
-				.Image(FEditorStyle::Get().GetBrush("Icons.Warning"))
+				SNew(SButton)
+				.ButtonStyle(FAppStyle::Get(), "SimpleButton")
 				.Visibility_Lambda([this]()
 				{
 					return bIsIndexOutdated ? EVisibility::Visible : EVisibility::Hidden;
 				})
 				.ToolTipText(LOCTEXT("UnusuedAssetsOutdatedTooltip", "Your project has changed since the last automatic indexing."
 					"Use the Refresh button to start re-indexing now or adjust refresh parameters inside the plugin settings."))
+				.OnClicked(this, &SCPDashboardWidget::OnRefreshUnused)
+				[
+					SNew(SImage)
+					.Image(FAppStyle::GetBrush("Icons.Refresh"))
+				]
+			]
+
+			//TODO: Add a spacer
+
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			[
+				SNew(SButton)
+				.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+				.ToolTipText(LOCTEXT("GoToDocsTip", "Open our documentation to get a better understand of the plugin."))
+				.OnClicked(this, &SCPDashboardWidget::OnGoToDocumentation)
+				[
+					SNew(SImage)
+					.Image(FAppStyle::GetBrush("Icons.Documentation"))
+				]
+			]
+
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			[
+				SNew(SButton)
+				.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+				.ToolTipText(LOCTEXT("OpenSettingsTip", "Open plugin settings to configure the Cleanup parameters."))
+				.OnClicked(this, &SCPDashboardWidget::OnOpenSettings)
+				[
+					SNew(SImage)
+					.Image(FAppStyle::GetBrush("Icons.Settings"))
+				]
 			]
 		]
 
@@ -119,30 +154,9 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 			+SHorizontalBox::Slot()
 			[
 				SNew(SButton)
-				.Text(LOCTEXT("OpenSettings", "Open Settings"))
-				.ToolTipText(LOCTEXT("OpenSettingsTip", "Open plugin settings to configure the Cleanup parameters."))
-				.OnClicked(this, &SCPDashboardWidget::OnOpenSettings)
-			]
-			+SHorizontalBox::Slot()
-			[
-				SNew(SButton)
 				.Text(LOCTEXT("GenerateBlacklist", "Generate Blacklist"))
 				.ToolTipText(LOCTEXT("GenerateBlacklistTip", "Generates an updated PakFileRules based on the blacklist settings."))
 				.OnClicked(this, &SCPDashboardWidget::OnGenerateBlacklist)
-			]
-			+SHorizontalBox::Slot()
-			[
-				SNew(SButton)
-				.Text(LOCTEXT("GoToDocs", "Documentation"))
-				.ToolTipText(LOCTEXT("GoToDocsTip", "Open our documentation to get a better understand of the plugin."))
-				.OnClicked(this, &SCPDashboardWidget::OnGoToDocumentation)
-			]
-			+SHorizontalBox::Slot()
-			[
-				SNew(SButton)
-				.Text(LOCTEXT("Refresh", "Refresh"))
-				.ToolTipText(LOCTEXT("RefreshTip", "Refresh the stats right now."))
-				.OnClicked(this, &SCPDashboardWidget::OnRefreshUnused)
 			]
 		]
 	];
