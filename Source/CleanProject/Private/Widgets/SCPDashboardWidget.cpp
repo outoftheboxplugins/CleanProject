@@ -161,6 +161,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 				.Text(LOCTEXT("GenerateBlacklist", "Generate Blacklist"))
 				.ToolTipText(LOCTEXT("GenerateBlacklistTip", "Generates an updated PakFileRules based on the blacklist settings."))
 				.OnClicked(this, &SCPDashboardWidget::OnGenerateBlacklist)
+				.IsEnabled(false)
 			]
 		]
 	];

@@ -6,7 +6,7 @@
 #include "CPSettings.h"
 #include "Widgets/SCPUnusedAssetsReport.h"
 
-#include <AssetRegistry/AssetRegistryModule.h>
+#include <AssetRegistryModule.h>
 #include <AssetToolsModule.h>
 #include <AssetViewUtils.h>
 #include <EditorAssetLibrary.h>

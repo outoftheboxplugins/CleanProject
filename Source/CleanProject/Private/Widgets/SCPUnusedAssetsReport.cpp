@@ -6,7 +6,7 @@
 #include "CPSettings.h"
 
 #include <AssetManagerEditorModule.h>
-#include <AssetRegistry/AssetRegistryModule.h>
+#include <AssetRegistryModule.h>
 #include <ContentBrowserModule.h>
 #include <IContentBrowserSingleton.h>
 #include <ObjectTools.h>
