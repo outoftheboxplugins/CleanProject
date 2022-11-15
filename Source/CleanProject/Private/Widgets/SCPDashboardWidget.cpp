@@ -340,7 +340,7 @@ FReply SCPDashboardWidget::OnGoToDocumentation()
 FReply SCPDashboardWidget::OnGenerateBlacklist()
 {
 	//TODO: Find out if we need to place it in a specific subfolder, e.g.: Windows to be picked up by CopyBuildToStagingDirectory.Automation
-	const FString PakFileRulesPath = FString(FPaths::GeneratedConfigDir()) / FString(TEXT("PakFileRules.ini"));
+	const FString PakFileRulesPath = FString(FPaths::ProjectConfigDir()) / FString(TEXT("DefaultPakFileRules.ini"));
 	FConfigFile* PakFileRulesConfig = GConfig->Find(PakFileRulesPath);
 
 	PakFileRulesConfig->SetBool(TEXT("CleanProject"), TEXT("bOverrideChunkManifest"), true);
