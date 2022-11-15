@@ -133,7 +133,7 @@ void FCPAssetDependenciesTable::CompileReferencesRecursive(
 {
 	for (const FAssetData& Asset : Assets)
 	{
-		UE_LOG(LogCleanProject, VeryVerbose, TEXT("%s%s"), *GetTabSpaces(RecursionLevel), *Asset.ObjectPath.ToString());
+		UE_LOG(LogCleanProject, VeryVerbose, TEXT("%s%s"), *GetTabSpaces(RecursionLevel), *Asset.GetSoftObjectPath().ToString());
 		OutReferences.Add(Asset);
 
 		TArray<FAssetData> AssetDependencies;
@@ -221,7 +221,7 @@ void UCPOperationsSubsystem::FixUpRedirectsInProject()
 	TArray<FString> ObjectPaths;
 	for (const FAssetData& Asset : RedirectsAssets)
 	{
-		ObjectPaths.Add(Asset.ObjectPath.ToString());
+		ObjectPaths.Add(Asset.GetSoftObjectPath().ToString());
 	}
 
 	TArray<UObject*> Objects;

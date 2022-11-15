@@ -89,7 +89,7 @@ void FCleanProjectModule::RegisterWindowExtensions()
 
 	CPMenuTab.SetDisplayName(LOCTEXT("DashboardName", "Clean Project Dashboard"))
 		.SetTooltipText(LOCTEXT("DashboardTooltip", "Get an overview of your project state in a separate tab."))
-		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "DerivedData.ResourceUsage"))
+		.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "DerivedData.ResourceUsage"))
 		.SetGroup(OutOfTheBoxCategory);
 }
 
@@ -104,7 +104,7 @@ void FCleanProjectModule::RegisterToolsExtensions()
 	SharedSection.AddSubMenu("CleanProject", LOCTEXT("CleanProjectCategoryName", "Clean Project"),
 		LOCTEXT("CleanProjectCategoryTooltip", "Organise your projet quick and easy by using smart cleanup operations"),
 		FNewToolMenuDelegate::CreateRaw(this, &FCleanProjectModule::CreateToolsSubMenu), false,
-		FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Search"));
+		FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Search"));
 }
 
 void FCleanProjectModule::UnregisterToolsExtensions()

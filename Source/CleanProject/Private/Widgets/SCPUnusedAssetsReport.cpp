@@ -31,7 +31,7 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 		[
 			SNew(STextBlock)
 			.Text( FText::Format(LOCTEXT("ReportDiskSize", "Total disk size: {0}"), FText::AsMemory(TotalDiskSize)))
-			.TextStyle(FEditorStyle::Get(), "PackageMigration.DialogTitle")
+			.TextStyle(FAppStyle::Get(), "PackageMigration.DialogTitle")
 		]
 
 		+ SVerticalBox::Slot()
@@ -40,7 +40,7 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 		[
 			SNew(STextBlock)
 			.Text(LOCTEXT("ReportSubtitle", "The following assets were found unreferenced:"))
-			.TextStyle(FEditorStyle::Get(), "PackageMigration.DialogTitle")
+			.TextStyle(FAppStyle::Get(), "PackageMigration.DialogTitle")
 		]
 
 		// Tree of packages in the report
@@ -49,7 +49,7 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 		[
 			SNew(SBorder)
 			.Padding(4)
-			.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+			.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
 			[
 				CreateAssetPickerWidget()
 			]
@@ -68,7 +68,7 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
-				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+				.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
 				.OnClicked(this, &SCPUnusedAssetsReport::OnDeleteClicked)
 				.Text(LOCTEXT("DeleteButton", "Delete"))
 			]
@@ -77,7 +77,7 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
-				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+				.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
 				.OnClicked(this, &SCPUnusedAssetsReport::OnReferenceViewerClicked)
 				.Text(LOCTEXT("ReferenceViewerButton", "References"))
 			]
@@ -86,7 +86,7 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
-				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+				.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
 				.OnClicked(this, &SCPUnusedAssetsReport::OnAuditClicked)
 				.Text(LOCTEXT("AuditButton", "Audit"))
 			]
@@ -95,7 +95,7 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
-				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+				.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
 				.OnClicked(this, &SCPUnusedAssetsReport::OnWhitelistClicked)
 				.Text(LOCTEXT("WhitelistButton", "Whitelist"))
 			]
@@ -104,7 +104,7 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
-				.ContentPadding(FEditorStyle::GetMargin("StandardDialog.ContentPadding"))
+				.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
 				.OnClicked(this, &SCPUnusedAssetsReport::OnBlacklistClicked)
 				.Text(LOCTEXT("BlacklistButton", "Blacklist"))
 			]
