@@ -12,6 +12,5 @@ class UCleanProjectCommandlet : public UCommandlet
 private:
 	virtual int32 Main(const FString& Params) override;
 
-	void DeleteAssets(const TArray<FAssetData>& AssetsToDelete);
-	bool DeleteAsset(const FAssetData& AssetToDelete);
+	void DeleteAssets(const TArray<FAssetData>& AssetsToDelete, bool bForce);
 };

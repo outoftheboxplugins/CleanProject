@@ -11,9 +11,10 @@ int32 UCleanProjectCommandlet::Main(const FString& Params)
 
 	const bool bLogUnused = FParse::Param(*Params, TEXT("LogUnused"));
 	const bool bDelete = FParse::Param(*Params, TEXT("Delete"));
+	const bool bForce = FParse::Param(*Params, TEXT("Force"));
 
-	UE_LOG(LogCleanProject, Display, TEXT("Parsed parameters LogUnused: %s Delete: %s"), *LexToString(bLogUnused),
-		*LexToString(bDelete));
+	UE_LOG(LogCleanProject, Display, TEXT("Parsed parameters LogUnused: %s Delete: %s Force: %s"), *LexToString(bLogUnused),
+		*LexToString(bDelete), *LexToString(bForce));
 
 	TArray<FAssetData> UnusedAssets = UCPOperationsSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
 	UE_LOG(LogCleanProject, Display, TEXT("Found: %s unused assets."), *LexToString(UnusedAssets.Num()));
@@ -25,16 +26,13 @@ int32 UCleanProjectCommandlet::Main(const FString& Params)
 		}
 	}
 
-	TArray<UObject*> ObjectsToDelete;
-	Algo::Transform(UnusedAssets, ObjectsToDelete, [](const FAssetData& AssetData) { return AssetData.GetAsset(); });
-
 	if (UnusedAssets.Num() == 0)
 	{
 		UE_LOG(LogCleanProject, Display, TEXT("No unused assets found."));
 	}
 	else if (bDelete)
 	{
-		DeleteAssets(UnusedAssets);
+		DeleteAssets(UnusedAssets, bForce);
 	}
 	else
 	{
@@ -43,26 +41,21 @@ int32 UCleanProjectCommandlet::Main(const FString& Params)
 	return 0;
 }
 
-void UCleanProjectCommandlet::DeleteAssets(const TArray<FAssetData>& AssetsToDelete)
+void UCleanProjectCommandlet::DeleteAssets(const TArray<FAssetData>& AssetsToDelete, bool bForce)
 {
-	for (const FAssetData& Asset : AssetsToDelete)
-	{
-		const bool bSuccess = DeleteAsset(Asset);
-		UE_CLOG(!bSuccess, LogCleanProject, Warning, TEXT("Failed to delete: %s"), *Asset.GetObjectPathString());
-	}
-}
+	TArray<UObject*> ObjectsToDelete;
+	Algo::Transform(AssetsToDelete, ObjectsToDelete, [](const FAssetData& AssetData) { return AssetData.GetAsset(); });
 
-bool UCleanProjectCommandlet::DeleteAsset(const FAssetData& AssetToDelete)
-{
-	UPackage* Package = AssetToDelete.GetPackage();
-	if (!Package)
+	if (bForce)
 	{
-		return false;
+		UE_LOG(LogCleanProject, Display, TEXT("Deleting assets"));
+		const int32 NumDeleted = ObjectTools::DeleteObjects(ObjectsToDelete, false);
+		UE_LOG(LogCleanProject, Display, TEXT("Deleted: %s assets"), *LexToString(NumDeleted));
 	}
-
-	// Unload package so we can delete it
-	const FString Filename = FPaths::ConvertRelativePathToFull(AssetToDelete.GetPackage()->GetLoadedPath().GetLocalFullPath());
-	UE_LOG(LogTemp, Warning, TEXT("DELETING: %s"), *Filename)
-	UPackageTools::UnloadPackages({Package});
-	return IFileManager::Get().Delete(*Filename, true, true);
+	else
+	{
+		UE_LOG(LogCleanProject, Display, TEXT("Deleting assets forcefully"));
+		const int32 NumDeleted = ObjectTools::ForceDeleteObjects(ObjectsToDelete, false);
+		UE_LOG(LogCleanProject, Display, TEXT("Deleted: %s assets"), *LexToString(NumDeleted));
+	}
 }
