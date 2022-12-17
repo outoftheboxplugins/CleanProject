@@ -2,6 +2,8 @@
 
 #include "CPSettings.h"
 
+#include "CPOperationsSubsystem.h"
+
 #include <AssetData.h>
 #include <EditorAssetLibrary.h>
 #include <ISettingsModule.h>
@@ -91,6 +93,13 @@ void UCPSettings::BlacklistPaths(const TArray<FString> Paths)
 TSet<FAssetData> UCPSettings::GetWhitelistAssetsPaths() const
 {
 	TSet<FAssetData> Result;
+
+	for (const FDirectoryPath& DirectoryPath : WhitelistedFolders)
+	{
+		TArray<FAssetData> AssetData = UCPOperationsSubsystem::Get()->GetAssetsInPaths(DirectoryPath.Path);
+		Result.Append(AssetData);
+	}
+
 	Algo::Transform(WhitelistedAssets, Result,
 		[](const FSoftObjectPath& Path)
 		{

@@ -279,6 +279,12 @@ TArray<FAssetData> UCPOperationsSubsystem::GetAssetsInPaths(TArray<FString> Fold
 	return AllAssetData;
 }
 
+TArray<FAssetData> UCPOperationsSubsystem::GetAssetsInPaths(FString FolderPath) const
+{
+	const TArray<FString> FolderPaths = {FolderPath};
+	return GetAssetsInPaths(FolderPaths);
+}
+
 TSet<FAssetData> UCPOperationsSubsystem::GetAllGameAssets(TOptional<FTopLevelAssetPath> ClassFilter) const
 {
 	TArray<FAssetData> AllAssetData;

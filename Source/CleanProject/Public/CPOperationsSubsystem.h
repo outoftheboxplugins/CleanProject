@@ -12,8 +12,9 @@
  */
 enum class EScanType
 {
-	Fast,	   // used cached references without loading the object in memory
-	Complex	   // load the object in memory to get up to date references
+	Fast,
+	// used cached references without loading the object in memory
+	Complex // load the object in memory to get up to date references
 };
 
 /**
@@ -129,6 +130,7 @@ public:
 	 * @return List of all the assets found inside the input Folders
 	 */
 	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths) const;
+	TArray<FAssetData> GetAssetsInPaths(FString FolderPath) const;
 
 	/**
 	 * @brief Gets all the assets of the input type from the Game's content folder
