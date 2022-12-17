@@ -22,7 +22,7 @@ void UCPSettings::PostInitProperties()
 	PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	for (const FString& OldWhitelistPath : WhitelistAssetsPaths)
 	{
-		WhitelistedAssets.Emplace(FSoftObjectPath(OldWhitelistPath));
+		WhitelistedAssets.Add(FSoftObjectPath(OldWhitelistPath));
 	}
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
@@ -49,7 +49,18 @@ void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
 	for (const FAssetData& Asset : Assets)
 	{
 		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
-		WhitelistedAssets.Emplace(AssetPath);
+		WhitelistedAssets.Add(AssetPath);
+	}
+
+	SaveToDefaultConfig();
+}
+
+void UCPSettings::WhitelistPaths(const TArray<FString> Paths)
+{
+	for (const FString& Path : Paths)
+	{
+		FDirectoryPath DirectoryPath = {Path};
+		WhitelistedFolders.Add(DirectoryPath);
 	}
 
 	SaveToDefaultConfig();
@@ -60,7 +71,18 @@ void UCPSettings::BlacklistAssets(const TArray<FAssetData> Assets)
 	for (const FAssetData& Asset : Assets)
 	{
 		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
-		BlacklistedAssets.Emplace(AssetPath);
+		BlacklistedAssets.Add(AssetPath);
+	}
+
+	SaveToDefaultConfig();
+}
+
+void UCPSettings::BlacklistPaths(const TArray<FString> Paths)
+{
+	for (const FString& Path : Paths)
+	{
+		FDirectoryPath DirectoryPath = {Path};
+		BlacklistedFolders.Add(DirectoryPath);
 	}
 
 	SaveToDefaultConfig();

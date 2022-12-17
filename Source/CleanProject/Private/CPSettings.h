@@ -6,6 +6,8 @@
 
 #include "CPSettings.generated.h"
 
+// TODO: Find a decent way to clean up assets and folders paths that are no longer valid and avoid duplicated entries
+
 /**
  * @brief Holds the configurable settings for the Clean Project plugin
  */
@@ -24,11 +26,17 @@ public:
 	 */
 	FSimpleMulticastDelegate OnSettingsChanged;
 	/**
-	 * @brief List of assets we always consider actively referenced. Add assets (including their dependencies) you want to prevent
-	 * our system from deleting here
+	 * @brief List of assets we always consider actively referenced.
+	 * Assets referenced (and their dependencies) will be deleted by our system
 	 */
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
-	TSet<FSoftObjectPath> WhitelistedAssets;
+	TArray<FSoftObjectPath> WhitelistedAssets;
+	/**
+	 * @brief List of folders we always consider actively referenced.
+	 * Assets inside the referenced folders (and their dependencies) will be deleted by our system
+	 */
+	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist", meta = (LongPackageName))
+	TArray<FDirectoryPath> WhitelistedFolders;
 	/**
 	 * @brief Old version for storing assets we want to whitelist
 	 */
@@ -36,12 +44,15 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, config, Category = "Deprecated")
 	TArray<FString> WhitelistAssetsPaths;
 	/**
-	 * @brief Assets we should actively exclude from the final pak
-	 * Add assets you want to prevent from getting added to your final game. Their dependencies might still get packaged if
-	 * referenced by something else
+	 * TODO
 	 */
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
-	TSet<FSoftObjectPath> BlacklistedAssets;
+	TArray<FSoftObjectPath> BlacklistedAssets;
+	/**
+	 * TODO
+	 */
+	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist", meta = (LongPackageName))
+	TArray<FDirectoryPath> BlacklistedFolders;
 	/**
 	 * @brief  Should the Clean Project Dashboard automatically refresh itself every time an asset is updated. (Unless time since
 	 * last refresh is lower than AutoRefreshInterval)
@@ -60,9 +71,17 @@ public:
 	 */
 	void WhitelistAssets(const TArray<FAssetData> Assets);
 	/**
+	 * @brief Convenience function to programatically add folders to the whitelisted set and saving config
+	 */
+	void WhitelistPaths(const TArray<FString> Paths);
+	/**
 	 * @brief Convenience function to programatically add assets to the blacklisted set and saving config
 	 */
 	void BlacklistAssets(const TArray<FAssetData> Assets);
+	/**
+	 * @brief Convenience function to programatically add folders to the blacklisted set and saving config
+	 */
+	void BlacklistPaths(const TArray<FString> Paths);
 	/**
 	 * @brief Returns the asset path of the whitelisted assets as FName
 	 */

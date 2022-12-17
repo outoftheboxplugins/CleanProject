@@ -262,26 +262,24 @@ void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray
 					  }),
 			FCanExecuteAction::CreateLambda([]() { return false; })));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersWhitelistAssets", "Whitelist assets from selected folders"),
-		LOCTEXT("FoldersWhitelistAssetsTooltip", "Add the assets from the selected folders to the Whitelist."), FSlateIcon(),
+	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersWhitelistAssets", "Whitelist selected folders"),
+		LOCTEXT("FoldersWhitelistAssetsTooltip", "Add the selected folders to the Whitelist."), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Whitelist Assets* from selected folders."));
-				const TArray<FAssetData> AssetsInSelectedFolders = UCPOperationsSubsystem::Get()->GetAssetsInPaths(SelectedFolders);
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Whitelist Folders* from selected folders."));
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-				Settings->WhitelistAssets(AssetsInSelectedFolders);
+				Settings->WhitelistPaths(SelectedFolders);
 			})));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersBlacklistAssets", "Blacklist assets from selected folders"),
-		LOCTEXT("FoldersBlacklistAssetsTooltip", "Add the assets from the selected folders to the Blacklist."), FSlateIcon(),
+	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersBlacklistAssets", "Blacklist selected folders"),
+		LOCTEXT("FoldersBlacklistAssetsTooltip", "Starting *Blacklist Folders* from selected folders."), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
 			{
 				UE_LOG(LogCleanProject, Log, TEXT("Starting *Blacklist Assets* from selected folders."));
-				const TArray<FAssetData> AssetsInSelectedFolders = UCPOperationsSubsystem::Get()->GetAssetsInPaths(SelectedFolders);
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-				Settings->BlacklistAssets(AssetsInSelectedFolders);
+				Settings->BlacklistPaths(SelectedFolders);
 			})));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCleanupEmptyFolders", "Cleanup empty folders"),
