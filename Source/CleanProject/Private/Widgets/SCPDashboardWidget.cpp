@@ -155,14 +155,6 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 				.OnClicked(this, &SCPDashboardWidget::OnRunCleanupComplex)
 				.IsEnabled(false)
 			]
-			+SHorizontalBox::Slot()
-			[
-				SNew(SButton)
-				.Text(LOCTEXT("GenerateBlacklist", "Generate Blacklist"))
-				.ToolTipText(LOCTEXT("GenerateBlacklistTip", "Generates an updated PakFileRules based on the blacklist settings."))
-				.OnClicked(this, &SCPDashboardWidget::OnGenerateBlacklist)
-				.IsEnabled(false)
-			]
 		]
 	];
 	// clang-format on
@@ -335,33 +327,6 @@ FReply SCPDashboardWidget::OnGoToDocumentation()
 	const FString DocsURL = CleanProjectPlugin->GetDescriptor().DocsURL;
 	FPlatformProcess::LaunchURL(*DocsURL, nullptr, nullptr);
 
-	return FReply::Handled();
-}
-
-FReply SCPDashboardWidget::OnGenerateBlacklist()
-{
-	const FString PakFileRulesPath = FString(FPaths::ProjectConfigDir()) / FString(TEXT("DefaultPakFileRules.ini"));
-	FConfigFile* PakFileRulesConfig = GConfig->Find(PakFileRulesPath);
-
-	PakFileRulesConfig->SetBool(TEXT("CleanProject"), TEXT("bOverrideChunkManifest"), true);
-	PakFileRulesConfig->SetBool(TEXT("CleanProject"), TEXT("bExcludeFromPaks"), true);
-
-	TArray<FString> BlacklistedFilePaths;
-	const UCPSettings* Settings = GetDefault<UCPSettings>();
-	for (const FSoftObjectPath& BlacklistedAsset : Settings->BlacklistedAssets)
-	{
-		const FString& AssetPath = FString(TEXT("...")) + BlacklistedAsset.GetAssetPathString();
-		BlacklistedFilePaths.Add(AssetPath);
-	}
-
-	//TODO: Each entry in the files array should be prefixed with "+"
-	PakFileRulesConfig->SetArray(TEXT("CleanProject"), TEXT("Files"), BlacklistedFilePaths);
-
-	PakFileRulesConfig->Dirty = true;
-	PakFileRulesConfig->Write(PakFileRulesPath);
-
-	//TODO: Test if files updates work (adding / removing files from the settings)
-	//TODO: Test if the files are actually excluded from the build
 	return FReply::Handled();
 }
 
