@@ -4,6 +4,7 @@
 
 #include "CPLog.h"
 #include "CPSettings.h"
+#include "GameDelegates.h"
 #include "Widgets/SCPUnusedAssetsReport.h"
 
 #include <AssetRegistryModule.h>
@@ -355,6 +356,28 @@ FAssetData UCPOperationsSubsystem::GetDefaultGameObject(const FName& PropertyNam
 	AssetManager.GetAssetDataForPath(ObjectPath, Result);
 
 	return Result;
+}
+
+void UCPOperationsSubsystem::ModifyCook(TConstArrayView<const ITargetPlatform*> InTargetPlatforms,
+	TArray<FName>& InOutPackagesToCook, TArray<FName>& InOutPackagesToNeverCook)
+{
+	UE_LOG(LogCleanProject, Display, TEXT("Modifying content to be cooked"));
+
+	const TSet<FAssetData> ExplicitlyBlacklisted = GetDefault<UCPSettings>()->GetBlacklistedAssetsPaths();
+	for (const FAssetData& BlacklistedAsset : ExplicitlyBlacklisted)
+	{
+		UE_LOG(LogCleanProject, Display, TEXT("%s is blacklisted and will be excluded from package"),
+			*BlacklistedAsset.GetObjectPathString());
+		InOutPackagesToNeverCook.Add(BlacklistedAsset.PackageName);
+	}
+}
+
+void UCPOperationsSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+
+	FModifyCookDelegate& ModifyCookDelegate = FGameDelegates::Get().GetModifyCookDelegate();
+	ModifyCookDelegate.AddUObject(this, &ThisClass::ModifyCook);
 }
 
 #undef LOCTEXT_NAMESPACE

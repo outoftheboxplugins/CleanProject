@@ -14,7 +14,7 @@ enum class EScanType
 {
 	Fast,
 	// used cached references without loading the object in memory
-	Complex // load the object in memory to get up to date references
+	Complex	   // load the object in memory to get up to date references
 };
 
 /**
@@ -156,7 +156,16 @@ public:
 	TSet<FAssetData> GetWhitelistedAssets() const;
 
 private:
+	// TODO: Comment
 	FAssetData GetDefaultGameObject(const FName& PropertyName) const;
+
+	// TODO: Comment
+	void ModifyCook(TConstArrayView<const ITargetPlatform*> InTargetPlatforms, TArray<FName>& InOutPackagesToCook,
+		TArray<FName>& InOutPackagesToNeverCook);
+
+	// Begin UEditorSubsystem interface
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	// End UEditorSubsystem interface
 };
 
 template <typename T>

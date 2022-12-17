@@ -4,7 +4,6 @@
 
 #include "CPOperationsSubsystem.h"
 
-#include <AssetData.h>
 #include <EditorAssetLibrary.h>
 #include <ISettingsModule.h>
 
@@ -109,6 +108,25 @@ TSet<FAssetData> UCPSettings::GetWhitelistAssetsPaths() const
 	return Result;
 }
 
+TSet<FAssetData> UCPSettings::GetBlacklistedAssetsPaths() const
+{
+	TSet<FAssetData> Result;
+
+	for (const FDirectoryPath& DirectoryPath : BlacklistedFolders)
+	{
+		TArray<FAssetData> AssetData = UCPOperationsSubsystem::Get()->GetAssetsInPaths(DirectoryPath.Path);
+		Result.Append(AssetData);
+	}
+
+	Algo::Transform(BlacklistedAssets, Result,
+		[](const FSoftObjectPath& Path)
+		{
+			const FString& AssetPath = Path.GetAssetPathString();
+			return UEditorAssetLibrary::FindAssetData(AssetPath);
+		});
+	return Result;
+}
+
 void UCPSettings::SaveToDefaultConfig()
 {
 	SaveConfig(CPF_Config, *GetDefaultConfigFilename());
@@ -116,7 +134,7 @@ void UCPSettings::SaveToDefaultConfig()
 
 void UCPSettings::OnAnyConfigSaved(const TCHAR* IniFilename, const FString& ContentsToSave, int32& SavedCount)
 {
-	FString IniFile = FString(IniFilename);
+	const FString IniFile = FString(IniFilename);
 	if (IniFile == GetDefaultConfigFilename())
 	{
 		OnSettingsChanged.Broadcast();

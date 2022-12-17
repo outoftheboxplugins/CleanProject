@@ -7,6 +7,8 @@
 #include "CPSettings.generated.h"
 
 // TODO: Find a decent way to clean up assets and folders paths that are no longer valid and avoid duplicated entries
+// TODO: Can we make the properties of this settings class private and just expose some getters?
+// TODO: Can we remove the reference to the operations subsystem and throw the getters in there?
 
 /**
  * @brief Holds the configurable settings for the Clean Project plugin
@@ -82,10 +84,15 @@ public:
 	 * @brief Convenience function to programatically add folders to the blacklisted set and saving config
 	 */
 	void BlacklistPaths(const TArray<FString> Paths);
+	// TODO: Unify GetWhitelistedAssetsPaths and GetBlacklistedAssetsPaths in a common getter with functionality
 	/**
 	 * @brief Returns the asset path of the whitelisted assets as FName
 	 */
 	TSet<FAssetData> GetWhitelistAssetsPaths() const;
+	/**
+	 * @brief Returns the asset path of the blacklisted assets as FName
+	 */
+	TSet<FAssetData> GetBlacklistedAssetsPaths() const;
 
 private:
 	// Begin UDeveloperSettings interface
