@@ -7,6 +7,8 @@
 #include <EditorAssetLibrary.h>
 #include <ISettingsModule.h>
 
+#include "CPHelpers.h"
+
 void UCPSettings::OpenSettings()
 {
 	const UCPSettings* Settings = GetDefault<UCPSettings>();
@@ -95,7 +97,7 @@ TSet<FAssetData> UCPSettings::GetCoreAssets() const
 
 	for (const FDirectoryPath& DirectoryPath : CoreFolders)
 	{
-		TArray<FAssetData> AssetData = UCPOperationsSubsystem::Get()->GetAssetsInPaths(DirectoryPath.Path);
+		TArray<FAssetData> AssetData = CPHelpers::GetAssetsInPaths(DirectoryPath.Path);
 		Result.Append(AssetData);
 	}
 
@@ -114,7 +116,7 @@ TSet<FAssetData> UCPSettings::GetAssetsExcludedFromPackage() const
 
 	for (const FDirectoryPath& DirectoryPath : FoldersExcludedFromPackage)
 	{
-		TArray<FAssetData> AssetData = UCPOperationsSubsystem::Get()->GetAssetsInPaths(DirectoryPath.Path);
+		TArray<FAssetData> AssetData = CPHelpers::GetAssetsInPaths(DirectoryPath.Path);
 		Result.Append(AssetData);
 	}
 

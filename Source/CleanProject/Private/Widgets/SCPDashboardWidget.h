@@ -27,21 +27,20 @@ private:
 	// Begin SCompoundWidget interface
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	// End SCompoundWidget interface
-
 	/**
 	 * @brief Callback executed after the initial scan of the assets is completed (or on tab spawn if scan was already completed)
 	 */
 	void OnInitialScanComplete();
 	/**
 	 * @brief Callback executed when a new asset is added
-	 * @param AssetData Newly added asset
+	 * @param AssetData Added asset
 	 */
 	void OnAssetAdded(const FAssetData& AssetData);
 	/**
-	 * @brief Callback executed when an existing asset is removed
+	 * @brief Callback executed when an existing asset is deleted 
 	 * @param AssetData Deleted asset
 	 */
-	void OnAssetRemoved(const FAssetData& AssetData);
+	void OnAssetDeleted(const FAssetData& AssetData);
 	/**
 	 * @brief Callback executed when an existing asset is renamed
 	 * @param AssetData Renamed asset
@@ -49,7 +48,7 @@ private:
 	 */
 	void OnAssetRenamed(const FAssetData& AssetData, const FString& Name);
 	/**
-	 * @brief Callback executed when an existing asset is changed
+	 * @brief Callback executed when an existing asset is updated 
 	 * @param AssetData Updated asset
 	 */
 	void OnAssetUpdated(const FAssetData& AssetData);
@@ -57,7 +56,6 @@ private:
 	 * @brief Callback executed when the Clean Project settings are changed
 	 */
 	void OnSettingsChanged();
-
 	/**
 	 * @brief Callback executed when a FastCleanup button is pressed
 	 * @return if the operation was handled or not
@@ -97,31 +95,29 @@ private:
 	 */
 	void RefreshUnusedAssets();
 	/**
-	 * @brief Determine if a certain Asset should be displayed inside the "In Use" category
+	 * @brief Determine if a certain Asset should be displayed inside the core assets category
 	 * @param AssetData Asset we are evaluating
 	 * @return true to hide the asset, false to show the asset
 	 */
-	bool FilterInuseAsset(const FAssetData& AssetData) const;
+	bool FilterCoreAssets(const FAssetData& AssetData) const;
 	/**
-	 * @brief Determine if a certain Asset should be displayed inside the "Unused" category
+	 * @brief Determine if a certain Asset should be displayed inside the Unused assets category
 	 * @param AssetData Asset we are evaluating
 	 * @return true to hide the asset, false to show the asset
 	 */
 	bool FilterUnusedAsset(const FAssetData& AssetData) const;
-
-private:
 	/**
-	 * @brief Cached in-use assets list at the time of the last refresh we performed
+	 * @brief Cached core assets list at the time of the last refresh we performed
 	 */
-	TArray<FAssetData> InuseAssets;
+	TArray<FAssetData> CachedCoreAssets;
 	/**
-	 * @brief Slate widget displaying the cached in-use assets of the last refresh we performed
+	 * @brief Slate widget displaying the cached core assets of the last refresh we performed
 	 */
-	TSharedPtr<SAssetView> InuseAssetView;
+	TSharedPtr<SAssetView> CoreAssetsView;
 	/**
 	 * @brief Cached unused assets list at the time of the last refresh we performed
 	 */
-	TArray<FAssetData> UnusedAssets;
+	TArray<FAssetData> CachedUnusedAssets;
 	/**
 	 * @brief Slate widget displaying the cached unused assets of the last refresh we performed
 	 */
@@ -133,5 +129,5 @@ private:
 	/**
 	 * @brief Records if a significant change happened since the last refresh
 	 */
-	bool bIsIndexOutdated = true;
+	bool bIsIndexDirty = true;
 };

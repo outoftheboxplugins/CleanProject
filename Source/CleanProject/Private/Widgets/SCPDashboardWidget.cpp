@@ -2,13 +2,11 @@
 
 #include "SCPDashboardWidget.h"
 
+#include "CPHelpers.h"
 #include "CPLog.h"
 #include "CPOperationsSubsystem.h"
 #include "CPSettings.h"
-#include "EditorAssetLibrary.h"
 
-#include <AssetRegistryModule.h>
-#include <EditorStyleSet.h>
 #include <Engine/AssetManager.h>
 #include <Interfaces/IPluginManager.h>
 #include <SAssetView.h>
@@ -23,35 +21,35 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 	[
 		SNew(SVerticalBox)
 
-		+SVerticalBox::Slot()
+		+ SVerticalBox::Slot()
 		.AutoHeight()
 		[
 			SNew(SHeaderRow)
-			+SHeaderRow::Column("CoreAssetsList")
+			+ SHeaderRow::Column("CoreAssetsList")
 			.DefaultLabel(LOCTEXT("CoreAssetsList", "Core assets - explicity marked assets from the settings and cooked/packaged maps"))
 		]
 
-		+SVerticalBox::Slot()
+		+ SVerticalBox::Slot()
 		[
-			SAssignNew(InuseAssetView, SAssetView)
+			SAssignNew(CoreAssetsView, SAssetView)
 			.InitialCategoryFilter(EContentBrowserItemCategoryFilter::IncludeAssets)
 			.InitialThumbnailSize(EThumbnailSize::Small)
 			.InitialViewType(EAssetViewType::List)
 			.ShowTypeInTileView(true)
 			.ShowBottomToolbar(true)
 			.ShowViewOptions(true)
-			.OnShouldFilterAsset_Raw(this, &SCPDashboardWidget::FilterInuseAsset)
+			.OnShouldFilterAsset_Raw(this, &SCPDashboardWidget::FilterCoreAssets)
 		]
-		
-		+SVerticalBox::Slot()
+
+		+ SVerticalBox::Slot()
 		.AutoHeight()
 		[
 			SNew(SHeaderRow)
 			+ SHeaderRow::Column("UnusedAssetsList")
 			.DefaultLabel(LOCTEXT("UnusedAssetsList", "Unused assets - not part of the Core assets or referenced by any of them"))
 		]
-		
-		+SVerticalBox::Slot()
+
+		+ SVerticalBox::Slot()
 		[
 			SAssignNew(UnusedAssetView, SAssetView)
 			.InitialCategoryFilter(EContentBrowserItemCategoryFilter::IncludeAssets)
@@ -63,20 +61,21 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 			.OnShouldFilterAsset_Raw(this, &SCPDashboardWidget::FilterUnusedAsset)
 		]
 
-		+SVerticalBox::Slot()
+		+ SVerticalBox::Slot()
 		.AutoHeight()
 		.Padding(4)
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
-			.AutoWidth()
-			.VAlign(VAlign_Center)
+			  .AutoWidth()
+			  .VAlign(VAlign_Center)
 			[
 				SNew(STextBlock)
 				.Text(TAttribute<FText>::Create(TAttribute<FText>::FGetter::CreateLambda([this]()
 				{
-					return bIsIndexOutdated ? LOCTEXT("UnusuedAssetsOutdated", "Index is NOT up to date")
-											: LOCTEXT("UnusuedAssetsUpdated", "Index is up to date");
+					return bIsIndexDirty
+						       ? LOCTEXT("DashboardOutdated", "Index is NOT up to date")
+						       : LOCTEXT("DashboardUpToDate", "Index is up to date");
 				})))
 			]
 
@@ -88,11 +87,11 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 				SNew(SButton)
 				.ButtonStyle(FAppStyle::Get(), "SimpleButton")
 				.Visibility_Lambda([this]()
-				{
-					return bIsIndexOutdated ? EVisibility::Visible : EVisibility::Hidden;
-				})
-				.ToolTipText(LOCTEXT("UnusuedAssetsOutdatedTooltip", "Your project has changed since the last automatic indexing."
-					"Use the Refresh button to start re-indexing now or adjust refresh parameters inside the plugin settings."))
+				             {
+					             return bIsIndexDirty ? EVisibility::Visible : EVisibility::Hidden;
+				             })
+				.ToolTipText(LOCTEXT("DashboardOutdatedTip", "Your project has changed since the last automatic indexing."
+				                     "Use the Refresh button to start re-indexing now or adjust refresh parameters inside the plugin settings."))
 				.OnClicked(this, &SCPDashboardWidget::OnRefreshUnused)
 				[
 					SNew(SImage)
@@ -100,7 +99,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 				]
 			]
 
-			+SHorizontalBox::Slot()
+			+ SHorizontalBox::Slot()
 			.FillWidth(1.f)
 			[
 				SNew(SSpacer)
@@ -121,8 +120,8 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 			]
 
 			+ SHorizontalBox::Slot()
-			.AutoWidth()
-			.VAlign(VAlign_Center)
+			  .AutoWidth()
+			  .VAlign(VAlign_Center)
 			[
 				SNew(SButton)
 				.ButtonStyle(FAppStyle::Get(), "SimpleButton")
@@ -135,19 +134,19 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 			]
 		]
 
-		+SVerticalBox::Slot()
+		+ SVerticalBox::Slot()
 		.AutoHeight()
 		[
 			SNew(SHorizontalBox)
 
-			+SHorizontalBox::Slot()
+			+ SHorizontalBox::Slot()
 			[
 				SNew(SButton)
 				.Text(LOCTEXT("FastCleanupNow", "Fast Cleanup"))
 				.ToolTipText(LOCTEXT("FastCleanupNowTip", "Uses cached data to determine unused assets in your project."))
 				.OnClicked(this, &SCPDashboardWidget::OnRunCleanupFast)
 			]
-			+SHorizontalBox::Slot()
+			+ SHorizontalBox::Slot()
 			[
 				SNew(SButton)
 				.Text(LOCTEXT("ComplexCleanupNow", "Complex Cleanup"))
@@ -167,7 +166,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 	}
 	else
 	{
-		UE_LOG(LogCleanProject, Warning, TEXT("There is no AssetManager! Initial refresh will be skipped"));
+		UE_LOG(LogCleanProject, Error, TEXT("There is no AssetManager! Initial refresh will be skipped"));
 	}
 }
 
@@ -187,7 +186,7 @@ void SCPDashboardWidget::OnInitialScanComplete()
 
 	IAssetRegistry& AssetRegistry = FAssetRegistryModule::GetRegistry();
 	AssetRegistry.OnAssetAdded().AddSP(this, &SCPDashboardWidget::OnAssetAdded);
-	AssetRegistry.OnAssetRemoved().AddSP(this, &SCPDashboardWidget::OnAssetRemoved);
+	AssetRegistry.OnAssetRemoved().AddSP(this, &SCPDashboardWidget::OnAssetDeleted);
 	AssetRegistry.OnAssetRenamed().AddSP(this, &SCPDashboardWidget::OnAssetRenamed);
 	AssetRegistry.OnAssetUpdatedOnDisk().AddSP(this, &SCPDashboardWidget::OnAssetUpdated);
 
@@ -196,55 +195,55 @@ void SCPDashboardWidget::OnInitialScanComplete()
 
 void SCPDashboardWidget::OnAssetAdded(const FAssetData& AssetData)
 {
-	const TArray<FAssetData>& GameAssets = UCPOperationsSubsystem::Get()->GetAllGameAssets().Array();
+	const TArray<FAssetData>& GameAssets = CPHelpers::GetAllGameAssets().Array();
 	const bool bIsGameAsset = GameAssets.Contains(AssetData);
 	if (!bIsGameAsset)
 	{
 		return;
 	}
 
-	bIsIndexOutdated = true;
+	bIsIndexDirty = true;
 }
 
-void SCPDashboardWidget::OnAssetRemoved(const FAssetData& AssetData)
+void SCPDashboardWidget::OnAssetDeleted(const FAssetData& AssetData)
 {
-	const TArray<FAssetData>& GameAssets = UCPOperationsSubsystem::Get()->GetAllGameAssets().Array();
+	const TArray<FAssetData>& GameAssets = CPHelpers::GetAllGameAssets().Array();
 	const bool bIsGameAsset = GameAssets.Contains(AssetData);
 	if (!bIsGameAsset)
 	{
 		return;
 	}
 
-	bIsIndexOutdated = true;
+	bIsIndexDirty = true;
 }
 
 void SCPDashboardWidget::OnAssetRenamed(const FAssetData& AssetData, const FString& Name)
 {
-	const TArray<FAssetData>& GameAssets = UCPOperationsSubsystem::Get()->GetAllGameAssets().Array();
+	const TArray<FAssetData>& GameAssets = CPHelpers::GetAllGameAssets().Array();
 	const bool bIsGameAsset = GameAssets.Contains(AssetData);
 	if (!bIsGameAsset)
 	{
 		return;
 	}
 
-	bIsIndexOutdated = true;
+	bIsIndexDirty = true;
 }
 
 void SCPDashboardWidget::OnAssetUpdated(const FAssetData& AssetData)
 {
-	const TArray<FAssetData>& GameAssets = UCPOperationsSubsystem::Get()->GetAllGameAssets().Array();
+	const TArray<FAssetData>& GameAssets = CPHelpers::GetAllGameAssets().Array();
 	const bool bIsGameAsset = GameAssets.Contains(AssetData);
 	if (!bIsGameAsset)
 	{
 		return;
 	}
 
-	bIsIndexOutdated = true;
+	bIsIndexDirty = true;
 }
 
 void SCPDashboardWidget::OnSettingsChanged()
 {
-	bIsIndexOutdated = true;
+	bIsIndexDirty = true;
 }
 
 void SCPDashboardWidget::RefreshUnusedAssets()
@@ -257,33 +256,32 @@ void SCPDashboardWidget::RefreshUnusedAssets()
 	}
 
 	LastRefreshTime = FDateTime::Now();
-	bIsIndexOutdated = false;
-	InuseAssets = UCPOperationsSubsystem::Get()->GetCoreAssets().Array();
-	InuseAssetView->RequestSlowFullListRefresh();
+	bIsIndexDirty = false;
+	CachedCoreAssets = UCPOperationsSubsystem::Get()->GetAllCoreAssets().Array();
+	CoreAssetsView->RequestSlowFullListRefresh();
 
-	UnusedAssets = UCPOperationsSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
+	CachedUnusedAssets = UCPOperationsSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
 	UnusedAssetView->RequestSlowFullListRefresh();
 }
 
-bool SCPDashboardWidget::FilterInuseAsset(const FAssetData& AssetData) const
+bool SCPDashboardWidget::FilterCoreAssets(const FAssetData& AssetData) const
 {
-	return !InuseAssets.Contains(AssetData);
+	return !CachedCoreAssets.Contains(AssetData);
 }
 
 bool SCPDashboardWidget::FilterUnusedAsset(const FAssetData& AssetData) const
 {
-	return !UnusedAssets.Contains(AssetData);
+	return !CachedUnusedAssets.Contains(AssetData);
 }
 
 bool SCPDashboardWidget::ShouldUpdateIndex() const
 {
-	const bool bIgnoreAssetUpdates = !GetDefault<UCPSettings>()->bAutoRefreshDashboard;
-	if (bIgnoreAssetUpdates)
+	if (!GetDefault<UCPSettings>()->bAutoRefreshDashboard)
 	{
 		return false;
 	}
 
-	if (!bIsIndexOutdated)
+	if (!bIsIndexDirty)
 	{
 		return false;
 	}
@@ -301,16 +299,12 @@ bool SCPDashboardWidget::ShouldUpdateIndex() const
 
 FReply SCPDashboardWidget::OnRunCleanupFast()
 {
-	UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Fast* from widget menu."));
-
 	UCPOperationsSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Fast);
 	return FReply::Handled();
 }
 
 FReply SCPDashboardWidget::OnRunCleanupComplex()
 {
-	UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Complex* from widget menu."));
-
 	UCPOperationsSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Complex);
 	return FReply::Handled();
 }

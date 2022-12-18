@@ -16,6 +16,8 @@
 #include <ProfilingDebugging/ScopedTimers.h>
 #include <Settings/ProjectPackagingSettings.h>
 
+#include "CPHelpers.h"
+
 #define LOCTEXT_NAMESPACE "CleanProject"
 
 namespace
@@ -158,13 +160,13 @@ UCPOperationsSubsystem* UCPOperationsSubsystem::Get()
 
 void UCPOperationsSubsystem::DeleteAllUnusedAssets(EScanType ScanType)
 {
-	const TArray<FAssetData> AllAssets = GetAllGameAssets().Array();
+	const TArray<FAssetData> AllAssets = CPHelpers::GetAllGameAssets().Array();
 	DeleteUnusedAssets(AllAssets, ScanType);
 }
 
 void UCPOperationsSubsystem::DeleteUnusedAssets(const TArray<FString>& InFolders, EScanType ScanType)
 {
-	const TArray<FAssetData> AssetsInSelectedFolders = GetAssetsInPaths(InFolders);
+	const TArray<FAssetData> AssetsInSelectedFolders = CPHelpers::GetAssetsInPaths(InFolders);
 	DeleteUnusedAssets(AssetsInSelectedFolders, ScanType);
 }
 
@@ -217,7 +219,7 @@ void UCPOperationsSubsystem::DeleteEmptyPackageFoldersIn(const FString& InPath)
 
 void UCPOperationsSubsystem::FixUpRedirectsInProject()
 {
-	const TSet<FAssetData> RedirectsAssets = GetAllGameAssetsOfType<UObjectRedirector>();
+	const TSet<FAssetData> RedirectsAssets = CPHelpers::GetAllGameAssetsOfType<UObjectRedirector>();
 
 	TArray<FString> ObjectPaths;
 	for (const FAssetData& Asset : RedirectsAssets)
@@ -241,7 +243,7 @@ void UCPOperationsSubsystem::FixUpRedirectsInProject()
 
 TArray<FAssetData> UCPOperationsSubsystem::GetAllUnusedAssets(EScanType ScanType) const
 {
-	const TArray<FAssetData> AllAssets = GetAllGameAssets().Array();
+	const TArray<FAssetData> AllAssets = CPHelpers::GetAllGameAssets().Array();
 	return GetUnusedAssets(AllAssets, ScanType);
 }
 
@@ -255,9 +257,9 @@ TArray<FAssetData> UCPOperationsSubsystem::GetUnusedAssets(const TArray<FAssetDa
 
 		return {};
 	}
-	const TSet<FAssetData> CoreAssets = GetCoreAssets();
+	const TSet<FAssetData> CoreAssets = GetAllCoreAssets();
 
-	FCPAssetDependenciesTable DependenciesTable = FCPAssetDependenciesTable(GetAllGameAssets(), ScanType);
+	FCPAssetDependenciesTable DependenciesTable = FCPAssetDependenciesTable(CPHelpers::GetAllGameAssets(), ScanType);
 	const TSet<FAssetData> AssetsToKeep = DependenciesTable.CompileReferences(CoreAssets);
 
 	TArray<FAssetData> UnusedAssets = AssetsToCheck;
@@ -266,44 +268,7 @@ TArray<FAssetData> UCPOperationsSubsystem::GetUnusedAssets(const TArray<FAssetDa
 	return UnusedAssets;
 }
 
-TArray<FAssetData> UCPOperationsSubsystem::GetAssetsInPaths(TArray<FString> FolderPaths) const
-{
-	FARFilter Filter;
-	Filter.bRecursivePaths = true;
-	for (const FString& FolderPath : FolderPaths)
-	{
-		Filter.PackagePaths.Add(FName(FolderPath));
-	}
-	TArray<FAssetData> AllAssetData;
-	FAssetRegistryModule::GetRegistry().GetAssets(Filter, AllAssetData);
-
-	return AllAssetData;
-}
-
-TArray<FAssetData> UCPOperationsSubsystem::GetAssetsInPaths(FString FolderPath) const
-{
-	const TArray<FString> FolderPaths = {FolderPath};
-	return GetAssetsInPaths(FolderPaths);
-}
-
-TSet<FAssetData> UCPOperationsSubsystem::GetAllGameAssets(TOptional<FTopLevelAssetPath> ClassFilter) const
-{
-	TArray<FAssetData> AllAssetData;
-
-	FARFilter Filter;
-	Filter.PackagePaths.Add(TEXT("/Game"));
-	Filter.bRecursivePaths = true;
-
-	if (ClassFilter.IsSet())
-	{
-		Filter.ClassPaths.Add(ClassFilter.GetValue());
-	}
-
-	FAssetRegistryModule::GetRegistry().GetAssets(Filter, AllAssetData);
-	return TSet(AllAssetData);
-}
-
-TSet<FAssetData> UCPOperationsSubsystem::GetCoreAssets() const
+TSet<FAssetData> UCPOperationsSubsystem::GetAllCoreAssets() const
 {
 	TArray<FAssetData> Result;
 	const UProjectPackagingSettings* const PackagingSettings = GetDefault<UProjectPackagingSettings>();
@@ -316,7 +281,7 @@ TSet<FAssetData> UCPOperationsSubsystem::GetCoreAssets() const
 	TArray<FString> FoldersToCook;
 	Algo::Transform(
 		PackagingSettings->DirectoriesToAlwaysCook, FoldersToCook, [](FDirectoryPath const& Directory) { return Directory.Path; });
-	const TArray<FAssetData> AssetsToCook = GetAssetsInPaths(FoldersToCook);
+	const TArray<FAssetData> AssetsToCook = CPHelpers::GetAssetsInPaths(FoldersToCook);
 	Algo::Transform(AssetsToCook, Result, [](const FAssetData& AssetData) { return AssetData; });
 
 	// Third get all the default game objects

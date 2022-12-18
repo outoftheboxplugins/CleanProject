@@ -124,27 +124,6 @@ public:
 	 */
 	TArray<FAssetData> GetUnusedAssets(const TArray<FAssetData>& AssetsToCheck, EScanType ScanType) const;
 
-	/**
-	 * @brief Recursively gets all the assets from the input folders
-	 * @param FolderPaths Folders we want to recursively get all assets from
-	 * @return List of all the assets found inside the input Folders
-	 */
-	TArray<FAssetData> GetAssetsInPaths(TArray<FString> FolderPaths) const;
-	TArray<FAssetData> GetAssetsInPaths(FString FolderPath) const;
-
-	/**
-	 * @brief Gets all the assets of the input type from the Game's content folder
-	 * @tparam T Type of asset we want to to look for
-	 * @return List of all the assets found
-	 */
-	template <typename T>
-	TSet<FAssetData> GetAllGameAssetsOfType() const;
-	/**
-	 * @brief Gets all the assets from the Game's content folder. Optionally filters them by a class type
-	 * @param ClassFilter Class we want to filter assets for. If unset no filtering will be done and assets will be returned
-	 * @return List of all the assets found
-	 */
-	TSet<FAssetData> GetAllGameAssets(TOptional<FTopLevelAssetPath> ClassFilter = {}) const;
 
 	/**
 	 * @brief Computes a set of all the core assets, takes into account:
@@ -153,7 +132,7 @@ public:
 	 * 3. Default Game Objects inside Project settings
 	 * 4. Assets added inside Clean Project settings
 	 */
-	TSet<FAssetData> GetCoreAssets() const;
+	TSet<FAssetData> GetAllCoreAssets() const;
 
 private:
 	// TODO: Comment
@@ -168,8 +147,3 @@ private:
 	// End UEditorSubsystem interface
 };
 
-template <typename T>
-TSet<FAssetData> UCPOperationsSubsystem::GetAllGameAssetsOfType() const
-{
-	return GetAllGameAssets(T::StaticClass()->GetClassPathName());
-}
