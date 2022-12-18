@@ -63,10 +63,10 @@ private:
 	 */
 	FReply OnDeleteClicked();
 	/**
-	 * @brief Callback executed when the Whitelist button is clicked
+	 * @brief Callback executed when the Mark as Core button is clicked
 	 * @return if the operation was handled or not
 	 */
-	FReply OnWhitelistClicked();
+	FReply OnMarkAsCoreClicked();
 	/**
 	 * @brief Callback executed when the Exclude from Package button is clicked
 	 * @return if the operation was handled or not
@@ -89,15 +89,15 @@ private:
 	 */
 	void DeleteAssets(const TArray<FAssetData> AssetsToDelete);
 	/**
-	 * @brief Adds input assets to the plugin setting's Whitelist
-	 * @param AssetsToWhitelist Assets to add to the list
+	 * @brief Adds input assets to the plugin setting's Core assets list 
+	 * @param Assets Assets to add to the list
 	 */
-	void WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist);
+	void MarkAssetsAsCore(const TArray<FAssetData> Assets);
 	/**
 	 * @brief Adds input assets to the plugin setting's excluded from package list
-	 * @param AssetsToExcludeFromPackage Assets to add to the list
+	 * @param Assets Assets to add to the list
 	 */
-	void ExcludeAssetsFromPackage(const TArray<FAssetData> AssetsToExcludeFromPackage);
+	void ExcludeAssetsFromPackage(const TArray<FAssetData> Assets);
 
 	/**
 	 * @brief Determine if a certain Asset should be displayed inside the list

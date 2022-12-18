@@ -31,51 +31,51 @@ public:
 	 * @brief List of assets we always consider actively referenced.
 	 * Assets referenced (and their dependencies) will be deleted by our system
 	 */
-	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
-	TArray<FSoftObjectPath> WhitelistedAssets;
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings")
+	TArray<FSoftObjectPath> CoreAssets;
 	/**
 	 * @brief List of folders we always consider actively referenced.
 	 * Assets inside the referenced folders (and their dependencies) will be deleted by our system
 	 */
-	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist", meta = (LongPackageName))
-	TArray<FDirectoryPath> WhitelistedFolders;
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings", meta = (LongPackageName))
+	TArray<FDirectoryPath> CoreFolders;
 	/**
 	 * @brief Old version for storing assets we want to whitelist
 	 */
-	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use WhitelistedAssets")
+	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use ")
 	UPROPERTY(VisibleDefaultsOnly, config, Category = "Deprecated")
 	TArray<FString> WhitelistAssetsPaths;
 	/**
 	 * TODO
 	 */
-	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings")
 	TArray<FSoftObjectPath> AssetsExcludedFromPackage;
 	/**
 	 * TODO
 	 */
-	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist", meta = (LongPackageName))
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings", meta = (LongPackageName))
 	TArray<FDirectoryPath> FoldersExcludedFromPackage;
 	/**
 	 * @brief  Should the Clean Project Dashboard automatically refresh itself every time an asset is updated. (Unless time since
 	 * last refresh is lower than AutoRefreshInterval)
 	 */
-	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings")
 	bool bAutoRefreshDashboard = true;
 	/**
 	 * @brief How much time we should wait in between Clean Project Dashboard refresh requests
 	 * @note measured in seconds
 	 * @note use -1 to refresh every time
 	 */
-	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings")
 	float AutoRefreshInterval = 30.0f;
 	/**
-	 * @brief Convenience function to programatically add assets to the whitelisted set and saving config
+	 * @brief Convenience function to programatically add assets to the core list and saving config
 	 */
-	void WhitelistAssets(const TArray<FAssetData> Assets);
+	void MarkAssetsAsCore(const TArray<FAssetData> Assets);
 	/**
-	 * @brief Convenience function to programatically add folders to the whitelisted set and saving config
+	 * @brief Convenience function to programatically add folders to the core list and saving config
 	 */
-	void WhitelistPaths(const TArray<FString> Paths);
+	void MarkPathsAsCore(const TArray<FString> Paths);
 	/**
 	 * @brief Convenience function to programatically add assets to the package exclusion list and saving config
 	 */
@@ -86,9 +86,9 @@ public:
 	void ExcludePathsFromPackage(const TArray<FString> Paths);
 	// TODO: Unify GetWhitelistedAssetsPaths and GetBlacklistedAssetsPaths in a common getter with functionality
 	/**
-	 * @brief Returns the asset path of the whitelisted assets
+	 * @brief Returns the asset path of the assets explicitly marked as Core
 	 */
-	TSet<FAssetData> GetWhitelistAssetsPaths() const;
+	TSet<FAssetData> GetCoreAssets() const;
 	/**
 	 * @brief Returns the asset path of the assets excluded from package
 	 */

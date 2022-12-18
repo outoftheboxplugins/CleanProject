@@ -255,10 +255,10 @@ TArray<FAssetData> UCPOperationsSubsystem::GetUnusedAssets(const TArray<FAssetDa
 
 		return {};
 	}
-	const TSet<FAssetData> WhitelistedAssets = GetWhitelistedAssets();
+	const TSet<FAssetData> CoreAssets = GetCoreAssets();
 
 	FCPAssetDependenciesTable DependenciesTable = FCPAssetDependenciesTable(GetAllGameAssets(), ScanType);
-	const TSet<FAssetData> AssetsToKeep = DependenciesTable.CompileReferences(WhitelistedAssets);
+	const TSet<FAssetData> AssetsToKeep = DependenciesTable.CompileReferences(CoreAssets);
 
 	TArray<FAssetData> UnusedAssets = AssetsToCheck;
 	UnusedAssets.RemoveAll([=](const FAssetData& AssetData) { return AssetsToKeep.Contains(AssetData); });
@@ -303,7 +303,7 @@ TSet<FAssetData> UCPOperationsSubsystem::GetAllGameAssets(TOptional<FTopLevelAss
 	return TSet(AllAssetData);
 }
 
-TSet<FAssetData> UCPOperationsSubsystem::GetWhitelistedAssets() const
+TSet<FAssetData> UCPOperationsSubsystem::GetCoreAssets() const
 {
 	TArray<FAssetData> Result;
 	const UProjectPackagingSettings* const PackagingSettings = GetDefault<UProjectPackagingSettings>();
@@ -327,8 +327,8 @@ TSet<FAssetData> UCPOperationsSubsystem::GetWhitelistedAssets() const
 	Result.Add(GetDefaultGameObject(FName(TEXT("GameInstanceClass"))));
 
 	// Forth get the assets which were explicitly selected by the user in our plugin settings
-	const TSet<FAssetData> ExplicitlyWhitelisted = GetDefault<UCPSettings>()->GetWhitelistAssetsPaths();
-	Result.Append(ExplicitlyWhitelisted.Array());
+	const TSet<FAssetData> ExplicitCoreAssets = GetDefault<UCPSettings>()->GetCoreAssets();
+	Result.Append(ExplicitCoreAssets.Array());
 
 	// Finally, remove all invalid assets before returning back
 	Result.RemoveAll([](const FAssetData& AssetData) { return !AssetData.IsValid(); });

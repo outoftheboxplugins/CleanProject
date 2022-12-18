@@ -21,9 +21,9 @@ void UCPSettings::PostInitProperties()
 
 	// Backwards compatibility
 	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	for (const FString& OldWhitelistPath : WhitelistAssetsPaths)
+	for (const FString& OldCorePath : WhitelistAssetsPaths)
 	{
-		WhitelistedAssets.Add(FSoftObjectPath(OldWhitelistPath));
+		CoreAssets.Add(FSoftObjectPath(OldCorePath));
 	}
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
@@ -45,23 +45,23 @@ FName UCPSettings::GetSectionName() const
 	return TEXT("Clean Project");
 }
 
-void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
+void UCPSettings::MarkAssetsAsCore(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
 	{
 		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
-		WhitelistedAssets.Add(AssetPath);
+		CoreAssets.Add(AssetPath);
 	}
 
 	SaveToDefaultConfig();
 }
 
-void UCPSettings::WhitelistPaths(const TArray<FString> Paths)
+void UCPSettings::MarkPathsAsCore(const TArray<FString> Paths)
 {
 	for (const FString& Path : Paths)
 	{
 		FDirectoryPath DirectoryPath = {Path};
-		WhitelistedFolders.Add(DirectoryPath);
+		CoreFolders.Add(DirectoryPath);
 	}
 
 	SaveToDefaultConfig();
@@ -89,17 +89,17 @@ void UCPSettings::ExcludePathsFromPackage(const TArray<FString> Paths)
 	SaveToDefaultConfig();
 }
 
-TSet<FAssetData> UCPSettings::GetWhitelistAssetsPaths() const
+TSet<FAssetData> UCPSettings::GetCoreAssets() const
 {
 	TSet<FAssetData> Result;
 
-	for (const FDirectoryPath& DirectoryPath : WhitelistedFolders)
+	for (const FDirectoryPath& DirectoryPath : CoreFolders)
 	{
 		TArray<FAssetData> AssetData = UCPOperationsSubsystem::Get()->GetAssetsInPaths(DirectoryPath.Path);
 		Result.Append(AssetData);
 	}
 
-	Algo::Transform(WhitelistedAssets, Result,
+	Algo::Transform(CoreAssets, Result,
 		[](const FSoftObjectPath& Path)
 		{
 			const FString& AssetPath = Path.GetAssetPathString();

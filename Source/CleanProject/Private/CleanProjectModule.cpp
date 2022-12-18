@@ -122,7 +122,6 @@ void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 		FUIAction(FExecuteAction::CreateLambda(
 			[]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Fast* from menu."));
 				UCPOperationsSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Fast);
 			}))));
 
@@ -134,7 +133,6 @@ void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 		FUIAction(FExecuteAction::CreateLambda(
 					  []()
 					  {
-						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Unused Assets Complex* from menu."));
 						  UCPOperationsSubsystem::Get()->DeleteAllUnusedAssets(EScanType::Complex);
 					  }),
 			FCanExecuteAction::CreateLambda([]() { return false; }))));
@@ -144,7 +142,6 @@ void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 		FUIAction(FExecuteAction::CreateLambda(
 			[]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Redirects* from menu."));
 				UCPOperationsSubsystem::Get()->FixUpRedirectsInProject();
 			}))));
 
@@ -154,7 +151,6 @@ void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 			FUIAction(FExecuteAction::CreateLambda(
 				[]()
 				{
-					UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from menu."));
 					UCPOperationsSubsystem::Get()->DeleteAllEmptyPackageFolders();
 				}))));
 }
@@ -189,7 +185,6 @@ void FCleanProjectModule::CreateCBAssetsEntry(FMenuBuilder& MenuBuilder, TArray<
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedAssets]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Fast* from selected assets."));
 				UCPOperationsSubsystem::Get()->DeleteUnusedAssets(SelectedAssets, EScanType::Fast);
 			})));
 
@@ -200,19 +195,17 @@ void FCleanProjectModule::CreateCBAssetsEntry(FMenuBuilder& MenuBuilder, TArray<
 		FUIAction(FExecuteAction::CreateLambda(
 					  [SelectedAssets]()
 					  {
-						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected assets."));
 						  UCPOperationsSubsystem::Get()->DeleteUnusedAssets(SelectedAssets, EScanType::Complex);
 					  }),
 			FCanExecuteAction::CreateLambda([]() { return false; })));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsWhitelistAssets", "Whitelist selected assets"),
-		LOCTEXT("AssetsWhitelistAssetsTooltip", "Add the selected assets to the Whitelist."), FSlateIcon(),
+	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsMarkAssetsAsCore", "Mark selected assets as Core"),
+		LOCTEXT("AssetsMarkAssetsAsCoreTooltip", "Add the selected assets to the Core Assets list."), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedAssets]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Whitelist Assets* from selected assets."));
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-				Settings->WhitelistAssets(SelectedAssets);
+				Settings->MarkAssetsAsCore(SelectedAssets);
 			})));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsExcludeAssetsFromPackage", "Exclude selected assets from package"),
@@ -220,7 +213,6 @@ void FCleanProjectModule::CreateCBAssetsEntry(FMenuBuilder& MenuBuilder, TArray<
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedAssets]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Exclude Assets from Package* from selected assets."));
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 				Settings->ExcludeAssetsFromPackage(SelectedAssets);
 			})));
@@ -246,7 +238,6 @@ void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Fast* from selected folders."));
 				UCPOperationsSubsystem::Get()->DeleteUnusedAssets(SelectedFolders, EScanType::Fast);
 			})));
 
@@ -257,19 +248,17 @@ void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray
 		FUIAction(FExecuteAction::CreateLambda(
 					  [SelectedFolders]()
 					  {
-						  UE_LOG(LogCleanProject, Log, TEXT("Starting *Check Unused Assets Complex* from selected folders."));
 						  UCPOperationsSubsystem::Get()->DeleteUnusedAssets(SelectedFolders, EScanType::Complex);
 					  }),
 			FCanExecuteAction::CreateLambda([]() { return false; })));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersWhitelistAssets", "Whitelist selected folders"),
-		LOCTEXT("FoldersWhitelistAssetsTooltip", "Add the selected folders to the Whitelist."), FSlateIcon(),
+	MenuBuilder.AddMenuEntry(LOCTEXT("FolderMarkAssetsAsCore", "Mark selected folders as Core"),
+		LOCTEXT("FolderMarkAssetsAsCoreTooltip", "Add the selected folders Core settings????."), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Whitelist Folders* from selected folders."));
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-				Settings->WhitelistPaths(SelectedFolders);
+				Settings->MarkPathsAsCore(SelectedFolders);
 			})));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersExcludeAssetsFromPackage", "Exclude selected folders from package"),
@@ -277,7 +266,6 @@ void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Exclude Assets from Package* from selected folders."));
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
 				Settings->ExcludePathsFromPackage(SelectedFolders);
 			})));
@@ -287,7 +275,6 @@ void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Cleanup Empty Folders* from selected folders."));
 				UCPOperationsSubsystem::Get()->DeleteEmptyPackageFoldersIn(SelectedFolders);
 			})));
 

@@ -27,8 +27,8 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 		.AutoHeight()
 		[
 			SNew(SHeaderRow)
-			+SHeaderRow::Column("InuseAssetsList")
-			.DefaultLabel(LOCTEXT("InuseAssetsList", "In use assets - whitelisted assets and explicitly cooked/packaged maps"))
+			+SHeaderRow::Column("CoreAssetsList")
+			.DefaultLabel(LOCTEXT("CoreAssetsList", "Core assets - explicity marked assets from the settings and cooked/packaged maps"))
 		]
 
 		+SVerticalBox::Slot()
@@ -48,7 +48,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 		[
 			SNew(SHeaderRow)
 			+ SHeaderRow::Column("UnusedAssetsList")
-			.DefaultLabel(LOCTEXT("UnusedAssetsList", "Unused assets - not directly whitelisted or referenced by any actively used asset"))
+			.DefaultLabel(LOCTEXT("UnusedAssetsList", "Unused assets - not part of the Core assets or referenced by any of them"))
 		]
 		
 		+SVerticalBox::Slot()
@@ -258,7 +258,7 @@ void SCPDashboardWidget::RefreshUnusedAssets()
 
 	LastRefreshTime = FDateTime::Now();
 	bIsIndexOutdated = false;
-	InuseAssets = UCPOperationsSubsystem::Get()->GetWhitelistedAssets().Array();
+	InuseAssets = UCPOperationsSubsystem::Get()->GetCoreAssets().Array();
 	InuseAssetView->RequestSlowFullListRefresh();
 
 	UnusedAssets = UCPOperationsSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);

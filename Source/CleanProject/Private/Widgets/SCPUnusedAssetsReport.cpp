@@ -96,8 +96,8 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCPUnusedAssetsReport::OnWhitelistClicked)
-				.Text(LOCTEXT("WhitelistButton", "Whitelist"))
+				.OnClicked(this, &SCPUnusedAssetsReport::OnMarkAsCoreClicked)
+				.Text(LOCTEXT("MarkAsCoreButton", "Mark As Core"))
 			]
 			+SHorizontalBox::Slot()
 			.FillWidth(1.0f)
@@ -164,9 +164,9 @@ TSharedPtr<SWidget> SCPUnusedAssetsReport::OnGetAssetContextMenu(const TArray<FA
 		LOCTEXT("AuditTooltip", "Open the Asset Audit tab with the selected assets."), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::AuditAssets, SelectedAssets)));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("WhitelistAction", "Whitelist"),
-		LOCTEXT("WhitelistActionTooltip", "Whitelist only selected assets and remove from report."), FSlateIcon(),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::WhiteListAssets, SelectedAssets)));
+	MenuBuilder.AddMenuEntry(LOCTEXT("MarkAsCoreAction", "Mark as Core"),
+		LOCTEXT("MarkAsCoreActionTooltip", "Mark as Core only selected assets and remove from report."), FSlateIcon(),
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::MarkAssetsAsCore, SelectedAssets)));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("ExcludeFromPackageAction", "Exclude from package"),
 		LOCTEXT("ExcludeFromPackageTooltip", "Exclude only selected assets from package and remove from report."), FSlateIcon(),
@@ -202,9 +202,9 @@ FReply SCPUnusedAssetsReport::OnDeleteClicked()
 	return FReply::Handled();
 }
 
-FReply SCPUnusedAssetsReport::OnWhitelistClicked()
+FReply SCPUnusedAssetsReport::OnMarkAsCoreClicked()
 {
-	WhiteListAssets(GetAssetsForAction());
+	MarkAssetsAsCore(GetAssetsForAction());
 	return FReply::Handled();
 }
 
@@ -242,24 +242,24 @@ void SCPUnusedAssetsReport::DeleteAssets(const TArray<FAssetData> AssetsToDelete
 	RemoveFromList(AssetsToDelete);
 }
 
-void SCPUnusedAssetsReport::ExcludeAssetsFromPackage(const TArray<FAssetData> AssetsToExcludeFromPackage)
+void SCPUnusedAssetsReport::ExcludeAssetsFromPackage(const TArray<FAssetData> Assets)
 {
 	LOG_TRACE();
 
 	UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-	Settings->ExcludeAssetsFromPackage(AssetsToExcludeFromPackage);
+	Settings->ExcludeAssetsFromPackage(Assets);
 
-	RemoveFromList(AssetsToExcludeFromPackage);
+	RemoveFromList(Assets);
 }
 
-void SCPUnusedAssetsReport::WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist)
+void SCPUnusedAssetsReport::MarkAssetsAsCore(const TArray<FAssetData> Assets)
 {
 	LOG_TRACE();
 
 	UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-	Settings->WhitelistAssets(AssetsToWhitelist);
+	Settings->MarkAssetsAsCore(Assets);
 
-	RemoveFromList(AssetsToWhitelist);
+	RemoveFromList(Assets);
 }
 
 bool SCPUnusedAssetsReport::FilterDisplayedAsset(const FAssetData& AssetData) const
