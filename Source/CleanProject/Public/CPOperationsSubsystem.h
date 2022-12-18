@@ -12,9 +12,8 @@
  */
 enum class EScanType
 {
-	Fast,
-	// used cached references without loading the object in memory
-	Complex	   // load the object in memory to get up to date references
+	Fast, 		// uses cached references without loading the object in memory
+	Complex		// load the object in memory to get up to date references
 };
 
 /**
@@ -68,7 +67,6 @@ public:
 	 * @brief Static wrapper for getting this engine subsystem. Will return nullptr if not loaded yet
 	 */
 	static UCPOperationsSubsystem* Get();
-
 	/**
 	 * @brief Checks for any unused assets inside the Game's content folder
 	 * @param ScanType Method used to determine references
@@ -86,30 +84,27 @@ public:
 	 * @param ScanType Method used to determine references
 	 */
 	void DeleteUnusedAssets(const TArray<FAssetData>& InAssets, EScanType ScanType);
-
 	/**
 	 * @brief Delete all empty folder inside the Game's content folder
 	 * @note Fixes up Redirects before perform action @see FixUpRedirectsInProject
 	 */
-	void DeleteAllEmptyPackageFolders();
+	void DeleteAllEmptyFolders();
 	/**
 	 * @brief Delete all empty folders inside the input folders
 	 * @param InPaths Folders to check
 	 * @note Fixes up Redirects before perform action @see FixUpRedirectsInProject
 	 */
-	void DeleteEmptyPackageFoldersIn(const TArray<FString>& InPaths);
+	void DeleteEmptyFoldersIn(const TArray<FString>& InPaths);
 	/**
 	 * @brief Delete all empty folders inside the input folder
 	 * @param InPath Folder to check
 	 * @note Fixes up Redirects before perform action @see FixUpRedirectsInProject
 	 */
-	void DeleteEmptyPackageFoldersIn(const FString& InPath);
-
+	void DeleteEmptyFoldersIn(const FString& InPath);
 	/**
 	 * @brief Fixes up Redirects inside the Game's content folder
 	 */
 	void FixUpRedirectsInProject();
-
 	/**
 	 * @brief Determine all unused assets from all assets inside the Game's content folder
 	 * @param ScanType Method used to determine references
@@ -123,8 +118,6 @@ public:
 	 * @return List of unused assets
 	 */
 	TArray<FAssetData> GetUnusedAssets(const TArray<FAssetData>& AssetsToCheck, EScanType ScanType) const;
-
-
 	/**
 	 * @brief Computes a set of all the core assets, takes into account:
 	 * 1. Maps added in MapsToCook Project settings
@@ -135,10 +128,12 @@ public:
 	TSet<FAssetData> GetAllCoreAssets() const;
 
 private:
-	// TODO: Comment
-	FAssetData GetDefaultGameObject(const FName& PropertyName) const;
-
-	// TODO: Comment
+	/**
+	 * @brief Delegate to modify cooking behavior - can add extra packages to cook or prevent certain packages from cooking
+	 * @param InTargetPlatforms Target platforms we are currently cooking for
+	 * @param InOutPackagesToCook Add packages to this list to cook them
+	 * @param InOutPackagesToNeverCook Add packages to this list to prevent them from cooking
+	 */
 	void ModifyCook(TConstArrayView<const ITargetPlatform*> InTargetPlatforms, TArray<FName>& InOutPackagesToCook,
 		TArray<FName>& InOutPackagesToNeverCook);
 

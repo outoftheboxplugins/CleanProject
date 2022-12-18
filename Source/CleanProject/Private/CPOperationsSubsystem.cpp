@@ -4,12 +4,13 @@
 
 #include "CPLog.h"
 #include "CPSettings.h"
-#include "GameDelegates.h"
 #include "Widgets/SCPUnusedAssetsReport.h"
 
 #include <AssetRegistryModule.h>
+#include <GameDelegates.h>
 #include <AssetToolsModule.h>
 #include <AssetViewUtils.h>
+#include <GameDelegates.h>
 #include <EditorAssetLibrary.h>
 #include <Engine/AssetManager.h>
 #include <Misc/ScopedSlowTask.h>
@@ -183,21 +184,21 @@ void UCPOperationsSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& InAsse
 	}
 }
 
-void UCPOperationsSubsystem::DeleteAllEmptyPackageFolders()
+void UCPOperationsSubsystem::DeleteAllEmptyFolders()
 {
 	FString GameContentFolder = TEXT("/Game");
-	DeleteEmptyPackageFoldersIn({GameContentFolder});
+	DeleteEmptyFoldersIn({GameContentFolder});
 }
 
-void UCPOperationsSubsystem::DeleteEmptyPackageFoldersIn(const TArray<FString>& InPaths)
+void UCPOperationsSubsystem::DeleteEmptyFoldersIn(const TArray<FString>& InPaths)
 {
 	for (const FString& Path : InPaths)
 	{
-		DeleteEmptyPackageFoldersIn(Path);
+		DeleteEmptyFoldersIn(Path);
 	}
 }
 
-void UCPOperationsSubsystem::DeleteEmptyPackageFoldersIn(const FString& InPath)
+void UCPOperationsSubsystem::DeleteEmptyFoldersIn(const FString& InPath)
 {
 	FixUpRedirectsInProject();
 
@@ -285,11 +286,11 @@ TSet<FAssetData> UCPOperationsSubsystem::GetAllCoreAssets() const
 	Algo::Transform(AssetsToCook, Result, [](const FAssetData& AssetData) { return AssetData; });
 
 	// Third get all the default game objects
-	Result.Add(GetDefaultGameObject(FName(TEXT("GameDefaultMap"))));
-	Result.Add(GetDefaultGameObject(FName(TEXT("ServerDefaultMap"))));
-	Result.Add(GetDefaultGameObject(FName(TEXT("GlobalDefaultGameMode"))));
-	Result.Add(GetDefaultGameObject(FName(TEXT("GlobalDefaultServerGameMode"))));
-	Result.Add(GetDefaultGameObject(FName(TEXT("GameInstanceClass"))));
+	Result.Add(CPHelpers::GetDefaultGameObject(FName(TEXT("GameDefaultMap"))));
+	Result.Add(CPHelpers::GetDefaultGameObject(FName(TEXT("ServerDefaultMap"))));
+	Result.Add(CPHelpers::GetDefaultGameObject(FName(TEXT("GlobalDefaultGameMode"))));
+	Result.Add(CPHelpers::GetDefaultGameObject(FName(TEXT("GlobalDefaultServerGameMode"))));
+	Result.Add(CPHelpers::GetDefaultGameObject(FName(TEXT("GameInstanceClass"))));
 
 	// Forth get the assets which were explicitly selected by the user in our plugin settings
 	const TSet<FAssetData> ExplicitCoreAssets = GetDefault<UCPSettings>()->GetCoreAssets();
@@ -299,28 +300,6 @@ TSet<FAssetData> UCPOperationsSubsystem::GetAllCoreAssets() const
 	Result.RemoveAll([](const FAssetData& AssetData) { return !AssetData.IsValid(); });
 
 	return TSet(Result);
-}
-
-FAssetData UCPOperationsSubsystem::GetDefaultGameObject(const FName& PropertyName) const
-{
-	FConfigFile PlatformEngineIni;
-	FConfigCacheIni::LoadLocalIniFile(PlatformEngineIni, TEXT("Engine"), true);
-
-	FConfigSection* MapSettingsSection = PlatformEngineIni.Find(TEXT("/Script/EngineSettings.GameMapsSettings"));
-	if (MapSettingsSection == nullptr)
-	{
-		return {};
-	}
-
-	const FConfigValue* PairString = MapSettingsSection->Find(PropertyName);
-	const FString ObjectPath = PairString ? PairString->GetValue() : TEXT("");
-	const FSoftClassPath Test = FSoftClassPath(ObjectPath);
-
-	FAssetData Result;
-	UAssetManager& AssetManager = UAssetManager::Get();
-	AssetManager.GetAssetDataForPath(ObjectPath, Result);
-
-	return Result;
 }
 
 void UCPOperationsSubsystem::ModifyCook(TConstArrayView<const ITargetPlatform*> InTargetPlatforms,

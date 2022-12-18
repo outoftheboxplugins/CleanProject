@@ -18,6 +18,12 @@ namespace CPHelpers
 	template <typename T>
 	TSet<FAssetData> GetAllGameAssetsOfType();
 	/**
+	 * @brief Get the referenced asset data for a certain property of the EngineSettings.GameMapsSettings section 
+	 * @param PropertyName Name of the property we want to get the value for
+	 * @return AssetData representing the property set. Can be invalid if no value was assigned
+	 */
+	FAssetData GetDefaultGameObject(const FName& PropertyName);
+	/**
 	 * @brief Recursively gets all the assets from the input folders
 	 * @param FolderPaths Folders we want to recursively get all assets from
 	 * @return List of all the assets found inside the input Folders

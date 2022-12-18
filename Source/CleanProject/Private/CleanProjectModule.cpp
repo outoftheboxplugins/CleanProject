@@ -151,7 +151,7 @@ void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 			FUIAction(FExecuteAction::CreateLambda(
 				[]()
 				{
-					UCPOperationsSubsystem::Get()->DeleteAllEmptyPackageFolders();
+					UCPOperationsSubsystem::Get()->DeleteAllEmptyFolders();
 				}))));
 }
 
@@ -275,7 +275,7 @@ void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
 			{
-				UCPOperationsSubsystem::Get()->DeleteEmptyPackageFoldersIn(SelectedFolders);
+				UCPOperationsSubsystem::Get()->DeleteEmptyFoldersIn(SelectedFolders);
 			})));
 
 	MenuBuilder.EndSection();
