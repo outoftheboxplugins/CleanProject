@@ -6,13 +6,10 @@
 #include "CPSettings.h"
 #include "Widgets/SCPUnusedAssetsReport.h"
 
-#include <AssetRegistryModule.h>
 #include <GameDelegates.h>
 #include <AssetToolsModule.h>
 #include <AssetViewUtils.h>
-#include <GameDelegates.h>
 #include <EditorAssetLibrary.h>
-#include <Engine/AssetManager.h>
 #include <Misc/ScopedSlowTask.h>
 #include <ProfilingDebugging/ScopedTimers.h>
 #include <Settings/ProjectPackagingSettings.h>
@@ -23,56 +20,56 @@
 
 namespace
 {
-FString GetTabSpaces(int TabSize)
-{
-	FString Result;
-	for (int i = 0; i < TabSize; i++)
+	FString GetTabSpaces(int TabSize)
 	{
-		Result += TEXT("    ");
-	}
-
-	return Result;
-}
-
-void GetEmptyFolderInPath(const FString& BaseDirectory, TArray<FString>& OutEmptyFolders)
-{
-	struct FEmptyFolderVisitor : public IPlatformFile::FDirectoryVisitor
-	{
-		TArray<FString>& EmptyFolders;
-		const FString& CurrentDirectory;
-		bool bIsEmpty;
-
-		FEmptyFolderVisitor(TArray<FString>& InEmptyFolders, const FString& InCurrentDirectory)
-			: EmptyFolders(InEmptyFolders), CurrentDirectory(InCurrentDirectory), bIsEmpty(true)
+		FString Result;
+		for (int i = 0; i < TabSize; i++)
 		{
+			Result += TEXT("    ");
 		}
 
-		virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory) override
-		{
-			if (bIsDirectory)
-			{
-				const FString DirectoryName(FilenameOrDirectory);
-				EmptyFolders.Add(DirectoryName);
-
-				GetEmptyFolderInPath(DirectoryName, EmptyFolders);
-			}
-			else
-			{
-				EmptyFolders.Remove(CurrentDirectory);
-				bIsEmpty = false;
-			}
-
-			return true;
-		}
-	};
-	FEmptyFolderVisitor EmptyFolderVisitor(OutEmptyFolders, BaseDirectory);
-	IFileManager::Get().IterateDirectoryRecursively(*BaseDirectory, EmptyFolderVisitor);
-	if (EmptyFolderVisitor.bIsEmpty)
-	{
-		OutEmptyFolders.Add(BaseDirectory);
+		return Result;
 	}
-}
-}	 // namespace
+
+	void GetEmptyFolderInPath(const FString& BaseDirectory, TArray<FString>& OutEmptyFolders)
+	{
+		struct FEmptyFolderVisitor : public IPlatformFile::FDirectoryVisitor
+		{
+			TArray<FString>& EmptyFolders;
+			const FString& CurrentDirectory;
+			bool bIsEmpty;
+
+			FEmptyFolderVisitor(TArray<FString>& InEmptyFolders, const FString& InCurrentDirectory)
+				: EmptyFolders(InEmptyFolders), CurrentDirectory(InCurrentDirectory), bIsEmpty(true)
+			{
+			}
+
+			virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory) override
+			{
+				if (bIsDirectory)
+				{
+					const FString DirectoryName(FilenameOrDirectory);
+					EmptyFolders.Add(DirectoryName);
+
+					GetEmptyFolderInPath(DirectoryName, EmptyFolders);
+				}
+				else
+				{
+					EmptyFolders.Remove(CurrentDirectory);
+					bIsEmpty = false;
+				}
+
+				return true;
+			}
+		};
+		FEmptyFolderVisitor EmptyFolderVisitor(OutEmptyFolders, BaseDirectory);
+		IFileManager::Get().IterateDirectoryRecursively(*BaseDirectory, EmptyFolderVisitor);
+		if (EmptyFolderVisitor.bIsEmpty)
+		{
+			OutEmptyFolders.Add(BaseDirectory);
+		}
+	}
+} // namespace
 
 FCPAssetDependenciesTable::FCPAssetDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
 {
@@ -187,7 +184,7 @@ void UCPOperationsSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& InAsse
 void UCPOperationsSubsystem::DeleteAllEmptyFolders()
 {
 	FString GameContentFolder = TEXT("/Game");
-	DeleteEmptyFoldersIn({GameContentFolder});
+	DeleteEmptyFoldersIn({ GameContentFolder });
 }
 
 void UCPOperationsSubsystem::DeleteEmptyFoldersIn(const TArray<FString>& InPaths)
