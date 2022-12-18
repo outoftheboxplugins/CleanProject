@@ -198,7 +198,9 @@ TSharedRef<SDockTab> FCleanProjectModule::CreateDashboardNomadTab(const FSpawnTa
 TSharedRef<FExtender> FCleanProjectModule::CreateCBAssetsExtender(const TArray<FAssetData>& SelectedAssets)
 {
 	TSharedRef<FExtender> ContentBrowserExtender = MakeShareable(new FExtender);
-	ContentBrowserExtender->AddMenuExtension("AssetContextAdvancedActions", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateCBAssetsEntry, SelectedAssets));
+	ContentBrowserExtender->AddMenuExtension(
+		"AssetContextAdvancedActions", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateCBAssetsEntry, SelectedAssets)
+	);
 
 	return ContentBrowserExtender;
 }
@@ -271,7 +273,9 @@ void FCleanProjectModule::CreateCBAssetsEntry(FMenuBuilder& MenuBuilder, TArray<
 TSharedRef<FExtender> FCleanProjectModule::CreateCBFoldersExtender(const TArray<FString>& SelectedFolders)
 {
 	TSharedRef<FExtender> ContentBrowserExtender = MakeShareable(new FExtender);
-	ContentBrowserExtender->AddMenuExtension("PathContextBulkOperations", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateCBFoldersEntry, SelectedFolders));
+	ContentBrowserExtender->AddMenuExtension(
+		"PathContextBulkOperations", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateCBFoldersEntry, SelectedFolders)
+	);
 
 	return ContentBrowserExtender;
 }
