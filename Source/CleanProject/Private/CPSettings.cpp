@@ -2,12 +2,32 @@
 
 #include "CPSettings.h"
 
-#include "CPOperationsSubsystem.h"
+#include "CPHelpers.h"
 
 #include <EditorAssetLibrary.h>
 #include <ISettingsModule.h>
 
-#include "CPHelpers.h"
+namespace
+{
+	TSet<FAssetData> GetAssetsFromObjectsAndPaths(const TArray<FSoftObjectPath>& InObjects, const TArray<FDirectoryPath>& InPaths)
+	{
+		TSet<FAssetData> Result;
+
+		for (const FDirectoryPath& DirectoryPath : InPaths)
+		{
+			TArray<FAssetData> AssetData = CPHelpers::GetAssetsInPaths(DirectoryPath.Path);
+			Result.Append(AssetData);
+		}
+
+		Algo::Transform(InObjects, Result,
+		                [](const FSoftObjectPath& ObjectPath)
+		                {
+			                const FString& AssetPath = ObjectPath.GetAssetPathString();
+			                return UEditorAssetLibrary::FindAssetData(AssetPath);
+		                });
+		return Result;
+	}
+}
 
 void UCPSettings::OpenSettings()
 {
@@ -93,40 +113,12 @@ void UCPSettings::ExcludePathsFromPackage(const TArray<FString> Paths)
 
 TSet<FAssetData> UCPSettings::GetCoreAssets() const
 {
-	TSet<FAssetData> Result;
-
-	for (const FDirectoryPath& DirectoryPath : CoreFolders)
-	{
-		TArray<FAssetData> AssetData = CPHelpers::GetAssetsInPaths(DirectoryPath.Path);
-		Result.Append(AssetData);
-	}
-
-	Algo::Transform(CoreAssets, Result,
-		[](const FSoftObjectPath& Path)
-		{
-			const FString& AssetPath = Path.GetAssetPathString();
-			return UEditorAssetLibrary::FindAssetData(AssetPath);
-		});
-	return Result;
+	return GetAssetsFromObjectsAndPaths(CoreAssets, CoreFolders);
 }
 
 TSet<FAssetData> UCPSettings::GetAssetsExcludedFromPackage() const
 {
-	TSet<FAssetData> Result;
-
-	for (const FDirectoryPath& DirectoryPath : FoldersExcludedFromPackage)
-	{
-		TArray<FAssetData> AssetData = CPHelpers::GetAssetsInPaths(DirectoryPath.Path);
-		Result.Append(AssetData);
-	}
-
-	Algo::Transform(AssetsExcludedFromPackage, Result,
-		[](const FSoftObjectPath& Path)
-		{
-			const FString& AssetPath = Path.GetAssetPathString();
-			return UEditorAssetLibrary::FindAssetData(AssetPath);
-		});
-	return Result;
+	return GetAssetsFromObjectsAndPaths(AssetsExcludedFromPackage, FoldersExcludedFromPackage);
 }
 
 void UCPSettings::SaveToDefaultConfig()
