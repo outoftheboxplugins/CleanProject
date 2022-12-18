@@ -2,21 +2,21 @@
 
 #include "CleanProjectModule.h"
 
+#include <ContentBrowserModule.h>
+#include <EditorStyleSet.h>
+#include <ToolMenus.h>
+
 #include "CPLog.h"
 #include "CPOperationsSubsystem.h"
 #include "CPSettings.h"
 #include "Shared/OutOfTheBoxHelpers.h"
 #include "Widgets/SCPDashboardWidget.h"
 
-#include <ContentBrowserModule.h>
-#include <EditorStyleSet.h>
-#include <ToolMenus.h>
-
 #define LOCTEXT_NAMESPACE "CleanProject"
 
 namespace
 {
-const FName MenuTabName = FName("CleanProjectMenuTab");
+	const FName MenuTabName = FName("CleanProjectMenuTab");
 }
 
 void FCleanProjectModule::StartupModule()
@@ -41,16 +41,12 @@ void FCleanProjectModule::RegisterContentBrowserExtensions()
 {
 	if (FContentBrowserModule* ContentBrowserModule = FModuleManager::GetModulePtr<FContentBrowserModule>(TEXT("ContentBrowser")))
 	{
-		TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuDelegates =
-			ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
-		CBAssetMenuDelegates.Add(
-			FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::CreateCBAssetsExtender));
+		TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuDelegates = ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
+		CBAssetMenuDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FCleanProjectModule::CreateCBAssetsExtender));
 		CBAssetsExtenderDelegateHandle = CBAssetMenuDelegates.Last().GetHandle();
 
-		TArray<FContentBrowserMenuExtender_SelectedPaths>& CBFolderMenuDelegates =
-			ContentBrowserModule->GetAllPathViewContextMenuExtenders();
-		CBFolderMenuDelegates.Add(
-			FContentBrowserMenuExtender_SelectedPaths::CreateRaw(this, &FCleanProjectModule::CreateCBFoldersExtender));
+		TArray<FContentBrowserMenuExtender_SelectedPaths>& CBFolderMenuDelegates = ContentBrowserModule->GetAllPathViewContextMenuExtenders();
+		CBFolderMenuDelegates.Add(FContentBrowserMenuExtender_SelectedPaths::CreateRaw(this, &FCleanProjectModule::CreateCBFoldersExtender));
 		CBFoldersExtenderDelegateHandle = CBFolderMenuDelegates.Last().GetHandle();
 	}
 	else
@@ -65,18 +61,14 @@ void FCleanProjectModule::UnregisterContentBrowserExtensions()
 	{
 		if (CBAssetsExtenderDelegateHandle.IsValid())
 		{
-			TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuDelegates =
-				ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
-			CBAssetMenuDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedAssets& Delegate)
-				{ return Delegate.GetHandle() == CBAssetsExtenderDelegateHandle; });
+			TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuDelegates = ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
+			CBAssetMenuDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedAssets& Delegate) { return Delegate.GetHandle() == CBAssetsExtenderDelegateHandle; });
 		}
 
 		if (CBFoldersExtenderDelegateHandle.IsValid())
 		{
-			TArray<FContentBrowserMenuExtender_SelectedPaths>& CBFolderMenuDelegates =
-				ContentBrowserModule->GetAllPathViewContextMenuExtenders();
-			CBFolderMenuDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedPaths& Delegate)
-				{ return Delegate.GetHandle() == CBFoldersExtenderDelegateHandle; });
+			TArray<FContentBrowserMenuExtender_SelectedPaths>& CBFolderMenuDelegates = ContentBrowserModule->GetAllPathViewContextMenuExtenders();
+			CBFolderMenuDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedPaths& Delegate) { return Delegate.GetHandle() == CBFoldersExtenderDelegateHandle; });
 		}
 	}
 }
@@ -84,8 +76,7 @@ void FCleanProjectModule::UnregisterContentBrowserExtensions()
 void FCleanProjectModule::RegisterWindowExtensions()
 {
 	TSharedRef<FWorkspaceItem> const OutOfTheBoxCategory = OutOfTheBoxHelpers::GetSharedWindowsCategory();
-	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
-		MenuTabName, FOnSpawnTab::CreateRaw(this, &FCleanProjectModule::CreateDashboardNomadTab));
+	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateRaw(this, &FCleanProjectModule::CreateDashboardNomadTab));
 
 	CPMenuTab.SetDisplayName(LOCTEXT("DashboardName", "Clean Project Dashboard"))
 		.SetTooltipText(LOCTEXT("DashboardTooltip", "Get an overview of your project state in a separate tab."))
@@ -169,8 +160,7 @@ TSharedRef<SDockTab> FCleanProjectModule::CreateDashboardNomadTab(const FSpawnTa
 TSharedRef<FExtender> FCleanProjectModule::CreateCBAssetsExtender(const TArray<FAssetData>& SelectedAssets)
 {
 	TSharedRef<FExtender> ContentBrowserExtender = MakeShareable(new FExtender);
-	ContentBrowserExtender->AddMenuExtension("AssetContextAdvancedActions", EExtensionHook::After, nullptr,
-		FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateCBAssetsEntry, SelectedAssets));
+	ContentBrowserExtender->AddMenuExtension("AssetContextAdvancedActions", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateCBAssetsEntry, SelectedAssets));
 
 	return ContentBrowserExtender;
 }
@@ -223,8 +213,7 @@ void FCleanProjectModule::CreateCBAssetsEntry(FMenuBuilder& MenuBuilder, TArray<
 TSharedRef<FExtender> FCleanProjectModule::CreateCBFoldersExtender(const TArray<FString>& SelectedFolders)
 {
 	TSharedRef<FExtender> ContentBrowserExtender = MakeShareable(new FExtender);
-	ContentBrowserExtender->AddMenuExtension("PathContextBulkOperations", EExtensionHook::After, nullptr,
-		FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateCBFoldersEntry, SelectedFolders));
+	ContentBrowserExtender->AddMenuExtension("PathContextBulkOperations", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FCleanProjectModule::CreateCBFoldersEntry, SelectedFolders));
 
 	return ContentBrowserExtender;
 }
