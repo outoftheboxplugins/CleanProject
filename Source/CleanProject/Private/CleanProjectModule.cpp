@@ -3,7 +3,6 @@
 #include "CleanProjectModule.h"
 
 #include <ContentBrowserModule.h>
-#include <EditorStyleSet.h>
 #include <ToolMenus.h>
 
 #include "CPLog.h"
@@ -86,7 +85,7 @@ void FCleanProjectModule::UnregisterContentBrowserExtensions()
 void FCleanProjectModule::RegisterWindowExtensions()
 {
 	TSharedRef<FWorkspaceItem> const OutOfTheBoxCategory = OutOfTheBoxHelpers::GetSharedWindowsCategory();
-	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateRaw(this, &FCleanProjectModule::CreateDashboardNomadTab));
+	FTabSpawnerEntry& CPMenuTab = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(MenuTabName, FOnSpawnTab::CreateRaw(this, &FCleanProjectModule::CreateDashboardTab));
 
 	// clang-format off
 	CPMenuTab.SetDisplayName(LOCTEXT("DashboardName", "Clean Project Dashboard"))
@@ -103,12 +102,11 @@ void FCleanProjectModule::UnregisterWindowExtensions()
 
 void FCleanProjectModule::RegisterToolsExtensions()
 {
-
 	FToolMenuSection& SharedSection = OutOfTheBoxHelpers::GetSharedActionsCategory();
 	SharedSection.AddSubMenu(
 		"CleanProject",
 		LOCTEXT("CleanProjectCategoryName", "Clean Project"),
-		LOCTEXT("CleanProjectCategoryTooltip", "Organise your projet quick and easy by using smart cleanup operations"),
+		LOCTEXT("CleanProjectCategoryTooltip", "Organise your projet quickly by using smart cleanup operations"),
 		FNewToolMenuDelegate::CreateRaw(this, &FCleanProjectModule::CreateToolsSubMenu),
 		false,
 		FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Search")
@@ -122,13 +120,12 @@ void FCleanProjectModule::UnregisterToolsExtensions()
 
 void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 {
-
 	FToolMenuOwnerScoped OwnerScoped(this);
 	FToolMenuSection& Section = InMenu->AddSection("Actions");
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
 		"MenuCleanupUnusedAssetsFast",
 		LOCTEXT("MenuCleanupUnusedAssetsFast", "Cleanup unused assets Fast"),
-		LOCTEXT("MenuCleanupUnusedAssetsFastTooltip", "Uses cached data to determine unused assets in your project."),
+		LOCTEXT("MenuCleanupUnusedAssetsFastTip", "Use cached data to determine unused assets in your project."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[]()
@@ -141,7 +138,7 @@ void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
 		"MenuCleanupUnusedAssetsComplex",
 		LOCTEXT("MenuCleanupUnusedAssetsComplex", "Cleanup unused assets Complex"),
-		LOCTEXT("MenuCleanupUnusedAssetsComplexTooltip", "!WARNING: VERY SLOW! Loads all assets to determine unused assets in your project."),
+		LOCTEXT("MenuCleanupUnusedAssetsComplexTip", "!WARNING: VERY SLOW! Index all references to accurately determine unused assets in your project."),
 		FSlateIcon(),
 		FUIAction(
 			FExecuteAction::CreateLambda(
@@ -161,8 +158,8 @@ void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
 		"MenuCleanupRedirects",
-		LOCTEXT("MenuCleanupRedirects", "Cleanup redirects"),
-		LOCTEXT("MenuCleanupRedirectsTooltip", "Fix redirects in your whole project."),
+		LOCTEXT("MenuCleanupRedirectors", "Cleanup redirectors"),
+		LOCTEXT("MenuCleanupRedirectorsTip", "Fixup redirects in your project."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[]()
@@ -212,8 +209,8 @@ void FCleanProjectModule::CreateCBAssetsEntry(FMenuBuilder& MenuBuilder, TArray<
 	MenuBuilder.BeginSection("CleanProject", LOCTEXT("ContentBrowserAssetSection", "Clean Project"));
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("AssetsCheckUnusedFast", "Fast Check if selected assets are unused"),
-		LOCTEXT("AssetsCheckUnusedFastTooltip", "Uses cached data to determine unused assets in the selected assets."),
+		LOCTEXT("AssetsCleanupUnusedAssetsFast", "Cleanup unused assets fast from selected assets"),
+		LOCTEXT("AssetsCheckUnusedAssetsFastTooltip", "Use cached data to determine unused assets in the selected assets."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedAssets]()
@@ -224,8 +221,8 @@ void FCleanProjectModule::CreateCBAssetsEntry(FMenuBuilder& MenuBuilder, TArray<
 	);
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("AssetsCheckUnusedComplex", "Complex Check if selected assets are unused"),
-		LOCTEXT("AssetsCheckUnusedComplexTooltip", "!WARNING: VERY SLOW! Loads all assets to determine unused assets in the selected assets."),
+		LOCTEXT("AssetsCleanupUnusedAssetsComplex", "Cleanup unused assets complex from selected assets"),
+		LOCTEXT("AssetsCheckUnusedAssetsComplexTooltip", "!WARNING: VERY SLOW! Index all references to accurately determine unused assets in the selected assets."),
 		FSlateIcon(),
 		FUIAction(
 			FExecuteAction::CreateLambda(
@@ -245,7 +242,7 @@ void FCleanProjectModule::CreateCBAssetsEntry(FMenuBuilder& MenuBuilder, TArray<
 
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("AssetsMarkAssetsAsCore", "Mark selected assets as Core"),
-		LOCTEXT("AssetsMarkAssetsAsCoreTooltip", "Add the selected assets to the Core Assets list."),
+		LOCTEXT("AssetsMarkAssetsAsCoreTip", "Add the selected assets to the Core Assets list of the plugin."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedAssets]()
@@ -257,8 +254,8 @@ void FCleanProjectModule::CreateCBAssetsEntry(FMenuBuilder& MenuBuilder, TArray<
 	);
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("AssetsExcludeAssetsFromPackage", "Exclude selected assets from package"),
-		LOCTEXT("AssetsExcludeAssetsFromPackageTooltip", "Exclude all the selected assets from package"),
+		LOCTEXT("AssetsExcludeAssetsFromPackage", "Mark selected assets as Excluded from Package"),
+		LOCTEXT("AssetsExcludeAssetsFromPackageTip", "Add the selected assets to the AssetsExcludedFromPackage list of the plugin."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedAssets]()
@@ -286,8 +283,8 @@ void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray
 {
 	MenuBuilder.BeginSection("CleanProject", LOCTEXT("ContentBrowserFolderSection", "Clean Project"));
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("FoldersCheckUnusedFast", "Fast Check assets from the selected folders"),
-		LOCTEXT("FoldersCheckUnusedFastTooltip", "Uses cached data to determine unused assets in the selected folders."),
+		LOCTEXT("FoldersCleanupUnusedAssetsFast", "Cleanup unused assets fast from selected folders"),
+		LOCTEXT("FoldersCheckUnusedAssetsFastTooltip", "Use cached data to determine unused assets in the selected folders."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
@@ -298,8 +295,8 @@ void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray
 	);
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("FoldersCheckUnusedComplex", "Complex Check assets from the selected folders"),
-		LOCTEXT("FoldersCheckUnusedComplexTooltip", "!WARNING: VERY SLOW! Loads all assets to determine unused assets in the selected folders."),
+		LOCTEXT("FoldersCleanupUnusedAssetsComplex", "Cleanup unused assets complex from selected folders"),
+		LOCTEXT("FoldersCheckUnusedAssetsComplexTooltip", "!WARNING: VERY SLOW! Index all references to accurately determine unused assets in the selected folders."),
 		FSlateIcon(),
 		FUIAction(
 			FExecuteAction::CreateLambda(
@@ -318,8 +315,8 @@ void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray
 	);
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("FolderMarkAssetsAsCore", "Mark selected folders as Core"),
-		LOCTEXT("FolderMarkAssetsAsCoreTooltip", "Add the selected folders Core settings????."),
+		LOCTEXT("FoldersMarkFoldersAsCore", "Mark selected folders as Core"),
+		LOCTEXT("FoldersMarkFoldersAsCoreTip", "Add the selected folders to the Core Folders list of the plugin."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
@@ -331,8 +328,8 @@ void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray
 	);
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("FoldersExcludeAssetsFromPackage", "Exclude selected folders from package"),
-		LOCTEXT("FoldersExcludeAssetsFromPackageTooltip", "Exclude all the assets from the selected folders from package."),
+		LOCTEXT("FoldersExcludeFoldersFromPackage", "Mark selected folders as Excluded from Package"),
+		LOCTEXT("FoldersExcludeFoldersFromPackageTip", "Add the selected folders to the FoldersExcludedFromPackage list of the plugin."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
