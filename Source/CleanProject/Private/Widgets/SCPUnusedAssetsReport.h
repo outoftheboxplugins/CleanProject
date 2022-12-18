@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include <Widgets/SCompoundWidget.h>
-
 #include <ContentBrowserDelegates.h>
+#include <Widgets/SCompoundWidget.h>
 
 /**
  * @brief Clean Project Report screen containing the reported assets after performing an operation
@@ -18,9 +17,7 @@ public:
 	 */
 	static void OpenDialog(const TArray<FAssetData>& AssetsToReport);
 
-	SLATE_BEGIN_ARGS(SCPUnusedAssetsReport)
-	{
-	}
+	SLATE_BEGIN_ARGS(SCPUnusedAssetsReport) {}
 	SLATE_END_ARGS()
 
 	/**
@@ -88,13 +85,13 @@ private:
 	 */
 	void DeleteAssets(const TArray<FAssetData> Assets);
 	/**
-	 * @brief Mark the input assets as Core inside the plugin's settings 
+	 * @brief Mark the input assets as Core inside the plugin's settings
 	 * @param Assets Assets to mark as Core
 	 */
 	void MarkAssetsAsCore(const TArray<FAssetData> Assets);
 	/**
 	 * @brief Exclude th input assets from the package inside the plugin's settings
-	 * @param Assets Assets to exclude from package 
+	 * @param Assets Assets to exclude from package
 	 */
 	void ExcludeAssetsFromPackage(const TArray<FAssetData> Assets);
 	/**

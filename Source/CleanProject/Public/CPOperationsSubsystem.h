@@ -12,8 +12,8 @@
  */
 enum class EScanType
 {
-	Fast, 		// uses cached references without loading the object in memory
-	Complex		// load the object in memory to get up to date references
+	Fast, // uses cached references without loading the object in memory
+	Complex // load the object in memory to get up to date references
 };
 
 /**
@@ -134,11 +134,9 @@ private:
 	 * @param InOutPackagesToCook Add packages to this list to cook them
 	 * @param InOutPackagesToNeverCook Add packages to this list to prevent them from cooking
 	 */
-	void ModifyCook(TConstArrayView<const ITargetPlatform*> InTargetPlatforms, TArray<FName>& InOutPackagesToCook,
-		TArray<FName>& InOutPackagesToNeverCook);
+	void ModifyCook(TConstArrayView<const ITargetPlatform*> InTargetPlatforms, TArray<FName>& InOutPackagesToCook, TArray<FName>& InOutPackagesToNeverCook);
 
 	// Begin UEditorSubsystem interface
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	// End UEditorSubsystem interface
 };
-

@@ -2,10 +2,10 @@
 
 #include "CleanProjectCommandlet.h"
 
+#include <ObjectTools.h>
+
 #include "CPLog.h"
 #include "CPOperationsSubsystem.h"
-
-#include <ObjectTools.h>
 
 int32 UCleanProjectCommandlet::Main(const FString& Params)
 {
@@ -15,10 +15,9 @@ int32 UCleanProjectCommandlet::Main(const FString& Params)
 	const bool bDelete = FParse::Param(*Params, TEXT("Delete"));
 	const bool bForce = FParse::Param(*Params, TEXT("Force"));
 
-	UE_LOG(LogCleanProject, Display, TEXT("Parsed parameters: { LogUnused: %s Delete: %s Force: %s }"), *LexToString(bLogUnused),
-	       *LexToString(bDelete), *LexToString(bForce));
+	UE_LOG(LogCleanProject, Display, TEXT("Parsed parameters: { LogUnused: %s Delete: %s Force: %s }"), *LexToString(bLogUnused), *LexToString(bDelete), *LexToString(bForce));
 
-	//TODO: Implement Complex cleanup as well when that becomes available
+	// TODO: Implement Complex cleanup as well when that becomes available
 	TArray<FAssetData> UnusedAssets = UCPOperationsSubsystem::Get()->GetAllUnusedAssets(EScanType::Fast);
 	UE_LOG(LogCleanProject, Display, TEXT("Found: %s unused assets"), *LexToString(UnusedAssets.Num()));
 	if (bLogUnused)
@@ -47,7 +46,14 @@ int32 UCleanProjectCommandlet::Main(const FString& Params)
 void UCleanProjectCommandlet::DeleteAssets(const TArray<FAssetData>& AssetsToDelete, bool bForce)
 {
 	TArray<UObject*> ObjectsToDelete;
-	Algo::Transform(AssetsToDelete, ObjectsToDelete, [](const FAssetData& AssetData) { return AssetData.GetAsset(); });
+	Algo::Transform(
+		AssetsToDelete,
+		ObjectsToDelete,
+		[](const FAssetData& AssetData)
+		{
+			return AssetData.GetAsset();
+		}
+	);
 
 	if (bForce)
 	{

@@ -16,7 +16,7 @@ class UCleanProjectCommandlet final : public UCommandlet
 	// End UCommandlet interface
 
 	/**
-	 * @brief Performs a delete operations on the input assets and optionally forces the operations 
+	 * @brief Performs a delete operations on the input assets and optionally forces the operations
 	 * @param AssetsToDelete Assets subject to being deleted
 	 * @param bForce if we should perform a normal or a force deletion
 	 */

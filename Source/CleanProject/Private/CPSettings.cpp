@@ -2,10 +2,10 @@
 
 #include "CPSettings.h"
 
-#include "CPHelpers.h"
-
 #include <EditorAssetLibrary.h>
 #include <ISettingsModule.h>
+
+#include "CPHelpers.h"
 
 namespace
 {
@@ -19,15 +19,18 @@ namespace
 			Result.Append(AssetData);
 		}
 
-		Algo::Transform(InObjects, Result,
-		                [](const FSoftObjectPath& ObjectPath)
-		                {
-			                const FString& AssetPath = ObjectPath.GetAssetPathString();
-			                return UEditorAssetLibrary::FindAssetData(AssetPath);
-		                });
+		Algo::Transform(
+			InObjects,
+			Result,
+			[](const FSoftObjectPath& ObjectPath)
+			{
+				const FString& AssetPath = ObjectPath.GetAssetPathString();
+				return UEditorAssetLibrary::FindAssetData(AssetPath);
+			}
+		);
 		return Result;
 	}
-}
+} // namespace
 
 void UCPSettings::OpenSettings()
 {

@@ -12,9 +12,7 @@ class SAssetView;
 class SCPDashboardWidget : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SCPDashboardWidget)
-	{
-	}
+	SLATE_BEGIN_ARGS(SCPDashboardWidget) {}
 	SLATE_END_ARGS()
 
 	/**
@@ -37,7 +35,7 @@ private:
 	 */
 	void OnAssetAdded(const FAssetData& AssetData);
 	/**
-	 * @brief Callback executed when an existing asset is deleted 
+	 * @brief Callback executed when an existing asset is deleted
 	 * @param AssetData Deleted asset
 	 */
 	void OnAssetDeleted(const FAssetData& AssetData);
@@ -48,7 +46,7 @@ private:
 	 */
 	void OnAssetRenamed(const FAssetData& AssetData, const FString& Name);
 	/**
-	 * @brief Callback executed when an existing asset is updated 
+	 * @brief Callback executed when an existing asset is updated
 	 * @param AssetData Updated asset
 	 */
 	void OnAssetUpdated(const FAssetData& AssetData);

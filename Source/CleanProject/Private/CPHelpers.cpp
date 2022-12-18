@@ -2,8 +2,8 @@
 
 #include "CPHelpers.h"
 
-#include "AssetViewUtils.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetViewUtils.h"
 #include "Engine/AssetManager.h"
 
 TSet<FAssetData> CPHelpers::GetAllGameAssets(TOptional<FTopLevelAssetPath> ClassFilter)

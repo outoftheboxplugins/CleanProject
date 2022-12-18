@@ -18,7 +18,7 @@ namespace CPHelpers
 	template <typename T>
 	TSet<FAssetData> GetAllGameAssetsOfType();
 	/**
-	 * @brief Get the referenced asset data for a certain property of the EngineSettings.GameMapsSettings section 
+	 * @brief Get the referenced asset data for a certain property of the EngineSettings.GameMapsSettings section
 	 * @param PropertyName Name of the property we want to get the value for
 	 * @return AssetData representing the property set. Can be invalid if no value was assigned
 	 */
@@ -35,7 +35,7 @@ namespace CPHelpers
 	 * @return List of all the aseets we found inside the input Folder
 	 */
 	TArray<FAssetData> GetAssetsInPaths(FString FolderPath);
-}
+} // namespace CPHelpers
 
 template <typename T>
 TSet<FAssetData> CPHelpers::GetAllGameAssetsOfType()
