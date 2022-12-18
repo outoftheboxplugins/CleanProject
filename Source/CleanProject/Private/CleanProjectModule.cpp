@@ -2,15 +2,15 @@
 
 #include "CleanProjectModule.h"
 
+#include <ContentBrowserModule.h>
+#include <EditorStyleSet.h>
+#include <ToolMenus.h>
+
 #include "CPLog.h"
 #include "CPOperationsSubsystem.h"
 #include "CPSettings.h"
 #include "Shared/OutOfTheBoxHelpers.h"
 #include "Widgets/SCPDashboardWidget.h"
-
-#include <ContentBrowserModule.h>
-#include <EditorStyleSet.h>
-#include <ToolMenus.h>
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -100,6 +100,7 @@ void FCleanProjectModule::UnregisterWindowExtensions()
 
 void FCleanProjectModule::RegisterToolsExtensions()
 {
+	
 	FToolMenuSection& SharedSection = OutOfTheBoxHelpers::GetSharedActionsCategory();
 	SharedSection.AddSubMenu("CleanProject", LOCTEXT("CleanProjectCategoryName", "Clean Project"),
 		LOCTEXT("CleanProjectCategoryTooltip", "Organise your projet quick and easy by using smart cleanup operations"),
@@ -114,6 +115,7 @@ void FCleanProjectModule::UnregisterToolsExtensions()
 
 void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 {
+	
 	FToolMenuOwnerScoped OwnerScoped(this);
 	FToolMenuSection& Section = InMenu->AddSection("Actions");
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry("MenuCleanupUnusedAssetsFast",
