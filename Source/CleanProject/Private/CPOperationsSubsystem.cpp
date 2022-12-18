@@ -179,7 +179,7 @@ void UCPOperationsSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& InAsse
 	}
 	else
 	{
-		SCPUnusedAssetsReport::OpenAssetDialog(AssetsToRemove);
+		SCPUnusedAssetsReport::OpenDialog(AssetsToRemove);
 	}
 }
 

@@ -9,6 +9,7 @@
 // TODO: Find a decent way to clean up assets and folders paths that are no longer valid and avoid duplicated entries
 // TODO: Can we make the properties of this settings class private and just expose some getters?
 // TODO: Can we remove the reference to the operations subsystem and throw the getters in there?
+// TODO: Check where LOG_TRACE is used and determine where we should add it next, maybe inside all the operations of CPOperations ?
 
 /**
  * @brief Holds the configurable settings for the Clean Project plugin

@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include <ContentBrowserDelegates.h>
 #include <Widgets/SCompoundWidget.h>
+
+#include <ContentBrowserDelegates.h>
 
 /**
  * @brief Clean Project Report screen containing the reported assets after performing an operation
@@ -15,7 +16,7 @@ public:
 	 * @brief Attempts to create a new report window which displays the AssetsToReport
 	 * @param AssetsToReport Assets to display in the report
 	 */
-	static void OpenAssetDialog(const TArray<FAssetData>& AssetsToReport);
+	static void OpenDialog(const TArray<FAssetData>& AssetsToReport);
 
 	SLATE_BEGIN_ARGS(SCPUnusedAssetsReport)
 	{
@@ -41,7 +42,6 @@ private:
 	 * @return Widget to be displayed as context menu
 	 */
 	TSharedPtr<SWidget> OnGetAssetContextMenu(const TArray<FAssetData>& SelectedAssets);
-
 	/**
 	 * @brief Callback executed when an asset is double clicked
 	 * @param AssetData Clicked asset
@@ -72,33 +72,31 @@ private:
 	 * @return if the operation was handled or not
 	 */
 	FReply OnExcludeFromPackageClicked();
-
 	/**
 	 * @brief Opens the Reference viewer with the input assets
-	 * @param AssetsToViewReferences Assets to view references for
+	 * @param Assets Assets to view references for
 	 */
-	void ReferenceViewerAssets(const TArray<FAssetData> AssetsToViewReferences);
+	void ReferenceViewerAssets(const TArray<FAssetData> Assets);
 	/**
 	 * @brief Opens the Asset Audit window with the input assets
-	 * @param AssetsToAudit Assets to view in the audit
+	 * @param Assets Assets to view in the audit
 	 */
-	void AuditAssets(const TArray<FAssetData> AssetsToAudit);
+	void AuditAssets(const TArray<FAssetData> Assets);
 	/**
 	 * @brief Opens a deletion dialog with the input assets
-	 * @param AssetsToDelete Assets to propose for deletion
+	 * @param Assets Assets to propose for deletion
 	 */
-	void DeleteAssets(const TArray<FAssetData> AssetsToDelete);
+	void DeleteAssets(const TArray<FAssetData> Assets);
 	/**
-	 * @brief Adds input assets to the plugin setting's Core assets list 
-	 * @param Assets Assets to add to the list
+	 * @brief Mark the input assets as Core inside the plugin's settings 
+	 * @param Assets Assets to mark as Core
 	 */
 	void MarkAssetsAsCore(const TArray<FAssetData> Assets);
 	/**
-	 * @brief Adds input assets to the plugin setting's excluded from package list
-	 * @param Assets Assets to add to the list
+	 * @brief Exclude th input assets from the package inside the plugin's settings
+	 * @param Assets Assets to exclude from package 
 	 */
 	void ExcludeAssetsFromPackage(const TArray<FAssetData> Assets);
-
 	/**
 	 * @brief Determine if a certain Asset should be displayed inside the list
 	 * @param AssetData Asset we are evaluating
@@ -107,10 +105,9 @@ private:
 	bool FilterDisplayedAsset(const FAssetData& AssetData) const;
 	/**
 	 * @brief Remove assets from the report for various reasons (removed from list by the user, already deleted)
-	 * @param AssetsToRemove Assets we want to remove from the report
+	 * @param Assets Assets we want to remove from the report
 	 */
-	void RemoveFromList(const TArray<FAssetData> AssetsToRemove);
-
+	void RemoveFromList(const TArray<FAssetData> Assets);
 	/**
 	 * @brief Determines what assets we want to perform the current operation on.
 	 * @return if no assets are selected -> all assets in report. If at least one asset is selected -> current selection
@@ -118,17 +115,16 @@ private:
 	TArray<FAssetData> GetAssetsForAction() const;
 	/**
 	 * @brief Sums up the size of all the assets in the list
-	 * @param AssetsList Assets to sum up the size for
+	 * @param Assets Assets to sum up the size for
 	 * @return Sum of all the assets' sizes (in MB)
 	 */
-	int64 GetAssetsDiskSize(const TArray<FAssetData>& AssetsList) const;
+	int64 GetAssetsDiskSize(const TArray<FAssetData>& Assets) const;
 	/**
 	 * @brief Determines the size on disk of an asset
 	 * @param Asset Asset to check size for
 	 * @return Size of asset in MB
 	 */
 	int64 GetAssetDiskSize(const FAssetData& Asset) const;
-
 	/**
 	 * @brief Assets displayed in the report. This can change through the window's lifetime
 	 */

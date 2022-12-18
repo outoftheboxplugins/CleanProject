@@ -1,4 +1,6 @@
-﻿#include "CPHelpers.h"
+﻿// Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
+
+#include "CPHelpers.h"
 
 #include "AssetViewUtils.h"
 #include "AssetRegistry/AssetRegistryModule.h"
