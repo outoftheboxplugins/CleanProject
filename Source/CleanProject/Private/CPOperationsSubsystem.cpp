@@ -2,19 +2,18 @@
 
 #include "CPOperationsSubsystem.h"
 
-#include "CPLog.h"
-#include "CPSettings.h"
-#include "Widgets/SCPUnusedAssetsReport.h"
-
-#include <GameDelegates.h>
 #include <AssetToolsModule.h>
 #include <AssetViewUtils.h>
 #include <EditorAssetLibrary.h>
+#include <GameDelegates.h>
 #include <Misc/ScopedSlowTask.h>
 #include <ProfilingDebugging/ScopedTimers.h>
 #include <Settings/ProjectPackagingSettings.h>
 
 #include "CPHelpers.h"
+#include "CPLog.h"
+#include "CPSettings.h"
+#include "Widgets/SCPUnusedAssetsReport.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -39,10 +38,7 @@ namespace
 			const FString& CurrentDirectory;
 			bool bIsEmpty;
 
-			FEmptyFolderVisitor(TArray<FString>& InEmptyFolders, const FString& InCurrentDirectory)
-				: EmptyFolders(InEmptyFolders), CurrentDirectory(InCurrentDirectory), bIsEmpty(true)
-			{
-			}
+			FEmptyFolderVisitor(TArray<FString>& InEmptyFolders, const FString& InCurrentDirectory) : EmptyFolders(InEmptyFolders), CurrentDirectory(InCurrentDirectory), bIsEmpty(true) {}
 
 			virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory) override
 			{
@@ -121,16 +117,14 @@ void FCPAssetDependenciesTable::BuildDependenciesTable(const TSet<FAssetData>& I
 		}
 		Table.Emplace(Asset, DependencyAssets);
 
-		UE_LOG(
-			LogCleanProject, VeryVerbose, TEXT("Inspecting: %s took %s seconds"), *AssetPath, *LexToString(AssetTimer.GetTime()));
+		UE_LOG(LogCleanProject, VeryVerbose, TEXT("Inspecting: %s took %s seconds"), *AssetPath, *LexToString(AssetTimer.GetTime()));
 	}
 
 	UE_LOG(LogCleanProject, VeryVerbose, TEXT("Building dependencies took: %s"), *LexToString(TotalTimer.GetTime()));
 	UE_LOG(LogCleanProject, VeryVerbose, TEXT("*************** STOP BuildDependenciesTable ***************"));
 }
 
-void FCPAssetDependenciesTable::CompileReferencesRecursive(
-	const TArray<FAssetData>& Assets, TSet<FAssetData>& OutReferences, int RecursionLevel /* = 0 */)
+void FCPAssetDependenciesTable::CompileReferencesRecursive(const TArray<FAssetData>& Assets, TSet<FAssetData>& OutReferences, int RecursionLevel /* = 0 */)
 {
 	for (const FAssetData& Asset : Assets)
 	{
@@ -145,7 +139,12 @@ void FCPAssetDependenciesTable::CompileReferencesRecursive(
 				AssetDependencies.Add(DependencyRow.Key);
 			}
 		}
-		AssetDependencies.RemoveAll([=](const FAssetData& AssetData) { return OutReferences.Contains(AssetData); });
+		AssetDependencies.RemoveAll(
+			[=](const FAssetData& AssetData)
+			{
+				return OutReferences.Contains(AssetData);
+			}
+		);
 
 		CompileReferencesRecursive(AssetDependencies, OutReferences, RecursionLevel + 1);
 	}
@@ -184,7 +183,7 @@ void UCPOperationsSubsystem::DeleteUnusedAssets(const TArray<FAssetData>& InAsse
 void UCPOperationsSubsystem::DeleteAllEmptyFolders()
 {
 	FString GameContentFolder = TEXT("/Game");
-	DeleteEmptyFoldersIn({ GameContentFolder });
+	DeleteEmptyFoldersIn({GameContentFolder});
 }
 
 void UCPOperationsSubsystem::DeleteEmptyFoldersIn(const TArray<FString>& InPaths)
@@ -249,9 +248,12 @@ TArray<FAssetData> UCPOperationsSubsystem::GetUnusedAssets(const TArray<FAssetDa
 {
 	if (ScanType == EScanType::Complex)
 	{
-		UE_LOG(LogCleanProject, Error,
+		UE_LOG(
+			LogCleanProject,
+			Error,
 			TEXT("Complex scan is currently not available due to a crash while unloading in "
-				 "UEditorAssetLibrary::FindPackageReferencersForAsset"));
+				 "UEditorAssetLibrary::FindPackageReferencersForAsset")
+		);
 
 		return {};
 	}
@@ -261,7 +263,12 @@ TArray<FAssetData> UCPOperationsSubsystem::GetUnusedAssets(const TArray<FAssetDa
 	const TSet<FAssetData> AssetsToKeep = DependenciesTable.CompileReferences(CoreAssets);
 
 	TArray<FAssetData> UnusedAssets = AssetsToCheck;
-	UnusedAssets.RemoveAll([=](const FAssetData& AssetData) { return AssetsToKeep.Contains(AssetData); });
+	UnusedAssets.RemoveAll(
+		[=](const FAssetData& AssetData)
+		{
+			return AssetsToKeep.Contains(AssetData);
+		}
+	);
 
 	return UnusedAssets;
 }
@@ -272,15 +279,34 @@ TSet<FAssetData> UCPOperationsSubsystem::GetAllCoreAssets() const
 	const UProjectPackagingSettings* const PackagingSettings = GetDefault<UProjectPackagingSettings>();
 
 	// First get the assets which are explicitly cooked by the user via MapsToCook list
-	Algo::Transform(PackagingSettings->MapsToCook, Result,
-		[](const FFilePath& File) { return UEditorAssetLibrary::FindAssetData(File.FilePath); });
+	Algo::Transform(
+		PackagingSettings->MapsToCook,
+		Result,
+		[](const FFilePath& File)
+		{
+			return UEditorAssetLibrary::FindAssetData(File.FilePath);
+		}
+	);
 
 	// Second get the assets which are inside an always cook folder
 	TArray<FString> FoldersToCook;
 	Algo::Transform(
-		PackagingSettings->DirectoriesToAlwaysCook, FoldersToCook, [](FDirectoryPath const& Directory) { return Directory.Path; });
+		PackagingSettings->DirectoriesToAlwaysCook,
+		FoldersToCook,
+		[](FDirectoryPath const& Directory)
+		{
+			return Directory.Path;
+		}
+	);
 	const TArray<FAssetData> AssetsToCook = CPHelpers::GetAssetsInPaths(FoldersToCook);
-	Algo::Transform(AssetsToCook, Result, [](const FAssetData& AssetData) { return AssetData; });
+	Algo::Transform(
+		AssetsToCook,
+		Result,
+		[](const FAssetData& AssetData)
+		{
+			return AssetData;
+		}
+	);
 
 	// Third get all the default game objects
 	Result.Add(CPHelpers::GetDefaultGameObject(FName(TEXT("GameDefaultMap"))));
@@ -294,21 +320,24 @@ TSet<FAssetData> UCPOperationsSubsystem::GetAllCoreAssets() const
 	Result.Append(ExplicitCoreAssets.Array());
 
 	// Finally, remove all invalid assets before returning back
-	Result.RemoveAll([](const FAssetData& AssetData) { return !AssetData.IsValid(); });
+	Result.RemoveAll(
+		[](const FAssetData& AssetData)
+		{
+			return !AssetData.IsValid();
+		}
+	);
 
 	return TSet(Result);
 }
 
-void UCPOperationsSubsystem::ModifyCook(TConstArrayView<const ITargetPlatform*> InTargetPlatforms,
-	TArray<FName>& InOutPackagesToCook, TArray<FName>& InOutPackagesToNeverCook)
+void UCPOperationsSubsystem::ModifyCook(TConstArrayView<const ITargetPlatform*> InTargetPlatforms, TArray<FName>& InOutPackagesToCook, TArray<FName>& InOutPackagesToNeverCook)
 {
 	UE_LOG(LogCleanProject, Display, TEXT("Modifying content to be cooked"));
 
 	const TSet<FAssetData> AssetsExcludedFromPackage = GetDefault<UCPSettings>()->GetAssetsExcludedFromPackage();
 	for (const FAssetData& ExcludedAsset : AssetsExcludedFromPackage)
 	{
-		UE_LOG(LogCleanProject, Display, TEXT("%s is excluded from packaging and will not be included in the final build"),
-			*ExcludedAsset.GetObjectPathString());
+		UE_LOG(LogCleanProject, Display, TEXT("%s is excluded from packaging and will not be included in the final build"), *ExcludedAsset.GetObjectPathString());
 		InOutPackagesToNeverCook.Add(ExcludedAsset.PackageName);
 	}
 }

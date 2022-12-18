@@ -2,15 +2,15 @@
 
 #include "SCPDashboardWidget.h"
 
-#include "CPHelpers.h"
-#include "CPLog.h"
-#include "CPOperationsSubsystem.h"
-#include "CPSettings.h"
-
 #include <Engine/AssetManager.h>
 #include <Interfaces/IPluginManager.h>
 #include <SAssetView.h>
 #include <Widgets/Input/SButton.h>
+
+#include "CPHelpers.h"
+#include "CPLog.h"
+#include "CPOperationsSubsystem.h"
+#include "CPSettings.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -161,8 +161,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 	// Callback is registered here because CallOrRegister might instantly execute it and we need to assign the slate properties
 	if (const UAssetManager* AssetManager = UAssetManager::GetIfValid())
 	{
-		AssetManager->CallOrRegister_OnCompletedInitialScan(
-			FSimpleMulticastDelegate::FDelegate::CreateSP(this, &SCPDashboardWidget::OnInitialScanComplete));
+		AssetManager->CallOrRegister_OnCompletedInitialScan(FSimpleMulticastDelegate::FDelegate::CreateSP(this, &SCPDashboardWidget::OnInitialScanComplete));
 	}
 	else
 	{
