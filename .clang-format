@@ -5,6 +5,7 @@ AccessModifierOffset: -4
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: false
+AlignAfterOpenBracket: BlockIndent
 AlignTrailingComments: false
 AllowShortFunctionsOnASingleLine : InlineOnly
 AllowShortLambdasOnASingleLine: Empty
@@ -28,6 +29,8 @@ BraceWrapping:
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
 BreakBeforeBraces: Custom
+BinPackArguments: false
+BinPackParameters: false
 BreakConstructorInitializers: AfterColon
 ColumnLimit: 300
 IncludeBlocks: Regroup
