@@ -248,13 +248,7 @@ TArray<FAssetData> UCPOperationsSubsystem::GetUnusedAssets(const TArray<FAssetDa
 {
 	if (ScanType == EScanType::Complex)
 	{
-		UE_LOG(
-			LogCleanProject,
-			Error,
-			TEXT("Complex scan is currently not available due to a crash while unloading in "
-				 "UEditorAssetLibrary::FindPackageReferencersForAsset")
-		);
-
+		UE_LOG(LogCleanProject, Error, TEXT("Complex scan is currently not available due to a crash while unloading in UEditorAssetLibrary::FindPackageReferencersForAsset"));
 		return {};
 	}
 	const TSet<FAssetData> CoreAssets = GetAllCoreAssets();

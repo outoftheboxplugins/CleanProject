@@ -103,7 +103,7 @@ void FCleanProjectModule::UnregisterWindowExtensions()
 
 void FCleanProjectModule::RegisterToolsExtensions()
 {
-	
+
 	FToolMenuSection& SharedSection = OutOfTheBoxHelpers::GetSharedActionsCategory();
 	SharedSection.AddSubMenu(
 		"CleanProject",
@@ -122,7 +122,7 @@ void FCleanProjectModule::UnregisterToolsExtensions()
 
 void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 {
-	
+
 	FToolMenuOwnerScoped OwnerScoped(this);
 	FToolMenuSection& Section = InMenu->AddSection("Actions");
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
@@ -186,11 +186,11 @@ void FCleanProjectModule::CreateToolsSubMenu(UToolMenu* InMenu)
 	));
 }
 
-TSharedRef<SDockTab> FCleanProjectModule::CreateDashboardNomadTab(const FSpawnTabArgs& Args)
+TSharedRef<SDockTab> FCleanProjectModule::CreateDashboardTab(const FSpawnTabArgs& Args)
 {
 	// clang-format off
 	return SNew(SDockTab)
-		.TabRole(ETabRole::NomadTab)
+		.TabRole(NomadTab)
 		[
 			SNew(SCPDashboardWidget)
 		];
