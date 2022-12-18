@@ -2,15 +2,15 @@
 
 #include "SCPUnusedAssetsReport.h"
 
-#include "CPLog.h"
-#include "CPSettings.h"
-
 #include <AssetManagerEditorModule.h>
 #include <AssetRegistryModule.h>
 #include <ContentBrowserModule.h>
 #include <IContentBrowserSingleton.h>
 #include <ObjectTools.h>
 #include <Widgets/Input/SButton.h>
+
+#include "CPLog.h"
+#include "CPSettings.h"
 
 #define LOCTEXT_NAMESPACE "CleanProject"
 
@@ -139,8 +139,7 @@ TSharedRef<SWidget> SCPUnusedAssetsReport::CreateAssetPickerWidget()
 	Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
 	Config.RefreshAssetViewDelegates.Add(&RefreshAssetViewDelegate);
 
-	IContentBrowserSingleton& ContentBrowserSingleton =
-		FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>("ContentBrowser").Get();
+	IContentBrowserSingleton& ContentBrowserSingleton = FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>("ContentBrowser").Get();
 	TSharedRef<SWidget> AssetPickerWidget = ContentBrowserSingleton.CreateAssetPicker(Config);
 
 	return AssetPickerWidget;
@@ -152,28 +151,47 @@ TSharedPtr<SWidget> SCPUnusedAssetsReport::OnGetAssetContextMenu(const TArray<FA
 
 	MenuBuilder.BeginSection(TEXT("ReportContextMenu"), LOCTEXT("ReportConextMenuCategory", "Cleanup actions"));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("RemoveAction", "Remove"),
-		LOCTEXT("RemoveActionTooltip", "Remove selected assets from the report, so they won't get deleted."), FSlateIcon(),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::RemoveFromList, SelectedAssets)));
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("RemoveAction", "Remove"),
+		LOCTEXT("RemoveActionTooltip", "Remove selected assets from the report, so they won't get deleted."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::RemoveFromList, SelectedAssets))
+	);
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("ReferenceViewerAction", "References"),
-		LOCTEXT("ReferenceViewerTooltip", "Open the References Viewer window with the selected assets."), FSlateIcon(),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::ReferenceViewerAssets, SelectedAssets)));
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("ReferenceViewerAction", "References"),
+		LOCTEXT("ReferenceViewerTooltip", "Open the References Viewer window with the selected assets."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::ReferenceViewerAssets, SelectedAssets))
+	);
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("AuditAction", "Audit"),
-		LOCTEXT("AuditTooltip", "Open the Asset Audit window with the selected assets."), FSlateIcon(),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::AuditAssets, SelectedAssets)));
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("AuditAction", "Audit"),
+		LOCTEXT("AuditTooltip", "Open the Asset Audit window with the selected assets."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::AuditAssets, SelectedAssets))
+	);
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("MarkAsCoreAction", "Mark as Core"),
-		LOCTEXT("MarkAsCoreActionTooltip", "Mark selected assets as core and remove them from report."), FSlateIcon(),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::MarkAssetsAsCore, SelectedAssets)));
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("MarkAsCoreAction", "Mark as Core"),
+		LOCTEXT("MarkAsCoreActionTooltip", "Mark selected assets as core and remove them from report."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::MarkAssetsAsCore, SelectedAssets))
+	);
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("ExcludeFromPackageAction", "Exclude from package"),
-		LOCTEXT("ExcludeFromPackageTooltip", "Exclude selected assets from package and remove them from report."), FSlateIcon(),
-		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::ExcludeAssetsFromPackage, SelectedAssets)));
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("ExcludeFromPackageAction", "Exclude from package"),
+		LOCTEXT("ExcludeFromPackageTooltip", "Exclude selected assets from package and remove them from report."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::ExcludeAssetsFromPackage, SelectedAssets))
+	);
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("DeleteAction", "Delete"), LOCTEXT("DeleteActionTooltip", "Initiate a delete action with the selected assets."),
-		FSlateIcon(), FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::DeleteAssets, SelectedAssets)));
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("DeleteAction", "Delete"),
+		LOCTEXT("DeleteActionTooltip", "Initiate a delete action with the selected assets."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::DeleteAssets, SelectedAssets))
+	);
 
 	MenuBuilder.EndSection();
 	return MenuBuilder.MakeWidget();
@@ -219,7 +237,14 @@ void SCPUnusedAssetsReport::ReferenceViewerAssets(const TArray<FAssetData> Asset
 	LOG_TRACE();
 
 	TArray<FName> AssetNames;
-	Algo::Transform(Assets, AssetNames, [](const FAssetData& AssetData) { return AssetData.PackageName; });
+	Algo::Transform(
+		Assets,
+		AssetNames,
+		[](const FAssetData& AssetData)
+		{
+			return AssetData.PackageName;
+		}
+	);
 
 	IAssetManagerEditorModule::Get().OpenReferenceViewerUI(AssetNames);
 }
@@ -236,7 +261,14 @@ void SCPUnusedAssetsReport::DeleteAssets(const TArray<FAssetData> Assets)
 	LOG_TRACE();
 
 	TArray<UObject*> ObjectsToDelete;
-	Algo::Transform(Assets, ObjectsToDelete, [](const FAssetData& AssetData) { return AssetData.GetAsset(); });
+	Algo::Transform(
+		Assets,
+		ObjectsToDelete,
+		[](const FAssetData& AssetData)
+		{
+			return AssetData.GetAsset();
+		}
+	);
 
 	ObjectTools::DeleteObjects(ObjectsToDelete);
 	RemoveFromList(Assets);
@@ -269,7 +301,12 @@ bool SCPUnusedAssetsReport::FilterDisplayedAsset(const FAssetData& AssetData) co
 
 void SCPUnusedAssetsReport::RemoveFromList(const TArray<FAssetData> Assets)
 {
-	ReportAssets.RemoveAllSwap([&Assets](const FAssetData& AssetData) { return Assets.Contains(AssetData); });
+	ReportAssets.RemoveAllSwap(
+		[&Assets](const FAssetData& AssetData)
+		{
+			return Assets.Contains(AssetData);
+		}
+	);
 
 	// Update list of assets displayed
 	constexpr bool bUpdateSource = false;

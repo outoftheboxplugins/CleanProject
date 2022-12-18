@@ -10,7 +10,7 @@ AlignTrailingComments: false
 AllowShortFunctionsOnASingleLine : InlineOnly
 AllowShortLambdasOnASingleLine: Empty
 AlwaysBreakTemplateDeclarations: Yes
-PointerAlignment: Left 
+PointerAlignment: Left
 BraceWrapping: 
   AfterCaseLabel: true
   AfterClass: true
@@ -32,7 +32,7 @@ BreakBeforeBraces: Custom
 BinPackArguments: false
 BinPackParameters: false
 BreakConstructorInitializers: AfterColon
-ColumnLimit: 300
+ColumnLimit: 200 
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '^<ext/.*\.h>'
