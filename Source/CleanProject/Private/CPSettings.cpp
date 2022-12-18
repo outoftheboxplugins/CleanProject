@@ -67,23 +67,23 @@ void UCPSettings::WhitelistPaths(const TArray<FString> Paths)
 	SaveToDefaultConfig();
 }
 
-void UCPSettings::BlacklistAssets(const TArray<FAssetData> Assets)
+void UCPSettings::ExcludeAssetsFromPackage(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
 	{
 		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
-		BlacklistedAssets.Add(AssetPath);
+		AssetsExcludedFromPackage.Add(AssetPath);
 	}
 
 	SaveToDefaultConfig();
 }
 
-void UCPSettings::BlacklistPaths(const TArray<FString> Paths)
+void UCPSettings::ExcludePathsFromPackage(const TArray<FString> Paths)
 {
 	for (const FString& Path : Paths)
 	{
 		FDirectoryPath DirectoryPath = {Path};
-		BlacklistedFolders.Add(DirectoryPath);
+		FoldersExcludedFromPackage.Add(DirectoryPath);
 	}
 
 	SaveToDefaultConfig();
@@ -108,17 +108,17 @@ TSet<FAssetData> UCPSettings::GetWhitelistAssetsPaths() const
 	return Result;
 }
 
-TSet<FAssetData> UCPSettings::GetBlacklistedAssetsPaths() const
+TSet<FAssetData> UCPSettings::GetAssetsExcludedFromPackage() const
 {
 	TSet<FAssetData> Result;
 
-	for (const FDirectoryPath& DirectoryPath : BlacklistedFolders)
+	for (const FDirectoryPath& DirectoryPath : FoldersExcludedFromPackage)
 	{
 		TArray<FAssetData> AssetData = UCPOperationsSubsystem::Get()->GetAssetsInPaths(DirectoryPath.Path);
 		Result.Append(AssetData);
 	}
 
-	Algo::Transform(BlacklistedAssets, Result,
+	Algo::Transform(AssetsExcludedFromPackage, Result,
 		[](const FSoftObjectPath& Path)
 		{
 			const FString& AssetPath = Path.GetAssetPathString();

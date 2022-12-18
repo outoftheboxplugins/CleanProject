@@ -215,14 +215,14 @@ void FCleanProjectModule::CreateCBAssetsEntry(FMenuBuilder& MenuBuilder, TArray<
 				Settings->WhitelistAssets(SelectedAssets);
 			})));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsBlacklistAssets", "Blacklist selected assets"),
-		LOCTEXT("AssetsBlacklistAssetsTooltip", "Add the selected assets to the Blacklist."), FSlateIcon(),
+	MenuBuilder.AddMenuEntry(LOCTEXT("AssetsExcludeAssetsFromPackage", "Exclude selected assets from package"),
+		LOCTEXT("AssetsExcludeAssetsFromPackageTooltip", "Exclude all the selected assets from package"), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedAssets]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Blacklist Assets* from selected assets."));
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Exclude Assets from Package* from selected assets."));
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-				Settings->BlacklistAssets(SelectedAssets);
+				Settings->ExcludeAssetsFromPackage(SelectedAssets);
 			})));
 
 	MenuBuilder.EndSection();
@@ -272,14 +272,14 @@ void FCleanProjectModule::CreateCBFoldersEntry(FMenuBuilder& MenuBuilder, TArray
 				Settings->WhitelistPaths(SelectedFolders);
 			})));
 
-	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersBlacklistAssets", "Blacklist selected folders"),
-		LOCTEXT("FoldersBlacklistAssetsTooltip", "Starting *Blacklist Folders* from selected folders."), FSlateIcon(),
+	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersExcludeAssetsFromPackage", "Exclude selected folders from package"),
+		LOCTEXT("FoldersExcludeAssetsFromPackageTooltip", "Exclude all the assets from the selected folders from package."), FSlateIcon(),
 		FUIAction(FExecuteAction::CreateLambda(
 			[SelectedFolders]()
 			{
-				UE_LOG(LogCleanProject, Log, TEXT("Starting *Blacklist Assets* from selected folders."));
+				UE_LOG(LogCleanProject, Log, TEXT("Starting *Exclude Assets from Package* from selected folders."));
 				UCPSettings* Settings = GetMutableDefault<UCPSettings>();
-				Settings->BlacklistPaths(SelectedFolders);
+				Settings->ExcludePathsFromPackage(SelectedFolders);
 			})));
 
 	MenuBuilder.AddMenuEntry(LOCTEXT("FoldersCleanupEmptyFolders", "Cleanup empty folders"),

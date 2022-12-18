@@ -49,12 +49,12 @@ public:
 	 * TODO
 	 */
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
-	TArray<FSoftObjectPath> BlacklistedAssets;
+	TArray<FSoftObjectPath> AssetsExcludedFromPackage;
 	/**
 	 * TODO
 	 */
 	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist", meta = (LongPackageName))
-	TArray<FDirectoryPath> BlacklistedFolders;
+	TArray<FDirectoryPath> FoldersExcludedFromPackage;
 	/**
 	 * @brief  Should the Clean Project Dashboard automatically refresh itself every time an asset is updated. (Unless time since
 	 * last refresh is lower than AutoRefreshInterval)
@@ -77,22 +77,22 @@ public:
 	 */
 	void WhitelistPaths(const TArray<FString> Paths);
 	/**
-	 * @brief Convenience function to programatically add assets to the blacklisted set and saving config
+	 * @brief Convenience function to programatically add assets to the package exclusion list and saving config
 	 */
-	void BlacklistAssets(const TArray<FAssetData> Assets);
+	void ExcludeAssetsFromPackage(const TArray<FAssetData> Assets);
 	/**
-	 * @brief Convenience function to programatically add folders to the blacklisted set and saving config
+	 * @brief Convenience function to programatically add folders to the package exclusion list and saving config
 	 */
-	void BlacklistPaths(const TArray<FString> Paths);
+	void ExcludePathsFromPackage(const TArray<FString> Paths);
 	// TODO: Unify GetWhitelistedAssetsPaths and GetBlacklistedAssetsPaths in a common getter with functionality
 	/**
-	 * @brief Returns the asset path of the whitelisted assets as FName
+	 * @brief Returns the asset path of the whitelisted assets
 	 */
 	TSet<FAssetData> GetWhitelistAssetsPaths() const;
 	/**
-	 * @brief Returns the asset path of the blacklisted assets as FName
+	 * @brief Returns the asset path of the assets excluded from package
 	 */
-	TSet<FAssetData> GetBlacklistedAssetsPaths() const;
+	TSet<FAssetData> GetAssetsExcludedFromPackage() const;
 
 private:
 	// Begin UDeveloperSettings interface

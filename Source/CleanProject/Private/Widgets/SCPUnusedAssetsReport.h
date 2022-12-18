@@ -68,10 +68,10 @@ private:
 	 */
 	FReply OnWhitelistClicked();
 	/**
-	 * @brief Callback executed when the Blacklist button is clicked
+	 * @brief Callback executed when the Exclude from Package button is clicked
 	 * @return if the operation was handled or not
 	 */
-	FReply OnBlacklistClicked();
+	FReply OnExcludeFromPackageClicked();
 
 	/**
 	 * @brief Opens the Reference viewer with the input assets
@@ -94,10 +94,10 @@ private:
 	 */
 	void WhiteListAssets(const TArray<FAssetData> AssetsToWhitelist);
 	/**
-	 * @brief Adds input assets to the plugin setting's Blacklist
-	 * @param AssetsToBlacklist Assets to add to the list
+	 * @brief Adds input assets to the plugin setting's excluded from package list
+	 * @param AssetsToExcludeFromPackage Assets to add to the list
 	 */
-	void BlackListAssets(const TArray<FAssetData> AssetsToBlacklist);
+	void ExcludeAssetsFromPackage(const TArray<FAssetData> AssetsToExcludeFromPackage);
 
 	/**
 	 * @brief Determine if a certain Asset should be displayed inside the list

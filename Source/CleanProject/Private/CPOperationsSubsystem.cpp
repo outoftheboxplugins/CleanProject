@@ -363,12 +363,12 @@ void UCPOperationsSubsystem::ModifyCook(TConstArrayView<const ITargetPlatform*> 
 {
 	UE_LOG(LogCleanProject, Display, TEXT("Modifying content to be cooked"));
 
-	const TSet<FAssetData> ExplicitlyBlacklisted = GetDefault<UCPSettings>()->GetBlacklistedAssetsPaths();
-	for (const FAssetData& BlacklistedAsset : ExplicitlyBlacklisted)
+	const TSet<FAssetData> AssetsExcludedFromPackage = GetDefault<UCPSettings>()->GetAssetsExcludedFromPackage();
+	for (const FAssetData& ExcludedAsset : AssetsExcludedFromPackage)
 	{
-		UE_LOG(LogCleanProject, Display, TEXT("%s is blacklisted and will be excluded from package"),
-			*BlacklistedAsset.GetObjectPathString());
-		InOutPackagesToNeverCook.Add(BlacklistedAsset.PackageName);
+		UE_LOG(LogCleanProject, Display, TEXT("%s is excluded from packaging and will not be included in the final build"),
+			*ExcludedAsset.GetObjectPathString());
+		InOutPackagesToNeverCook.Add(ExcludedAsset.PackageName);
 	}
 }
 
