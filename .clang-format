@@ -6,6 +6,8 @@ AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: false
 AlignTrailingComments: false
+AllowShortFunctionsOnASingleLine : InlineOnly
+AllowShortLambdasOnASingleLine: Empty
 AlwaysBreakTemplateDeclarations: Yes
 PointerAlignment: Left 
 BraceWrapping: 
