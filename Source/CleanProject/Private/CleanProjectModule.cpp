@@ -62,13 +62,21 @@ void FCleanProjectModule::UnregisterContentBrowserExtensions()
 		if (CBAssetsExtenderDelegateHandle.IsValid())
 		{
 			TArray<FContentBrowserMenuExtender_SelectedAssets>& CBAssetMenuDelegates = ContentBrowserModule->GetAllAssetViewContextMenuExtenders();
-			CBAssetMenuDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedAssets& Delegate) { return Delegate.GetHandle() == CBAssetsExtenderDelegateHandle; });
+			CBAssetMenuDelegates.RemoveAll(
+				[this](const FContentBrowserMenuExtender_SelectedAssets& Delegate)
+				{
+					return Delegate.GetHandle() == CBAssetsExtenderDelegateHandle;
+				});
 		}
 
 		if (CBFoldersExtenderDelegateHandle.IsValid())
 		{
 			TArray<FContentBrowserMenuExtender_SelectedPaths>& CBFolderMenuDelegates = ContentBrowserModule->GetAllPathViewContextMenuExtenders();
-			CBFolderMenuDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedPaths& Delegate) { return Delegate.GetHandle() == CBFoldersExtenderDelegateHandle; });
+			CBFolderMenuDelegates.RemoveAll(
+				[this](const FContentBrowserMenuExtender_SelectedPaths& Delegate)
+				{
+					return Delegate.GetHandle() == CBFoldersExtenderDelegateHandle;
+				});
 		}
 	}
 }
