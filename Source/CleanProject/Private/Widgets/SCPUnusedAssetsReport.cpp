@@ -120,6 +120,7 @@ TSharedRef<SWidget> SCPUnusedAssetsReport::CreateAssetPickerWidget()
 	Config.OnShouldFilterAsset = FOnShouldFilterAsset::CreateSP(this, &SCPUnusedAssetsReport::FilterDisplayedAsset);
 	Config.GetCurrentSelectionDelegates.Add(&GetCurrentSelectionDelegate);
 	Config.RefreshAssetViewDelegates.Add(&RefreshAssetViewDelegate);
+	Config.bCanShowClasses = false;
 
 	IContentBrowserSingleton& ContentBrowserSingleton = FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>("ContentBrowser").Get();
 	TSharedRef<SWidget> AssetPickerWidget = ContentBrowserSingleton.CreateAssetPicker(Config);
