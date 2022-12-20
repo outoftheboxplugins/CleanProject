@@ -6,6 +6,9 @@
 
 #include "CPSettings.generated.h"
 
+// TODO: Find a decent way to clean up assets and folders paths that are no longer valid and avoid duplicated entries
+// TODO: Check where LOG_TRACE is used and determine where we should add it next, maybe inside all the operations of CPOperations ?
+
 /**
  * @brief Holds the configurable settings for the Clean Project plugin
  */
@@ -24,58 +27,76 @@ public:
 	 */
 	FSimpleMulticastDelegate OnSettingsChanged;
 	/**
-	 * @brief List of assets we always consider actively referenced. Add assets (including their dependencies) you want to prevent
-	 * our system from deleting here
+	 * @brief Returns the asset path of the assets explicitly marked as Core
 	 */
-	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
-	TSet<FSoftObjectPath> WhitelistedAssets;
+	TSet<FAssetData> GetCoreAssets() const;
 	/**
-	 * @brief Old version for storing assets we want to whitelist
+	 * @brief Returns the asset path of the assets excluded from package
 	 */
-	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use WhitelistedAssets")
-	UPROPERTY(VisibleDefaultsOnly, config, Category = "Deprecated")
-	TArray<FString> WhitelistAssetsPaths;
+	TSet<FAssetData> GetAssetsExcludedFromPackage() const;
 	/**
-	 * @brief Assets we should actively exclude from the final pak
-	 * Add assets you want to prevent from getting added to your final game. Their dependencies might still get packaged if
-	 * referenced by something else
+	 * @brief Convenience function to programatically add assets to the core list and saving config
 	 */
-	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
-	TSet<FSoftObjectPath> BlacklistedAssets;
+	void MarkAssetsAsCore(const TArray<FAssetData> Assets);
+	/**
+	 * @brief Convenience function to programatically add folders to the core list and saving config
+	 */
+	void MarkPathsAsCore(const TArray<FString> Paths);
+	/**
+	 * @brief Convenience function to programatically add assets to the package exclusion list and saving config
+	 */
+	void ExcludeAssetsFromPackage(const TArray<FAssetData> Assets);
+	/**
+	 * @brief Convenience function to programatically add folders to the package exclusion list and saving config
+	 */
+	void ExcludePathsFromPackage(const TArray<FString> Paths);
 	/**
 	 * @brief  Should the Clean Project Dashboard automatically refresh itself every time an asset is updated. (Unless time since
 	 * last refresh is lower than AutoRefreshInterval)
 	 */
-	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings")
 	bool bAutoRefreshDashboard = true;
 	/**
 	 * @brief How much time we should wait in between Clean Project Dashboard refresh requests
 	 * @note measured in seconds
 	 * @note use -1 to refresh every time
 	 */
-	UPROPERTY(EditDefaultsOnly, config, Category = "Whitelist")
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings")
 	float AutoRefreshInterval = 30.0f;
+
+protected:
 	/**
-	 * @brief Convenience function to programatically add assets to the whitelisted set and saving config
+	 * @brief List of assets we always consider actively referenced.
+	 * Assets inside this list (and their dependencies) will not be deleted by our system
 	 */
-	void WhitelistAssets(const TArray<FAssetData> Assets);
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings")
+	TArray<FSoftObjectPath> CoreAssets;
 	/**
-	 * @brief Convenience function to programatically add assets to the blacklisted set and saving config
+	 * @brief List of folders we always consider actively referenced.
+	 * Assets contained in a folder inside this list (and their dependencies) will not be deleted by our system
 	 */
-	void BlacklistAssets(const TArray<FAssetData> Assets);
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings", meta = (LongPackageName))
+	TArray<FDirectoryPath> CoreFolders;
 	/**
-	 * @brief Returns the asset path of the whitelisted assets as FName
+	 * @brief Old version for storing assets we want to whitelist
 	 */
-	TSet<FAssetData> GetWhitelistAssetsPaths() const;
+	UE_DEPRECATED(5.0, "WhitelistAssetsPaths has been removed as a way of storing references. Please use CoreAssets or CoreFolders")
+	UPROPERTY(VisibleDefaultsOnly, config, Category = "Deprecated")
+	TArray<FString> WhitelistAssetsPaths;
+	/**
+	 * @brief List of assets we exclude from the package
+	 * Assets inside this list will not be included in the final build, but are available in the editor
+	 */
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings")
+	TArray<FSoftObjectPath> AssetsExcludedFromPackage;
+	/**
+	 * @brief List of folders we exclude from the package
+	 * Assets contained in a folder inside this list will not be included in the final build, but are available in the editor
+	 */
+	UPROPERTY(EditDefaultsOnly, config, Category = "Cleanup settings", meta = (LongPackageName))
+	TArray<FDirectoryPath> FoldersExcludedFromPackage;
 
 private:
-	// Begin UDeveloperSettings interface
-	virtual void PostInitProperties() override;
-	virtual FName GetContainerName() const override;
-	virtual FName GetCategoryName() const override;
-	virtual FName GetSectionName() const override;
-	// End UDeveloperSettings interface
-
 	/**
 	 * @brief Saves the current values to the .ini file inside root Config folder
 	 */
@@ -84,4 +105,10 @@ private:
 	 * @brief Callback executed when any config is saved so we can react to saves to this config
 	 */
 	void OnAnyConfigSaved(const TCHAR* IniFilename, const FString& ContentsToSave, int32& SavedCount);
+	// Begin UDeveloperSettings interface
+	virtual void PostInitProperties() override;
+	virtual FName GetContainerName() const override;
+	virtual FName GetCategoryName() const override;
+	virtual FName GetSectionName() const override;
+	// End UDeveloperSettings interface
 };
