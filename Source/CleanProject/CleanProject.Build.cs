@@ -7,15 +7,16 @@ public class CleanProject : ModuleRules
 	public CleanProject(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PrivateDependencyModuleNames.AddRange(new[]{
-			"AssetTools",
 			"AssetManagerEditor",
+			"AssetTools",
+			"ContentBrowser",
 			"Core",
 			"CoreUObject",
-			"ContentBrowser",
 			"DeveloperSettings",
 			"DeveloperToolSettings",
-			"EditorSubsystem",
+			"EditorScriptingUtilities",
 			"EditorStyle",
+			"EditorSubsystem",
 			"Engine",
 			"Projects",
 			"Slate",
@@ -23,7 +24,6 @@ public class CleanProject : ModuleRules
 			"ToolMenus",
 			"UnrealEd",
 			"WorkspaceMenuStructure", 
-			"EditorScriptingUtilities",
 		});
 	}
 }

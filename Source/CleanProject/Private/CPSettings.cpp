@@ -2,9 +2,35 @@
 
 #include "CPSettings.h"
 
-#include <AssetData.h>
 #include <EditorAssetLibrary.h>
 #include <ISettingsModule.h>
+
+#include "CPHelpers.h"
+
+namespace
+{
+	TSet<FAssetData> GetAssetsFromObjectsAndPaths(const TArray<FSoftObjectPath>& InObjects, const TArray<FDirectoryPath>& InPaths)
+	{
+		TSet<FAssetData> Result;
+
+		for (const FDirectoryPath& DirectoryPath : InPaths)
+		{
+			TArray<FAssetData> AssetData = CPHelpers::GetAssetsInPaths(DirectoryPath.Path);
+			Result.Append(AssetData);
+		}
+
+		Algo::Transform(
+			InObjects,
+			Result,
+			[](const FSoftObjectPath& ObjectPath)
+			{
+				const FString& AssetPath = ObjectPath.GetAssetPathString();
+				return UEditorAssetLibrary::FindAssetData(AssetPath);
+			}
+		);
+		return Result;
+	}
+} // namespace
 
 void UCPSettings::OpenSettings()
 {
@@ -20,9 +46,9 @@ void UCPSettings::PostInitProperties()
 
 	// Backwards compatibility
 	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	for (const FString& OldWhitelistPath : WhitelistAssetsPaths)
+	for (const FString& OldCorePath : WhitelistAssetsPaths)
 	{
-		WhitelistedAssets.Emplace(FSoftObjectPath(OldWhitelistPath));
+		CoreAssets.Add(FSoftObjectPath(OldCorePath));
 	}
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
@@ -44,38 +70,58 @@ FName UCPSettings::GetSectionName() const
 	return TEXT("Clean Project");
 }
 
-void UCPSettings::WhitelistAssets(const TArray<FAssetData> Assets)
+void UCPSettings::MarkAssetsAsCore(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
 	{
 		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
-		WhitelistedAssets.Emplace(AssetPath);
+		CoreAssets.Add(AssetPath);
 	}
 
 	SaveToDefaultConfig();
 }
 
-void UCPSettings::BlacklistAssets(const TArray<FAssetData> Assets)
+void UCPSettings::MarkPathsAsCore(const TArray<FString> Paths)
 {
-	for (const FAssetData& Asset : Assets)
+	for (const FString& Path : Paths)
 	{
-		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
-		BlacklistedAssets.Emplace(AssetPath);
+		FDirectoryPath DirectoryPath = {Path};
+		CoreFolders.Add(DirectoryPath);
 	}
 
 	SaveToDefaultConfig();
 }
 
-TSet<FAssetData> UCPSettings::GetWhitelistAssetsPaths() const
+void UCPSettings::ExcludeAssetsFromPackage(const TArray<FAssetData> Assets)
 {
-	TSet<FAssetData> Result;
-	Algo::Transform(WhitelistedAssets, Result,
-		[](const FSoftObjectPath& Path)
-		{
-			const FString& AssetPath = Path.GetAssetPathString();
-			return UEditorAssetLibrary::FindAssetData(AssetPath);
-		});
-	return Result;
+	for (const FAssetData& Asset : Assets)
+	{
+		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
+		AssetsExcludedFromPackage.Add(AssetPath);
+	}
+
+	SaveToDefaultConfig();
+}
+
+void UCPSettings::ExcludePathsFromPackage(const TArray<FString> Paths)
+{
+	for (const FString& Path : Paths)
+	{
+		FDirectoryPath DirectoryPath = {Path};
+		FoldersExcludedFromPackage.Add(DirectoryPath);
+	}
+
+	SaveToDefaultConfig();
+}
+
+TSet<FAssetData> UCPSettings::GetCoreAssets() const
+{
+	return GetAssetsFromObjectsAndPaths(CoreAssets, CoreFolders);
+}
+
+TSet<FAssetData> UCPSettings::GetAssetsExcludedFromPackage() const
+{
+	return GetAssetsFromObjectsAndPaths(AssetsExcludedFromPackage, FoldersExcludedFromPackage);
 }
 
 void UCPSettings::SaveToDefaultConfig()
@@ -85,7 +131,7 @@ void UCPSettings::SaveToDefaultConfig()
 
 void UCPSettings::OnAnyConfigSaved(const TCHAR* IniFilename, const FString& ContentsToSave, int32& SavedCount)
 {
-	FString IniFile = FString(IniFilename);
+	const FString IniFile = FString(IniFilename);
 	if (IniFile == GetDefaultConfigFilename())
 	{
 		OnSettingsChanged.Broadcast();

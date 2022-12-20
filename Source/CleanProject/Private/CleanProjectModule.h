@@ -7,7 +7,6 @@
  */
 class FCleanProjectModule : public IModuleInterface
 {
-private:
 	// Begin IModuleInterface interface
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
@@ -65,13 +64,12 @@ private:
 	/**
 	 * @brief Callback executed by the windows menu entry to spawn the Dashboard nomad tab
 	 */
-	TSharedRef<SDockTab> CreateDashboardNomadTab(const FSpawnTabArgs& Args);
+	TSharedRef<SDockTab> CreateDashboardTab(const FSpawnTabArgs& Args);
 	/**
 	 * @brief Create the entries for the Clean Project actions in the Tools submenu
 	 * @param InMenu Menu Owner
 	 */
 	void CreateToolsSubMenu(UToolMenu* InMenu);
-
 	/**
 	 * @brief Callback handle for the assets context menu extension of the Content Browser
 	 */
