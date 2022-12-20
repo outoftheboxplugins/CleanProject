@@ -45,16 +45,6 @@ private:
 	 */
 	void OnAssetDoubleClicked(const FAssetData& AssetData);
 	/**
-	 * @brief Callback executed when the References button is clicked
-	 * @return if the operation was handled or not
-	 */
-	FReply OnReferenceViewerClicked();
-	/**
-	 * @brief Callback executed when the Audit button is clicked
-	 * @return if the operation was handled or not
-	 */
-	FReply OnAuditClicked();
-	/**
 	 * @brief Callback executed when the Delete button is clicked
 	 * @return if the operation was handled or not
 	 */

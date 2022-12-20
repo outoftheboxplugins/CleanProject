@@ -78,24 +78,6 @@ void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAs
 				SNew(SButton)
 				.HAlign(HAlign_Center)
 				.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCPUnusedAssetsReport::OnReferenceViewerClicked)
-				.Text(LOCTEXT("ReferenceViewerButton", "References"))
-			]
-			+SHorizontalBox::Slot()
-			.FillWidth(1.0f)
-			[
-				SNew(SButton)
-				.HAlign(HAlign_Center)
-				.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
-				.OnClicked(this, &SCPUnusedAssetsReport::OnAuditClicked)
-				.Text(LOCTEXT("AuditButton", "Audit"))
-			]
-			+SHorizontalBox::Slot()
-			.FillWidth(1.0f)
-			[
-				SNew(SButton)
-				.HAlign(HAlign_Center)
-				.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
 				.OnClicked(this, &SCPUnusedAssetsReport::OnMarkAsCoreClicked)
 				.Text(LOCTEXT("MarkAsCoreButton", "Mark As Core"))
 			]
@@ -200,18 +182,6 @@ TSharedPtr<SWidget> SCPUnusedAssetsReport::OnGetAssetContextMenu(const TArray<FA
 void SCPUnusedAssetsReport::OnAssetDoubleClicked(const FAssetData& AssetData)
 {
 	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(AssetData.GetAsset());
-}
-
-FReply SCPUnusedAssetsReport::OnReferenceViewerClicked()
-{
-	ReferenceViewerAssets(GetAssetsForAction());
-	return FReply::Handled();
-}
-
-FReply SCPUnusedAssetsReport::OnAuditClicked()
-{
-	AuditAssets(GetAssetsForAction());
-	return FReply::Handled();
 }
 
 FReply SCPUnusedAssetsReport::OnDeleteClicked()
