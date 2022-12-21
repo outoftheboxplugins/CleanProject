@@ -110,5 +110,8 @@ private:
 	virtual FName GetContainerName() const override;
 	virtual FName GetCategoryName() const override;
 	virtual FName GetSectionName() const override;
+#if WITH_EDITOR
+	virtual FText GetSectionText() const override;
+#endif
 	// End UDeveloperSettings interface
 };

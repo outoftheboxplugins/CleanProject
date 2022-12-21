@@ -70,6 +70,14 @@ FName UCPSettings::GetSectionName() const
 	return TEXT("Clean Project");
 }
 
+#if WITH_EDITOR
+FText UCPSettings::GetSectionText() const
+{
+	const FName DisplaySectionName = GetSectionName();
+	return FText::FromName(DisplaySectionName);
+}
+#endif
+
 void UCPSettings::MarkAssetsAsCore(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
