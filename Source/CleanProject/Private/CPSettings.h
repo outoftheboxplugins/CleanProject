@@ -112,7 +112,6 @@ private:
 	virtual FName GetSectionName() const override;
 #if WITH_EDITOR
 	virtual FText GetSectionText() const override;
-#endif WITH_EDITOR
-
+#endif
 	// End UDeveloperSettings interface
 };

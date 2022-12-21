@@ -76,7 +76,7 @@ FText UCPSettings::GetSectionText() const
 	const FName DisplaySectionName = GetSectionName();
 	return FText::FromName(DisplaySectionName);
 }
-#endif WITH_EDITOR
+#endif
 
 void UCPSettings::MarkAssetsAsCore(const TArray<FAssetData> Assets)
 {
