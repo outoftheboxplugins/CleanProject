@@ -70,6 +70,11 @@ private:
 	 */
 	void AuditAssets(const TArray<FAssetData> Assets);
 	/**
+	 * @brief Removes assets from Source control 'Mark for Add' state without deleting them
+	 * @param Assets Assets to revert
+	 */
+	void SoftRevertFiles(const TArray<FAssetData> Assets);
+	/**
 	 * @brief Opens a deletion dialog with the input assets
 	 * @param Assets Assets to propose for deletion
 	 */
