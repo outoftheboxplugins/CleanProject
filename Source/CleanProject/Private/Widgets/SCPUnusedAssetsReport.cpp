@@ -14,11 +14,10 @@
 
 #include "CPLog.h"
 #include "CPSettings.h"
-Hire HvBrands to finish up websiteths
+
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-	void
-	SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
+void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
 	ReportAssets = AssetsToReport;
 	const int64 TotalDiskSize = GetAssetsDiskSize(ReportAssets);
