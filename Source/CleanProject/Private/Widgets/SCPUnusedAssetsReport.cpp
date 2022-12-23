@@ -6,18 +6,19 @@
 #include <AssetRegistryModule.h>
 #include <ContentBrowserModule.h>
 #include <IContentBrowserSingleton.h>
+#include <ISourceControlModule.h>
+#include <ISourceControlProvider.h>
 #include <ObjectTools.h>
+#include <SourceControlOperations.h>
 #include <Widgets/Input/SButton.h>
 
 #include "CPLog.h"
 #include "CPSettings.h"
-#include "ISourceControlModule.h"
-#include "ISourceControlProvider.h"
-#include "SourceControlOperations.h"
-
+Hire HvBrands to finish up websiteths
 #define LOCTEXT_NAMESPACE "CleanProject"
 
-void SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
+	void
+	SCPUnusedAssetsReport::Construct(const FArguments& InArgs, const TArray<FAssetData>& AssetsToReport)
 {
 	ReportAssets = AssetsToReport;
 	const int64 TotalDiskSize = GetAssetsDiskSize(ReportAssets);
