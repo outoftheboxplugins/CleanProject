@@ -38,6 +38,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 			.ShowTypeInTileView(true)
 			.ShowBottomToolbar(true)
 			.ShowViewOptions(true)
+			.CanShowClasses(false)
 			.OnShouldFilterAsset_Raw(this, &SCPDashboardWidget::FilterCoreAssets)
 		]
 
@@ -58,6 +59,7 @@ void SCPDashboardWidget::Construct(const FArguments& InArgs)
 			.ShowTypeInTileView(true)
 			.ShowBottomToolbar(true)
 			.ShowViewOptions(true)
+			.CanShowClasses(false)
 			.OnShouldFilterAsset_Raw(this, &SCPDashboardWidget::FilterUnusedAsset)
 		]
 

@@ -6,7 +6,10 @@
 #include <AssetRegistryModule.h>
 #include <ContentBrowserModule.h>
 #include <IContentBrowserSingleton.h>
+#include <ISourceControlModule.h>
+#include <ISourceControlProvider.h>
 #include <ObjectTools.h>
+#include <SourceControlOperations.h>
 #include <Widgets/Input/SButton.h>
 
 #include "CPLog.h"
@@ -156,6 +159,13 @@ TSharedPtr<SWidget> SCPUnusedAssetsReport::OnGetAssetContextMenu(const TArray<FA
 	);
 
 	MenuBuilder.AddMenuEntry(
+		LOCTEXT("SoftRevert", "Soft revert"),
+		LOCTEXT("SoftRevertTooltip", "Remove selected assets from the 'Mark for Add' state without deleting them."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateSP(this, &SCPUnusedAssetsReport::SoftRevertFiles, SelectedAssets))
+	);
+
+	MenuBuilder.AddMenuEntry(
 		LOCTEXT("MarkAsCoreAction", "Mark as Core"),
 		LOCTEXT("MarkAsCoreActionTooltip", "Mark selected assets as core and remove them from report."),
 		FSlateIcon(),
@@ -225,6 +235,26 @@ void SCPUnusedAssetsReport::AuditAssets(const TArray<FAssetData> Assets)
 	LOG_TRACE();
 
 	IAssetManagerEditorModule::Get().OpenAssetAuditUI(Assets);
+}
+void SCPUnusedAssetsReport::SoftRevertFiles(const TArray<FAssetData> Assets)
+{
+	LOG_TRACE();
+
+	TArray<UPackage*> PackagesToUpdate;
+	Algo::Transform(
+		Assets,
+		PackagesToUpdate,
+		[](const FAssetData& Asset)
+		{
+			return Asset.GetPackage();
+		}
+	);
+
+	ISourceControlProvider& SourceControlProvider = ISourceControlModule::Get().GetProvider();
+	const TSharedRef<FRevert> RevertOperation = ISourceControlOperation::Create<FRevert>();
+
+	RevertOperation->SetSoftRevert(true);
+	SourceControlProvider.Execute(RevertOperation, PackagesToUpdate);
 }
 
 void SCPUnusedAssetsReport::DeleteAssets(const TArray<FAssetData> Assets)
