@@ -1,14 +1,15 @@
 {
 	"FileVersion": 3,
 	"VersionName": "1.0",
+	"EngineVersion": "5.1",
 	"FriendlyName": "Clean Project",
 	"Description": "Keep your project organized with fast and easy to use cleanup operations",
 	"Category": "Editor",
 	"CreatedBy": "Out-of-the-Box Plugins",
 	"CreatedByURL": "https://outofthebox-plugins.com",
-	"DocsURL": "https://gitlab.com/unreal-marketplace/CleanProject/-/wikis/home",
+	"DocsURL": "http://cleanproject.outofthebox-plugins.com/",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/13d45e838b954d67b9d5d01fa82635d9",
-	"SupportURL": "https://gitlab.com/unreal-marketplace/CleanProject/-/wikis/home",
+	"SupportURL": "https://github.com/outoftheboxplugins/CleanProject-docs/issues",
 	"EnabledByDefault": true,
 	"Modules": [
 		{
