@@ -6,6 +6,7 @@
 #include <ISettingsModule.h>
 
 #include "CPHelpers.h"
+#include "CPLog.h"
 
 namespace
 {
@@ -144,4 +145,26 @@ void UCPSettings::OnAnyConfigSaved(const TCHAR* IniFilename, const FString& Cont
 	{
 		OnSettingsChanged.Broadcast();
 	}
+}
+
+void UCPSettings::CleanupReferences()
+{
+	auto RemoveInvalidEntries = [](TArray<FSoftObjectPath>& Entries)
+	{
+		for(auto It = Entries.CreateIterator(); It; ++It)
+		{
+			const FString AssetPath = It->GetAssetPathString();
+			FAssetData FoundAsset = UEditorAssetLibrary::FindAssetData(AssetPath);
+			if(!FoundAsset.IsValid())
+			{
+				It.RemoveCurrent();
+				UE_LOG(LogCleanProject, Display, TEXT("Removing: %s because it was found invalid."), *AssetPath)
+			}	
+		}
+	};
+
+	RemoveInvalidEntries(CoreAssets);
+	RemoveInvalidEntries(AssetsExcludedFromPackage);
+
+	SaveConfig();
 }
