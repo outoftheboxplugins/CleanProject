@@ -105,6 +105,10 @@ private:
 	 * @brief Callback executed when any config is saved so we can react to saves to this config
 	 */
 	void OnAnyConfigSaved(const TCHAR* IniFilename, const FString& ContentsToSave, int32& SavedCount);
+	/*
+	 * @brief Callback executed when the AssetManager is ready to perform actions
+	 */
+	void OnAssetManagerReady();
 	// Begin UDeveloperSettings interface
 	virtual void PostInitProperties() override;
 	virtual FName GetContainerName() const override;
