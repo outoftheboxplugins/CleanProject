@@ -7,6 +7,7 @@
 
 #include "CPHelpers.h"
 #include "CPLog.h"
+#include "Engine/AssetManager.h"
 
 namespace
 {
@@ -52,6 +53,8 @@ void UCPSettings::PostInitProperties()
 		CoreAssets.Add(FSoftObjectPath(OldCorePath));
 	}
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
+
+	UAssetManager::CallOrRegister_OnCompletedInitialScan(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAssetManagerReady));
 
 	FCoreDelegates::PreSaveConfigFileDelegate.AddUObject(this, &UCPSettings::OnAnyConfigSaved);
 }
@@ -146,20 +149,19 @@ void UCPSettings::OnAnyConfigSaved(const TCHAR* IniFilename, const FString& Cont
 		OnSettingsChanged.Broadcast();
 	}
 }
-
-void UCPSettings::CleanupReferences()
+void UCPSettings::OnAssetManagerReady()
 {
 	auto RemoveInvalidEntries = [](TArray<FSoftObjectPath>& Entries)
 	{
-		for(auto It = Entries.CreateIterator(); It; ++It)
+		for (auto It = Entries.CreateIterator(); It; ++It)
 		{
 			const FString AssetPath = It->GetAssetPathString();
 			FAssetData FoundAsset = UEditorAssetLibrary::FindAssetData(AssetPath);
-			if(!FoundAsset.IsValid())
+			if (!FoundAsset.IsValid())
 			{
 				It.RemoveCurrent();
 				UE_LOG(LogCleanProject, Display, TEXT("Removing: %s because it was found invalid."), *AssetPath)
-			}	
+			}
 		}
 	};
 
