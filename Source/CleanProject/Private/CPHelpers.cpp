@@ -1,4 +1,4 @@
-﻿// Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
+// Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
 
 #include "CPHelpers.h"
 
@@ -21,28 +21,6 @@ TSet<FAssetData> CPHelpers::GetAllGameAssets(TOptional<FTopLevelAssetPath> Class
 
 	FAssetRegistryModule::GetRegistry().GetAssets(Filter, AllAssetData);
 	return TSet(AllAssetData);
-}
-
-FAssetData CPHelpers::GetDefaultGameObject(const FName& PropertyName)
-{
-	FConfigFile PlatformEngineIni;
-	FConfigCacheIni::LoadLocalIniFile(PlatformEngineIni, TEXT("Engine"), true);
-
-	FConfigSection* MapSettingsSection = PlatformEngineIni.Find(TEXT("/Script/EngineSettings.GameMapsSettings"));
-	if (MapSettingsSection == nullptr)
-	{
-		return {};
-	}
-
-	const FConfigValue* PairString = MapSettingsSection->Find(PropertyName);
-	const FString ObjectPath = PairString ? PairString->GetValue() : TEXT("");
-	const FSoftClassPath Test = FSoftClassPath(ObjectPath);
-
-	FAssetData Result;
-	UAssetManager& AssetManager = UAssetManager::Get();
-	AssetManager.GetAssetDataForPath(ObjectPath, Result);
-
-	return Result;
 }
 
 TArray<FAssetData> CPHelpers::GetAssetsInPaths(TArray<FString> FolderPaths)
