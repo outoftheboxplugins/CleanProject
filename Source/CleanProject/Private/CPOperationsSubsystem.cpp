@@ -1,4 +1,4 @@
-﻿// Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
+// Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
 
 #include "CPOperationsSubsystem.h"
 
@@ -302,16 +302,12 @@ TSet<FAssetData> UCPOperationsSubsystem::GetAllCoreAssets() const
 		}
 	);
 
-	// Third get all the default game objects
-	Result.Add(CPHelpers::GetDefaultGameObject(FName(TEXT("GameDefaultMap"))));
-	Result.Add(CPHelpers::GetDefaultGameObject(FName(TEXT("ServerDefaultMap"))));
-	Result.Add(CPHelpers::GetDefaultGameObject(FName(TEXT("GlobalDefaultGameMode"))));
-	Result.Add(CPHelpers::GetDefaultGameObject(FName(TEXT("GlobalDefaultServerGameMode"))));
-	Result.Add(CPHelpers::GetDefaultGameObject(FName(TEXT("GameInstanceClass"))));
-
-	// Forth get the assets which were explicitly selected by the user in our plugin settings
+	// Third get the assets which were explicitly selected by the user in our plugin settings
 	const TSet<FAssetData> ExplicitCoreAssets = GetDefault<UCPSettings>()->GetCoreAssets();
 	Result.Append(ExplicitCoreAssets.Array());
+
+	// Forth get the assets referenced inside the .ini Settings
+	Result.Append(CPHelpers::GetAssetsInIniFiles());
 
 	// Finally, remove all invalid assets before returning back
 	Result.RemoveAll(

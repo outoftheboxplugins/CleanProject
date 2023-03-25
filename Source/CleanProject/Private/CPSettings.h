@@ -23,10 +23,6 @@ public:
 	 */
 	static void OpenSettings();
 	/**
-	 * @brief Called after this settings object has been changed
-	 */
-	FSimpleMulticastDelegate OnSettingsChanged;
-	/**
 	 * @brief Returns the asset path of the assets explicitly marked as Core
 	 */
 	TSet<FAssetData> GetCoreAssets() const;
@@ -101,10 +97,6 @@ private:
 	 * @brief Saves the current values to the .ini file inside root Config folder
 	 */
 	void SaveToDefaultConfig();
-	/**
-	 * @brief Callback executed when any config is saved so we can react to saves to this config
-	 */
-	void OnAnyConfigSaved(const TCHAR* IniFilename, const FString& ContentsToSave, int32& SavedCount);
 	/*
 	 * @brief Callback executed when the AssetManager is ready to perform actions
 	 */
