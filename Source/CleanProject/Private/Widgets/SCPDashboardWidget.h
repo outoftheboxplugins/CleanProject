@@ -51,9 +51,9 @@ private:
 	 */
 	void OnAssetUpdated(const FAssetData& AssetData);
 	/**
-	 * @brief Callback executed when the Clean Project settings are changed
+	 * @brief Callback executed when any settings are changed
 	 */
-	void OnSettingsChanged();
+	void OnSettingsChanged(const TCHAR* IniFilename, const FString& ContentsToSave, int32& SavedCount);
 	/**
 	 * @brief Callback executed when a FastCleanup button is pressed
 	 * @return if the operation was handled or not

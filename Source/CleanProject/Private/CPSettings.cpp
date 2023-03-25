@@ -55,8 +55,6 @@ void UCPSettings::PostInitProperties()
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	UAssetManager::CallOrRegister_OnCompletedInitialScan(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAssetManagerReady));
-
-	FCoreDelegates::PreSaveConfigFileDelegate.AddUObject(this, &UCPSettings::OnAnyConfigSaved);
 }
 
 FName UCPSettings::GetContainerName() const
@@ -141,14 +139,6 @@ void UCPSettings::SaveToDefaultConfig()
 	SaveConfig(CPF_Config, *GetDefaultConfigFilename());
 }
 
-void UCPSettings::OnAnyConfigSaved(const TCHAR* IniFilename, const FString& ContentsToSave, int32& SavedCount)
-{
-	const FString IniFile = FString(IniFilename);
-	if (IniFile == GetDefaultConfigFilename())
-	{
-		OnSettingsChanged.Broadcast();
-	}
-}
 void UCPSettings::OnAssetManagerReady()
 {
 	auto RemoveInvalidEntries = [](TArray<FSoftObjectPath>& Entries)

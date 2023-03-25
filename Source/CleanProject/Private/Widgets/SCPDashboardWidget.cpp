@@ -184,7 +184,7 @@ void SCPDashboardWidget::OnInitialScanComplete()
 	AssetRegistry.OnAssetRenamed().AddSP(this, &SCPDashboardWidget::OnAssetRenamed);
 	AssetRegistry.OnAssetUpdatedOnDisk().AddSP(this, &SCPDashboardWidget::OnAssetUpdated);
 
-	GetMutableDefault<UCPSettings>()->OnSettingsChanged.AddSP(this, &SCPDashboardWidget::OnSettingsChanged);
+	FCoreDelegates::PreSaveConfigFileDelegate.AddSP(this, &SCPDashboardWidget::OnSettingsChanged);
 }
 
 void SCPDashboardWidget::OnAssetAdded(const FAssetData& AssetData)
@@ -235,7 +235,7 @@ void SCPDashboardWidget::OnAssetUpdated(const FAssetData& AssetData)
 	bIsIndexDirty = true;
 }
 
-void SCPDashboardWidget::OnSettingsChanged()
+void SCPDashboardWidget::OnSettingsChanged(const TCHAR* IniFilename, const FString& ContentsToSave, int32& SavedCount)
 {
 	bIsIndexDirty = true;
 }

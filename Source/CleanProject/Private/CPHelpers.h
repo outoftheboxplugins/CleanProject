@@ -35,6 +35,11 @@ namespace CPHelpers
 	 * @return List of all the aseets we found inside the input Folder
 	 */
 	TArray<FAssetData> GetAssetsInPaths(FString FolderPath);
+	/**
+	 * @brief Scans the Config/ folder .ini files for any potentially referenced assets
+	 * @return List of all the asset datas found inside the .ini files
+	 */
+	TArray<FAssetData> GetAssetsInIniFiles();
 } // namespace CPHelpers
 
 template <typename T>

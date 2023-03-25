@@ -58,3 +58,36 @@ TArray<FAssetData> CPHelpers::GetAssetsInPaths(FString FolderPath)
 	const TArray<FString> FolderPaths = {FolderPath};
 	return GetAssetsInPaths(FolderPaths);
 }
+
+TArray<FAssetData> CPHelpers::GetAssetsInIniFiles()
+{
+	TArray<FAssetData> Result;
+
+	TArray<FString> IniFiles;
+	GConfig->GetConfigFilenames(IniFiles);
+	IniFiles.RemoveAll(
+		[](const FString& FileName)
+		{
+			return !GConfig->IsKnownConfigName(FName(*FileName));
+		}
+	);
+
+	for (const FString& ConfigFilename : IniFiles)
+	{
+		const FConfigFile* ConfigFile = GConfig->FindConfigFile(ConfigFilename);
+		for (auto& ConfigSection : *ConfigFile)
+		{
+			for (auto& ConfigValue : ConfigSection.Value)
+			{
+				const FString Entry = ConfigValue.Value.GetValue();
+				if (const UObject* ResolvedObject = FSoftObjectPath(Entry).TryLoad())
+				{
+					FAssetData AssetData = FAssetData(ResolvedObject);
+					Result.Add(AssetData);
+				}
+			}
+		}
+	}
+
+	return Result;
+}
