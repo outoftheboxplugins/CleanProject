@@ -1,4 +1,4 @@
-﻿// Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
+// Copyright Out-of-the-Box Plugins 2018-2023. All Rights Reserved.
 
 #include "CPOperationsSubsystem.h"
 
@@ -312,6 +312,38 @@ TSet<FAssetData> UCPOperationsSubsystem::GetAllCoreAssets() const
 	// Forth get the assets which were explicitly selected by the user in our plugin settings
 	const TSet<FAssetData> ExplicitCoreAssets = GetDefault<UCPSettings>()->GetCoreAssets();
 	Result.Append(ExplicitCoreAssets.Array());
+
+	// Fifth get the assets referenced inside the .ini Settings
+	TArray<FString> IniFiles;
+	GConfig->GetConfigFilenames(IniFiles);
+	IniFiles.RemoveAll(
+		[](const FString& FileName)
+		{
+			return !GConfig->IsKnownConfigName(FName(*FileName));
+		}
+	);
+
+	for (const FString& ConfigFilename : IniFiles)
+	{
+		const FConfigFile* ConfigFile = GConfig->FindConfigFile(ConfigFilename);
+		for (auto& ConfigSection : *ConfigFile)
+		{
+			//			if (ConfigSection.Key != TEXT("/Script/PlayGround.TestSettings"))
+			//			{
+			//				continue;
+			//			}
+			//
+			for (auto& ConfigValue : ConfigSection.Value)
+			{
+				FString Entry = ConfigValue.Value.GetValue();
+				if (UObject* ResolvedObject = FSoftObjectPath(Entry).TryLoad())
+				{
+					FAssetData AssetData = FAssetData(ResolvedObject);
+					Result.Add(AssetData);
+				}
+			}
+		}
+	}
 
 	// Finally, remove all invalid assets before returning back
 	Result.RemoveAll(
