@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"VersionName": "1.0",
-	"EngineVersion": "5.1",
+	"EngineVersion": "5.2",
 	"FriendlyName": "Clean Project",
 	"Description": "Keep your project organized with fast and easy to use cleanup operations",
 	"Category": "Editor",
