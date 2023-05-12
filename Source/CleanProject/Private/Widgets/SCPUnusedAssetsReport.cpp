@@ -3,7 +3,7 @@
 #include "SCPUnusedAssetsReport.h"
 
 #include <AssetManagerEditorModule.h>
-#include <AssetRegistryModule.h>
+#include <AssetRegistry/AssetRegistryModule.h>
 #include <ContentBrowserModule.h>
 #include <IContentBrowserSingleton.h>
 #include <ISourceControlModule.h>

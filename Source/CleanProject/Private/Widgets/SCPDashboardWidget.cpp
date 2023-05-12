@@ -184,7 +184,7 @@ void SCPDashboardWidget::OnInitialScanComplete()
 	AssetRegistry.OnAssetRenamed().AddSP(this, &SCPDashboardWidget::OnAssetRenamed);
 	AssetRegistry.OnAssetUpdatedOnDisk().AddSP(this, &SCPDashboardWidget::OnAssetUpdated);
 
-	FCoreDelegates::PreSaveConfigFileDelegate.AddSP(this, &SCPDashboardWidget::OnSettingsChanged);
+	FCoreDelegates::TSPreSaveConfigFileDelegate().AddSP(this, &SCPDashboardWidget::OnSettingsChanged);
 }
 
 void SCPDashboardWidget::OnAssetAdded(const FAssetData& AssetData)
