@@ -8,6 +8,7 @@ public class CleanProject : ModuleRules
 	{
 		PrivateDependencyModuleNames.AddRange(new[]{
 			"AssetManagerEditor",
+			"AssetRegistry",
 			"AssetTools",
 			"ContentBrowser",
 			"Core",

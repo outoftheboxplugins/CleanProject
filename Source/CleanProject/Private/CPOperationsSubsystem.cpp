@@ -2,6 +2,7 @@
 
 #include "CPOperationsSubsystem.h"
 
+#include <AssetRegistry/AssetRegistryModule.h>
 #include <AssetToolsModule.h>
 #include <AssetViewUtils.h>
 #include <EditorAssetLibrary.h>
@@ -65,6 +66,14 @@ namespace
 			OutEmptyFolders.Add(BaseDirectory);
 		}
 	}
+
+	FAssetData GetAssetDataFromDependency(const FAssetDependency& Dependency)
+	{
+		TMap<FName, FAssetData> Result;
+		UE::AssetRegistry::GetAssetForPackages({Dependency.AssetId.PackageName}, Result);
+
+		return Result.FindOrAdd(Dependency.AssetId.PackageName);
+	}
 } // namespace
 
 FCPAssetDependenciesTable::FCPAssetDependenciesTable(const TSet<FAssetData>& InAssets, EScanType ScanType)
@@ -107,12 +116,15 @@ void FCPAssetDependenciesTable::BuildDependenciesTable(const TSet<FAssetData>& I
 		SlowTask.EnterProgressFrame(1, FText::FromString(AssetPath));
 
 		const bool bLoadAssetsToConfirm = ScanType == EScanType::Complex;
-		TArray<FString> Dependencies = UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPath, bLoadAssetsToConfirm);
+
+		FAssetIdentifier AssetIdentifier = FAssetIdentifier(Asset.PackageName);
+		TArray<FAssetDependency> PackageReferences;
+		FAssetRegistryModule::GetRegistry().GetReferencers(AssetIdentifier, PackageReferences);
 
 		TArray<FAssetData> DependencyAssets;
-		for (const FString& Dependency : Dependencies)
+		for (const FAssetDependency& Dependency : PackageReferences)
 		{
-			FAssetData DependencyAsset = UEditorAssetLibrary::FindAssetData(Dependency);
+			FAssetData DependencyAsset = GetAssetDataFromDependency(Dependency);
 			DependencyAssets.Emplace(DependencyAsset);
 		}
 		Table.Emplace(Asset, DependencyAssets);
@@ -134,7 +146,14 @@ void FCPAssetDependenciesTable::CompileReferencesRecursive(const TArray<FAssetDa
 		TArray<FAssetData> AssetDependencies;
 		for (TPair<FAssetData, TArray<FAssetData>> DependencyRow : Table)
 		{
+			// This asset is referencing us directly, we care about all it's dependencies
 			if (DependencyRow.Value.Contains(Asset))
+			{
+				AssetDependencies.Add(DependencyRow.Key);
+			}
+
+			// This asset is a external reference to us, we care about all it's dependencies
+			if (DependencyRow.Key.GetObjectPathString().StartsWith(Asset.GetObjectPathString()))
 			{
 				AssetDependencies.Add(DependencyRow.Key);
 			}
