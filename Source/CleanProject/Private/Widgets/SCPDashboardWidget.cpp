@@ -242,7 +242,7 @@ void SCPDashboardWidget::OnSettingsChanged(const TCHAR* IniFilename, const FStri
 
 void SCPDashboardWidget::RefreshUnusedAssets()
 {
-	const UAssetManager* AssetManager = UAssetManager::GetIfValid();
+	const UAssetManager* AssetManager = UAssetManager::GetIfInitialized();
 	if (!AssetManager || !AssetManager->HasInitialScanCompleted())
 	{
 		// Asset manager is not ready yet, delaying refresh

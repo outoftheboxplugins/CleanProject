@@ -11,6 +11,7 @@ public class CleanProject : ModuleRules
 			"AssetRegistry",
 			"AssetTools",
 			"ContentBrowser",
+			"ContentBrowserData",
 			"Core",
 			"CoreUObject",
 			"DeveloperSettings",
