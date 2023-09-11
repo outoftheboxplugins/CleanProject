@@ -11,6 +11,7 @@
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/13d45e838b954d67b9d5d01fa82635d9",
 	"SupportURL": "https://github.com/outoftheboxplugins/CleanProject-docs/issues",
 	"EnabledByDefault": true,
+	"CanContainContent": false,
 	"Modules": [
 		{
 			"Name": "CleanProject",
