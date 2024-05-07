@@ -243,8 +243,14 @@ void UCPOperationsSubsystem::FixUpRedirectsInProject()
 		ObjectPaths.Add(Asset.GetSoftObjectPath().ToString());
 	}
 
+	AssetViewUtils::FLoadAssetsSettings Settings {
+    		.bFollowRedirectors = true,
+    		.bLoadWorldPartitionMaps = false,
+    		.bLoadAllExternalObjects = false,
+    	};
+
 	TArray<UObject*> Objects;
-	if (AssetViewUtils::LoadAssetsIfNeeded(ObjectPaths, Objects, true, true))
+	if (LoadAssetsIfNeeded(ObjectPaths, Objects, Settings) == AssetViewUtils::ELoadAssetsResult::Success)
 	{
 		TArray<UObjectRedirector*> Redirects;
 		for (UObject* Object : Objects)
