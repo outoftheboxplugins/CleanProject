@@ -84,8 +84,7 @@ void UCPSettings::MarkAssetsAsCore(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
 	{
-		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
-		CoreAssets.Add(AssetPath);
+		CoreAssets.Add(Asset.GetSoftObjectPath());
 	}
 
 	SaveToDefaultConfig();
@@ -106,8 +105,7 @@ void UCPSettings::ExcludeAssetsFromPackage(const TArray<FAssetData> Assets)
 {
 	for (const FAssetData& Asset : Assets)
 	{
-		FSoftObjectPath AssetPath = FSoftObjectPath(Asset.PackageName.ToString());
-		AssetsExcludedFromPackage.Add(AssetPath);
+		AssetsExcludedFromPackage.Add(Asset.GetSoftObjectPath());
 	}
 
 	SaveToDefaultConfig();
